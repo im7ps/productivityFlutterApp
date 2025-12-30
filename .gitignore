@@ -1,0 +1,32 @@
+# Flutter/Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+build/
+
+# Android Studio / Gradle
+/android/app/build/
+/android/.gradle/
+/android/local.properties
+/android/.idea/
+/android/captures/
+
+# IntelliJ
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# Misc
+*.log
+*.class
+*.swp
+.DS_Store
+
+# Ignora piattaforme che non usi
+/ios/
+/macos/
+/linux/
+/web/
