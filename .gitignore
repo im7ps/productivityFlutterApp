@@ -8,10 +8,13 @@ build/
 
 # Android Studio / Gradle
 /android/app/build/
+/android/build/
 /android/.gradle/
 /android/local.properties
 /android/.idea/
 /android/captures/
+/android/key.properties
+/android/app/key.properties
 
 # IntelliJ
 *.iml
@@ -30,3 +33,7 @@ build/
 /macos/
 /linux/
 /web/
+
+# Python
+__pycache__/
+backend/__pycache__/

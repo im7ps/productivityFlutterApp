@@ -1,12 +1,17 @@
 services:
   db:
     image: postgres:15
+    healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U user -d whativedone_db",]
+        interval: 5s
+        timeout: 5s
+        retries: 5
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=prod_db
+      - POSTGRES_DB=whativedone_db
     ports:
       - "5432:5432"
 
@@ -17,9 +22,10 @@ services:
     volumes:
       - ./backend:/app
     environment:
-      - DATABASE_URL=postgresql://user:password@db:5432/prod_db
+      - DATABASE_URL=postgresql://user:password@db:5432/whativedone_db
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     restart: always
 
 volumes:
