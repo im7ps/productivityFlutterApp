@@ -37,3 +37,22 @@ build/
 # Python
 __pycache__/
 backend/__pycache__/
+
+# Env virtuale
+venv/
+.venv/
+env/
+
+# Variabili d'ambiente e segreti (FONDAMENTALE)
+.env
+.env.*
+
+# Bytecode Python
+*.pyc
+
+# Cartelle di migrazione di Alembic (vogliamo solo le versions e l'env.py, non la cache)
+backend/alembic/__pycache__/
+
+# Database locale (se mai dovessi montare un volume locale invece che named volume)
+postgres_data/
+pgdata/

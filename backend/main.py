@@ -1,19 +1,41 @@
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, Request
+from fastapi.responses import JSONResponse
+
+from models import User, UserCreate, UserPublic, Token, Category, CategoryCreate, CategoryRead
+from typing import List
+
 from sqlmodel import Session, select
-from database import init_db, get_session
-from models import User, UserCreate, UserPublic, Token
+
+from database import get_session
+
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from auth_utils import verify_password, create_access_token, get_password_hash, SECRET_KEY, ALGORITHM
 from jose import JWTError, jwt
+
+
+import logging
+import traceback
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 app = FastAPI(title="Productivity Tracker API")
 
 
-@app.on_event("startup")
-def on_startup():
-    init_db()
+# --- GLOBAL EXCEPTION HANDLER ---
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    # 1. Logga l'errore completo nel server (visibile con 'docker-compose logs')
+    logger.error(f"🔥 ERRORE NON GESTITO SU {request.url}")
+    logger.error(traceback.format_exc())
+    
+    # 2. Risponde al Frontend in modo pulito
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Errore interno del server. Contatta l'amministratore o controlla i log."},
+    )
 
 
 @app.get("/")
@@ -91,7 +113,51 @@ def get_current_user(token: str = Depends(oauth2_scheme), session: Session = Dep
         raise credentials_exception
     return user
 
+
 @app.get("/users/me", response_model=UserPublic)
 def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
 
+
+@app.post("/categories/", response_model=CategoryRead)
+def create_category(
+    category_data: CategoryCreate, 
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    try:
+        # Metodo più sicuro per creare l'istanza:
+        # Trasformiamo i dati in dizionario e aggiungiamo l'ID utente PRIMA di creare l'oggetto
+        # Questo evita errori di validazione se user_id è obbligatorio nel modello
+        category_dict = category_data.dict()
+        category_dict["user_id"] = current_user.id
+        
+        new_category = Category(**category_dict)
+        
+        session.add(new_category)
+        session.commit()
+        session.refresh(new_category)
+        
+        return new_category
+
+    except Exception as e:
+        # Stampa l'errore completo nei log di Docker
+        print("❌ ERRORE CREAZIONE CATEGORIA:")
+        traceback.print_exc()
+        
+        # Restituisci un errore leggibile su Swagger/App
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Errore durante il salvataggio: {str(e)}"
+        )
+
+
+@app.get("/categories/", response_model=List[CategoryRead])
+def read_categories(
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    # Restituisce solo le categorie dell'utente loggato
+    statement = select(Category).where(Category.user_id == current_user.id)
+    results = session.exec(statement).all()
+    return results
