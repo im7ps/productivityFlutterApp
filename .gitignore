@@ -56,3 +56,4 @@ backend/alembic/__pycache__/
 # Database locale (se mai dovessi montare un volume locale invece che named volume)
 postgres_data/
 pgdata/
+.aider*
