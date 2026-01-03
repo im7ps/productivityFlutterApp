@@ -1,14 +1,15 @@
 from passlib.context import CryptContext
 from datetime import datetime, timedelta, timezone
 from jose import jwt
+from app.core.config import settings
 
 # Configurazione per l'hashing delle password
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# Configurazione JWT (In produzione useremo variabili d'ambiente)
-SECRET_KEY = "chiave_secreta"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 # Il token dura un giorno
+# Configurazione JWT
+SECRET_KEY = settings.SECRET_KEY
+ALGORITHM = settings.ALGORITHM
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
 
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password[:72])

@@ -76,4 +76,6 @@ alembic upgrade head
 ```
 ## Authentication
 
-The backend uses JWT for authentication. The `auth_utils.py` file contains the password hashing and JWT creation logic. The secret key is hardcoded in the `auth_utils.py` file. This should be moved to an environment variable in a production environment.
+The backend uses JWT for authentication. The secret key for JWT (SECRET_KEY), along with the algorithm (ALGORITHM) and token expiration minutes (ACCESS_TOKEN_EXPIRE_MINUTES), are now managed via environment variables passed to the backend service in `docker-compose.yml`.
+
+**IMPORTANT:** Ensure you change the placeholder `SECRET_KEY` in your `docker-compose.yml` file to a strong, unique secret before deploying or sharing. You can generate a strong key using tools like `openssl rand -hex 32`.
