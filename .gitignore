@@ -57,3 +57,4 @@ backend/alembic/__pycache__/
 postgres_data/
 pgdata/
 .aider*
+node_modules
