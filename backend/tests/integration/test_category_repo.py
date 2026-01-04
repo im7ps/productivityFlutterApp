@@ -22,7 +22,7 @@ def test_category_crud_lifecycle(db_session):
     print("\nAzione: Creazione di una nuova categoria...")
     category_data = CategoryCreate(name="Lavoro", color="blue")
     print(f"Parametri: {category_data.model_dump()}")
-    created_category_1 = category_repo.create_category(category_data, user.id)
+    created_category_1 = category_repo.create(obj_in=category_data, user_id=user.id)
     assert created_category_1.id is not None
     assert created_category_1.name == "Lavoro"
     assert created_category_1.user_id == user.id
@@ -31,7 +31,7 @@ def test_category_crud_lifecycle(db_session):
     print("\nAzione: Creazione di una seconda categoria...")
     category_data_2 = CategoryCreate(name="Hobby", color="green")
     print(f"Parametri: {category_data_2.model_dump()}")
-    created_category_2 = category_repo.create_category(category_data_2, user.id)
+    created_category_2 = category_repo.create(obj_in=category_data_2, user_id=user.id)
     assert created_category_2.id is not None
     assert created_category_2.name == "Hobby"
     assert created_category_2.user_id == user.id
@@ -39,13 +39,13 @@ def test_category_crud_lifecycle(db_session):
 
     # 3. READ (singola e tutte)
     print("\nAzione: Recupero della categoria 1 per ID...")
-    fetched_category_1 = category_repo.get_category_by_id(created_category_1.id, user.id)
+    fetched_category_1 = category_repo.get_by_id(obj_id=created_category_1.id, user_id=user.id)
     assert fetched_category_1 is not None
     assert fetched_category_1.id == created_category_1.id
     print("Risultato: Categoria singola recuperata correttamente.")
 
     print("\nAzione: Recupero di tutte le categorie per l'utente...")
-    all_categories = category_repo.get_all_categories_by_user(user.id)
+    all_categories = category_repo.get_all_by_user(user_id=user.id)
     assert len(all_categories) == 2
     
     created_ids = {created_category_1.id, created_category_2.id}
@@ -57,29 +57,29 @@ def test_category_crud_lifecycle(db_session):
     print("\nAzione: Aggiornamento della categoria 1...")
     update_data = CategoryUpdate(name="Lavoro Urgente", color="red")
     print(f"Parametri: {update_data.model_dump(exclude_unset=True)}")
-    updated_category = category_repo.update_category(fetched_category_1, update_data)
+    updated_category = category_repo.update(db_obj=fetched_category_1, obj_in=update_data)
     assert updated_category.name == "Lavoro Urgente"
     assert updated_category.color == "red"
     print("Risultato: Categoria 1 aggiornata con successo.")
 
     # 5. DELETE
     print("\nAzione: Eliminazione della categoria 1...")
-    category_repo.delete_category(updated_category)
+    category_repo.delete(db_obj=updated_category)
     
-    deleted_category_1 = category_repo.get_category_by_id(created_category_1.id, user.id)
+    deleted_category_1 = category_repo.get_by_id(obj_id=created_category_1.id, user_id=user.id)
     assert deleted_category_1 is None
     print("Risultato: Categoria 1 eliminata con successo.")
     
     # Verifica che la Categoria 2 esista ancora
-    remaining_category = category_repo.get_category_by_id(created_category_2.id, user.id)
+    remaining_category = category_repo.get_by_id(obj_id=created_category_2.id, user_id=user.id)
     assert remaining_category is not None
     assert remaining_category.name == "Hobby"
     print("Risultato: Categoria 2 esiste ancora.")
 
     # Elimina anche la Categoria 2 per pulizia
     print("\nAzione: Eliminazione della categoria 2 per pulizia...")
-    category_repo.delete_category(remaining_category)
-    deleted_category_2 = category_repo.get_category_by_id(created_category_2.id, user.id)
+    category_repo.delete(db_obj=remaining_category)
+    deleted_category_2 = category_repo.get_by_id(obj_id=created_category_2.id, user_id=user.id)
     assert deleted_category_2 is None
     print("Risultato: Categoria 2 eliminata con successo.")
     print("--- Test: test_category_crud_lifecycle COMPLETATO ---")
@@ -98,12 +98,12 @@ def test_get_category_for_wrong_user(db_session):
     print(f"Setup: Creati utente 1 (ID: {user1.id}) e utente 2 (ID: {user2.id}).")
 
     category_repo = CategoryRepository(db_session)
-    category_user1 = category_repo.create_category(CategoryCreate(name="Segreta"), user1.id)
+    category_user1 = category_repo.create(obj_in=CategoryCreate(name="Segreta"), user_id=user1.id)
     print(f"Setup: Creata categoria (ID: {category_user1.id}) per l'utente 1.")
 
     # 2. ACTION & ASSERT
     print(f"Azione: L'utente 2 tenta di recuperare la categoria dell'utente 1...")
-    retrieved_category = category_repo.get_category_by_id(category_user1.id, user2.id)
+    retrieved_category = category_repo.get_by_id(obj_id=category_user1.id, user_id=user2.id)
     
     print("Risultato Atteso: Il risultato deve essere None.")
     assert retrieved_category is None

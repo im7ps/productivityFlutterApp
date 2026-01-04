@@ -23,9 +23,7 @@ def signup(user_data: UserCreate, session: Session = Depends(get_session)):
         raise HTTPException(status_code=400, detail="Username o Email già registrati")
 
     # 2. Hash the password (ensure input is within limits)
-    # If you didn't add max_length to Pydantic, truncate here:
-    safe_password = user_data.password[:72]
-    hashed_pwd = get_password_hash(safe_password)
+    hashed_pwd = get_password_hash(user_data.password)
 
     new_user = User(
         username=user_data.username,

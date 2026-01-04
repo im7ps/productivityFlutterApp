@@ -19,14 +19,14 @@ def create_daily_log(
     repo: DailyLogRepository = Depends(get_daily_log_repo),
     current_user: User = Depends(get_current_user)
 ):
-    return repo.create_daily_log(daily_log_create=log_data, user_id=current_user.id)
+    return repo.create(obj_in=log_data, user_id=current_user.id)
 
 @router.get("", response_model=List[DailyLogRead])
 def read_daily_logs(
     repo: DailyLogRepository = Depends(get_daily_log_repo),
     current_user: User = Depends(get_current_user)
 ):
-    return repo.get_all_daily_logs_by_user(user_id=current_user.id)
+    return repo.get_all_by_user(user_id=current_user.id)
 
 @router.get("/{log_id}", response_model=DailyLogRead)
 def read_daily_log(
@@ -34,7 +34,7 @@ def read_daily_log(
     repo: DailyLogRepository = Depends(get_daily_log_repo),
     current_user: User = Depends(get_current_user)
 ):
-    log = repo.get_daily_log_by_id(log_id=log_id, user_id=current_user.id)
+    log = repo.get_by_id(obj_id=log_id, user_id=current_user.id)
     if not log:
         raise HTTPException(status_code=404, detail="Daily log not found")
     return log
@@ -46,10 +46,10 @@ def update_daily_log(
     repo: DailyLogRepository = Depends(get_daily_log_repo),
     current_user: User = Depends(get_current_user)
 ):
-    log = repo.get_daily_log_by_id(log_id=log_id, user_id=current_user.id)
+    log = repo.get_by_id(obj_id=log_id, user_id=current_user.id)
     if not log:
         raise HTTPException(status_code=404, detail="Daily log not found")
-    return repo.update_daily_log(log=log, log_update=log_data)
+    return repo.update(db_obj=log, obj_in=log_data)
 
 @router.delete("/{log_id}", status_code=204)
 def delete_daily_log(
@@ -57,8 +57,8 @@ def delete_daily_log(
     repo: DailyLogRepository = Depends(get_daily_log_repo),
     current_user: User = Depends(get_current_user)
 ):
-    log = repo.get_daily_log_by_id(log_id=log_id, user_id=current_user.id)
+    log = repo.get_by_id(obj_id=log_id, user_id=current_user.id)
     if not log:
         raise HTTPException(status_code=404, detail="Daily log not found")
-    repo.delete_daily_log(log=log)
+    repo.delete(db_obj=log)
     return

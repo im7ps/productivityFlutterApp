@@ -3,7 +3,7 @@ from sqlmodel import Session
 import uuid
 from app.database.session import get_session
 from app.schemas.category import CategoryCreate, CategoryRead, CategoryUpdate
-from app.models import User, Category
+from app.models import User
 from typing import List
 from app.api.v1.routers.auth import get_current_user
 from app.repositories import CategoryRepository
@@ -19,14 +19,14 @@ def create_category(
     repo: CategoryRepository = Depends(get_category_repo),
     current_user: User = Depends(get_current_user)
 ):
-    return repo.create_category(category_create=category_data, user_id=current_user.id)
+    return repo.create(obj_in=category_data, user_id=current_user.id)
 
 @router.get("", response_model=List[CategoryRead])
 def read_categories(
     repo: CategoryRepository = Depends(get_category_repo),
     current_user: User = Depends(get_current_user)
 ):
-    return repo.get_all_categories_by_user(user_id=current_user.id)
+    return repo.get_all_by_user(user_id=current_user.id)
 
 @router.get("/{category_id}", response_model=CategoryRead)
 def read_category(
@@ -34,7 +34,7 @@ def read_category(
     repo: CategoryRepository = Depends(get_category_repo),
     current_user: User = Depends(get_current_user)
 ):
-    category = repo.get_category_by_id(category_id=category_id, user_id=current_user.id)
+    category = repo.get_by_id(obj_id=category_id, user_id=current_user.id)
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
     return category
@@ -46,10 +46,10 @@ def update_category(
     repo: CategoryRepository = Depends(get_category_repo),
     current_user: User = Depends(get_current_user)
 ):
-    category = repo.get_category_by_id(category_id=category_id, user_id=current_user.id)
+    category = repo.get_by_id(obj_id=category_id, user_id=current_user.id)
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
-    return repo.update_category(category=category, category_update=category_data)
+    return repo.update(db_obj=category, obj_in=category_data)
 
 @router.delete("/{category_id}", status_code=204)
 def delete_category(
@@ -57,8 +57,8 @@ def delete_category(
     repo: CategoryRepository = Depends(get_category_repo),
     current_user: User = Depends(get_current_user)
 ):
-    category = repo.get_category_by_id(category_id=category_id, user_id=current_user.id)
+    category = repo.get_by_id(obj_id=category_id, user_id=current_user.id)
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
-    repo.delete_category(category=category)
+    repo.delete(db_obj=category)
     return
