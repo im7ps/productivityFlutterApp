@@ -1,71 +1,66 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlmodel import Session
-from app.database.session import get_session
-from app.core.security import verify_password, create_access_token, get_password_hash
-from app.schemas.user import UserCreate, UserPublic, Token
-from app.models.user import User
-from sqlmodel import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from jose import JWTError, jwt
-from app.core.security import SECRET_KEY, ALGORITHM
 from fastapi.security import OAuth2PasswordBearer
+
+from app.database.session import get_session
+from app.core.security import verify_password, create_access_token
+from app.schemas.user import UserCreate, UserPublic, Token
+from app.repositories import UserRepository
+from app.models import User
+from app.core.security import SECRET_KEY, ALGORITHM
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
+def get_user_repo(session: AsyncSession = Depends(get_session)) -> UserRepository:
+    return UserRepository(session)
+
 @router.post("/register", response_model=UserPublic, status_code=status.HTTP_201_CREATED)
-def signup(user_data: UserCreate, session: Session = Depends(get_session)):
+async def signup(
+    user_data: UserCreate, 
+    repo: UserRepository = Depends(get_user_repo)
+):
     # 1. Check if user exists
-    statement = select(User).where((User.username == user_data.username) | (User.email == user_data.email))
-    existing_user = session.exec(statement).first()
-
+    existing_user = await repo.get_user_by_username(user_data.username)
     if existing_user:
-        raise HTTPException(status_code=400, detail="Username o Email già registrati")
+        raise HTTPException(status_code=400, detail="Username or Email already registered")
 
-    # 2. Hash the password (ensure input is within limits)
-    hashed_pwd = get_password_hash(user_data.password)
-
-    new_user = User(
-        username=user_data.username,
-        email=user_data.email,
-        hashed_password=hashed_pwd
-    )
-
-    # 3. Save
-    session.add(new_user)
-    session.commit()
-    session.refresh(new_user)
-
+    # 2. Create user
+    new_user = await repo.create_user(user_data)
     return new_user
 
 
 @router.post("/login", response_model=Token)
-def login(
+async def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
-    session: Session = Depends(get_session)
+    repo: UserRepository = Depends(get_user_repo)
 ):
-    # 1. Cerchiamo l'utente nel DB tramite lo username
-    statement = select(User).where(User.username == form_data.username)
-    user = session.exec(statement).first()
+    # 1. Find the user in the DB by username
+    user = await repo.get_user_by_username(form_data.username)
 
-    # 2. Verifichiamo se l'utente esiste e se la password è corretta
+    # 2. Verify user and password
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Username o password errati",
+            detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    # 3. Generiamo il token JWT (usiamo lo username o l'id come 'sub')
+    # 3. Generate JWT token
     access_token = create_access_token(data={"sub": user.username})
 
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-def get_current_user(token: str = Depends(oauth2_scheme), session: Session = Depends(get_session)):
+async def get_current_user(
+    token: str = Depends(oauth2_scheme), 
+    repo: UserRepository = Depends(get_user_repo)
+) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Impossibile validare le credenziali",
+        detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
@@ -76,7 +71,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), session: Session = Dep
     except JWTError:
         raise credentials_exception
 
-    user = session.exec(select(User).where(User.username == username)).first()
+    user = await repo.get_user_by_username(username)
     if user is None:
         raise credentials_exception
     return user

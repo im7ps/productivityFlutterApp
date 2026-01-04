@@ -1,15 +1,32 @@
-# Usa Python 3.11 come base
-FROM python:3.11-slim
-
-# Imposta la cartella di lavoro
+# Stage 1: Base comune con Python e Poetry installato
+FROM python:3.11-slim as base
+ENV POETRY_VERSION=1.8.2
+RUN pip install "poetry==${POETRY_VERSION}"
+RUN poetry config virtualenvs.in-project true
 WORKDIR /app
+COPY pyproject.toml poetry.lock ./
 
-# Copia i requisiti e installali
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Stage 2: Stage di build per la Produzione
+# Installa solo le dipendenze di produzione
+FROM base as builder
+RUN poetry install --no-interaction --no-ansi --only main
 
-# Copia tutto il resto del codice
-COPY . .
+# Stage 3: Stage di build per il Testing (CORRETTO)
+FROM base as testing
+# Prima installiamo TUTTE le dipendenze. Questo strato verrà messo in cache.
+RUN poetry install --no-interaction --no-ansi
+# ORA copiamo il codice e i file di configurazione necessari per i test.
+COPY ./app ./app
+COPY ./tests ./tests
+COPY ./pytest.ini .
+COPY ./alembic.ini .
+COPY ./alembic ./alembic
 
-# Comando per avviare FastAPI
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Stage 4: Immagine finale per la Produzione
+# È leggera e contiene solo le dipendenze di produzione
+FROM python:3.11-slim as production
+WORKDIR /app
+COPY --from=builder /app/.venv ./.venv
+COPY ./app ./app
+ENV PATH="/app/.venv/bin:$PATH"
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

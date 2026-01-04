@@ -1,66 +1,59 @@
-import pytest
-from sqlalchemy import create_engine
+import pytest_asyncio
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
-from sqlmodel import SQLModel, Session as SQLModelSession
 from testcontainers.postgres import PostgresContainer
 from alembic.config import Config
 from alembic import command
-import os
+import pytest
+from sqlmodel import SQLModel
 
 @pytest.fixture(scope="session")
 def postgres_container():
     """
     Avvia il container una volta per tutta la sessione di test.
     """
-    # Usiamo un'immagine specifica. 
-    # Suggerimento: aggiorna testcontainers con `pip install -U testcontainers`
-    with PostgresContainer("postgres:15-alpine") as postgres:
+    with PostgresContainer("postgres:15-alpine", driver="psycopg") as postgres:
         yield postgres
 
-@pytest.fixture(scope="session")
-def db_engine(postgres_container: PostgresContainer):
+@pytest_asyncio.fixture(scope="session")
+async def db_engine(postgres_container: PostgresContainer):
     """
-    Applica le migrazioni al DB di test appena creato.
+    Applica le migrazioni al DB di test e fornisce un engine ASINCRONO.
     """
-    database_url = postgres_container.get_connection_url()
-    engine = create_engine(database_url)
-    
-    # Configurazione programmatica di Alembic per puntare al container
-    alembic_cfg = Config("alembic.ini") # Carica la config base dal file
-    alembic_cfg.set_main_option("sqlalchemy.url", database_url)
-    # Assicuriamo che lo script location sia corretto
+    # La parte di Alembic è sincrona e va eseguita prima
+    sync_db_url = postgres_container.get_connection_url()
+    alembic_cfg = Config("alembic.ini")
+    alembic_cfg.set_main_option("sqlalchemy.url", sync_db_url)
     alembic_cfg.set_main_option("script_location", "alembic")
-
-    # Esegue le migrazioni
     command.upgrade(alembic_cfg, "head")
 
-    yield engine
-    engine.dispose()
-
-@pytest.fixture(scope="function")
-def db_session(db_engine):
-    """
-    Crea una transazione isolata per ogni test. 
-    ROLLBACK automatico alla fine.
-    """
-    connection = db_engine.connect()
-    transaction = connection.begin()
+    # Ora creiamo l'engine ASINCRONO per i test, usando il dialetto corretto
+    async_db_url = sync_db_url.replace("postgresql://", "postgresql+psycopg://")
+    engine = create_async_engine(async_db_url)
     
-    # Bind della sessione alla connessione specifica (non all'engine generico)
+    yield engine
+    
+    await engine.dispose()
+
+@pytest_asyncio.fixture(scope="function")
+async def db_session(db_engine):
+    """
+    Crea una transazione asincrona isolata per ogni test. 
+    Esegue un ROLLBACK automatico alla fine.
+    """
+    connection = await db_engine.connect()
+    transaction = await connection.begin()
+    
     SessionLocal = sessionmaker(
-        class_=SQLModelSession, 
-        autocommit=False, 
-        autoflush=False, 
-        bind=connection
+        class_=AsyncSession, # Usiamo la AsyncSession standard di SQLAlchemy
+        bind=connection,
+        expire_on_commit=False,
     )
     session = SessionLocal()
     
     yield session
     
-    session.close()
-    # Se la transazione è ancora attiva (cioè non è stata invalidata da un errore
-    # come IntegrityError), eseguiamo il rollback. Altrimenti, l'errore ha già
-    # causato un rollback implicito e tentare di farlo di nuovo causa un warning.
+    await session.close()
     if transaction.is_active:
-        transaction.rollback()
-    connection.close()
+        await transaction.rollback()
+    await connection.close()

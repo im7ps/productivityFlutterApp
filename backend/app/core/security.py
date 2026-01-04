@@ -1,11 +1,10 @@
-from pwdlib import PasswordHash
-from pwdlib.hashers.bcrypt import BcryptHasher
+from passlib.context import CryptContext
 from datetime import datetime, timedelta, timezone
 from jose import jwt
 from app.core.config import settings
 
 # Configurazione per l'hashing delle password
-pwd_context = PasswordHash((BcryptHasher(),))
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Configurazione JWT
 SECRET_KEY = settings.SECRET_KEY

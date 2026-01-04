@@ -3,7 +3,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.routers import auth, users, categories, activity_logs, daily_logs
 from app.core.config import settings
 
+from app.database.session import init_db
+
 app = FastAPI(title="Productivity Tracker API")
+
+@app.on_event("startup")
+async def on_startup():
+    await init_db()
 
 app.add_middleware(
     CORSMiddleware,
