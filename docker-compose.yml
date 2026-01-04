@@ -26,10 +26,21 @@ services:
       - SECRET_KEY=${SECRET_KEY}
       - ALGORITHM=${ALGORITHM}
       - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
-    depends_on:
-      db:
-        condition: service_healthy
+
     restart: always
+
+  backend-test:
+    build:
+      context: ./backend
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: ["pytest", "tests/", "-s"]
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DOCKER_HOST=tcp://host.docker.internal:2375
+      - SECRET_KEY=test_secret_key_for_ci
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
 
 volumes:
   postgres_data:

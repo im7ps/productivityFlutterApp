@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel import Session
 from app.database.session import get_session
 from app.core.security import verify_password, create_access_token, get_password_hash
-from app.schemas.user_schema import UserCreate, UserPublic, Token
+from app.schemas.user import UserCreate, UserPublic, Token
 from app.models.user import User
 from sqlmodel import select
 from jose import JWTError, jwt

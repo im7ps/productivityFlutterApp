@@ -1,12 +1,19 @@
 from sqlmodel import SQLModel
 import uuid
 from datetime import datetime
+from typing import Optional
 
 # Schema per la REGISTRAZIONE (quello che invia Flutter)
 class UserCreate(SQLModel):
     username: str
     email: str
     password: str
+
+# Schema per l'AGGIORNAMENTO (campi opzionali)
+class UserUpdate(SQLModel):
+    username: Optional[str] = None
+    email: Optional[str] = None
+    password: Optional[str] = None
 
 # Schema per la RISPOSTA (quello che torna a Flutter, senza password!)
 class UserPublic(SQLModel):
@@ -20,16 +27,3 @@ class UserPublic(SQLModel):
 class Token(SQLModel):
     access_token: str
     token_type: str = "bearer"
-
-# Schema per CREARE una categoria (Input)
-class CategoryCreate(SQLModel):
-    name: str
-    icon: str = "circle"
-    color: str = "blue"
-
-# Schema per LEGGERE una categoria (Output)
-class CategoryRead(SQLModel):
-    id: uuid.UUID
-    name: str
-    icon: str
-    color: str

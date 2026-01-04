@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1.routers import auth, users, categories
+from app.api.v1.routers import auth, users, categories, activity_logs, daily_logs
 from app.core.config import settings
 
 app = FastAPI(title="Productivity Tracker API")
@@ -16,6 +16,9 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
 app.include_router(users.router, prefix="/api/v1/users", tags=["users"])
 app.include_router(categories.router, prefix="/api/v1/categories", tags=["categories"])
+app.include_router(activity_logs.router, prefix="/api/v1/activity-logs", tags=["activity-logs"])
+app.include_router(daily_logs.router, prefix="/api/v1/daily-logs", tags=["daily-logs"])
+
 
 @app.get("/")
 def read_root():

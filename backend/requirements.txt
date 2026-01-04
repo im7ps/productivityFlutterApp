@@ -3,8 +3,13 @@ uvicorn[standard]
 sqlmodel
 psycopg2-binary
 python-jose[cryptography]
-passlib[bcrypt]==1.7.4
-bcrypt==4.0.1
+pwdlib[bcrypt]
+
 python-multipart
 alembic
 pydantic-settings
+
+# Testing
+pytest
+pytest-cov
+testcontainers[postgres]

@@ -9,7 +9,7 @@ from alembic import context
 # --- IMPORTA I TUOI MODELLI QUI ---
 from sqlmodel import SQLModel
 # Importiamo models per essere sicuri che tutte le classi siano caricate in memoria
-from models import User, Category, ActivityLog, DailyLog
+from app.models import User, Category, ActivityLog, DailyLog
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

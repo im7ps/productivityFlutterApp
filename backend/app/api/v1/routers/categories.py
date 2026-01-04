@@ -1,36 +1,64 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
+import uuid
 from app.database.session import get_session
-from app.schemas.user_schema import CategoryCreate, CategoryRead
-from app.models.user import User, Category
+from app.schemas.category import CategoryCreate, CategoryRead, CategoryUpdate
+from app.models import User, Category
 from typing import List
 from app.api.v1.routers.auth import get_current_user
-from sqlmodel import select
+from app.repositories import CategoryRepository
 
 router = APIRouter()
+
+def get_category_repo(session: Session = Depends(get_session)) -> CategoryRepository:
+    return CategoryRepository(session)
 
 @router.post("", response_model=CategoryRead)
 def create_category(
     category_data: CategoryCreate,
-    session: Session = Depends(get_session),
+    repo: CategoryRepository = Depends(get_category_repo),
     current_user: User = Depends(get_current_user)
 ):
-    category_dict = category_data.dict()
-    category_dict["user_id"] = current_user.id
-
-    new_category = Category(**category_dict)
-
-    session.add(new_category)
-    session.commit()
-    session.refresh(new_category)
-
-    return new_category
+    return repo.create_category(category_create=category_data, user_id=current_user.id)
 
 @router.get("", response_model=List[CategoryRead])
 def read_categories(
-    session: Session = Depends(get_session),
+    repo: CategoryRepository = Depends(get_category_repo),
     current_user: User = Depends(get_current_user)
 ):
-    statement = select(Category).where(Category.user_id == current_user.id)
-    results = session.exec(statement).all()
-    return results
+    return repo.get_all_categories_by_user(user_id=current_user.id)
+
+@router.get("/{category_id}", response_model=CategoryRead)
+def read_category(
+    category_id: uuid.UUID,
+    repo: CategoryRepository = Depends(get_category_repo),
+    current_user: User = Depends(get_current_user)
+):
+    category = repo.get_category_by_id(category_id=category_id, user_id=current_user.id)
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    return category
+
+@router.put("/{category_id}", response_model=CategoryRead)
+def update_category(
+    category_id: uuid.UUID,
+    category_data: CategoryUpdate,
+    repo: CategoryRepository = Depends(get_category_repo),
+    current_user: User = Depends(get_current_user)
+):
+    category = repo.get_category_by_id(category_id=category_id, user_id=current_user.id)
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    return repo.update_category(category=category, category_update=category_data)
+
+@router.delete("/{category_id}", status_code=204)
+def delete_category(
+    category_id: uuid.UUID,
+    repo: CategoryRepository = Depends(get_category_repo),
+    current_user: User = Depends(get_current_user)
+):
+    category = repo.get_category_by_id(category_id=category_id, user_id=current_user.id)
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    repo.delete_category(category=category)
+    return
