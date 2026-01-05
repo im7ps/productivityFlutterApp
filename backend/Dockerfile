@@ -11,17 +11,6 @@ COPY pyproject.toml poetry.lock ./
 FROM base as builder
 RUN poetry install --no-interaction --no-ansi --only main
 
-# Stage 3: Stage di build per il Testing (CORRETTO)
-FROM base as testing
-# Prima installiamo TUTTE le dipendenze. Questo strato verrà messo in cache.
-RUN poetry install --no-interaction --no-ansi
-# ORA copiamo il codice e i file di configurazione necessari per i test.
-COPY ./app ./app
-COPY ./tests ./tests
-COPY ./pytest.ini .
-COPY ./alembic.ini .
-COPY ./alembic ./alembic
-
 # Stage 4: Immagine finale per la Produzione
 # È leggera e contiene solo le dipendenze di produzione
 FROM python:3.11-slim as production

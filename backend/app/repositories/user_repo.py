@@ -22,17 +22,17 @@ class UserRepository(BaseRepository[User, UserCreate, UserUpdate]):
 
     async def get_by_username(self, username: str) -> User | None:
         """
-        Retrieves a user by their username.
+        Retrieves a user by their username, case-insensitively.
         """
-        statement = select(self.model).where(self.model.username == username)
+        statement = select(self.model).where(self.model.username.ilike(username))
         result = await self.session.execute(statement)
         return result.scalars().first()
     
     async def get_by_email(self, email: str) -> User | None:
         """
-        Retrieves a user by their email.
+        Retrieves a user by their email, case-insensitively.
         """
-        statement = select(self.model).where(self.model.email == email)
+        statement = select(self.model).where(self.model.email.ilike(email))
         result = await self.session.execute(statement)
         return result.scalars().first()
 

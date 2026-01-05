@@ -58,3 +58,6 @@ postgres_data/
 pgdata/
 .aider*
 node_modules
+
+# Hipothesis testing cache
+.hypothesis/

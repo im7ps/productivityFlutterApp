@@ -34,23 +34,5 @@ services:
 
     restart: always
 
-  backend-test:
-    build:
-      context: ./backend
-      target: testing
-    depends_on:
-      db:
-        condition: service_healthy
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    command: ["poetry", "run", "pytest", "tests/", "-s"]
-    environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
-      - PYTHONUNBUFFERED=1
-      - DOCKER_HOST=tcp://host.docker.internal:2375
-      - SECRET_KEY=test_secret_key_for_ci
-      - ALGORITHM=HS256
-      - ACCESS_TOKEN_EXPIRE_MINUTES=30
-
 volumes:
   postgres_data:
