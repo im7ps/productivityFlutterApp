@@ -1,10 +1,20 @@
 import pytest
 from app.repositories import UserRepository, CategoryRepository
-from app.schemas.user import UserCreate
 from app.schemas.category import CategoryCreate, CategoryUpdate
+from app.models.user import User
+from app.core.security import get_password_hash
 
 # Mark all tests in this file as async
 pytestmark = pytest.mark.asyncio
+
+
+async def _create_test_user(db_session, username: str, email: str) -> User:
+    """Helper function to create a user for test setup."""
+    user_repo = UserRepository(db_session)
+    hashed_password = get_password_hash("testpassword")
+    user_model = User(username=username, email=email, hashed_password=hashed_password)
+    return await user_repo.create(user_model)
+
 
 async def test_category_crud_lifecycle(db_session):
     """
@@ -14,9 +24,7 @@ async def test_category_crud_lifecycle(db_session):
     print("Scopo: Verificare il ciclo di vita completo di una categoria (CRUD).")
 
     # 1. SETUP: Crea un utente a cui associare le categorie
-    user_repo = UserRepository(db_session)
-    user_data = UserCreate(username="category_user_async", email="cat_async@test.com", password="pw")
-    user = await user_repo.create_user(user_data)
+    user = await _create_test_user(db_session, "category_user_async", "cat_async@test.com")
     print(f"Setup: Utente creato (ID: {user.id}).")
 
     category_repo = CategoryRepository(db_session)
@@ -87,9 +95,8 @@ async def test_get_category_for_wrong_user(db_session):
     print("Scopo: Verificare l'isolamento dei dati tra utenti per le categorie.")
 
     # 1. SETUP: Crea due utenti e una categoria per il primo utente
-    user_repo = UserRepository(db_session)
-    user1 = await user_repo.create_user(UserCreate(username="user1_async", email="u1_async@test.com", password="pw"))
-    user2 = await user_repo.create_user(UserCreate(username="user2_async", email="u2_async@test.com", password="pw"))
+    user1 = await _create_test_user(db_session, "user1_async", "u1_async@test.com")
+    user2 = await _create_test_user(db_session, "user2_async", "u2_async@test.com")
     print(f"Setup: Creati utente 1 (ID: {user1.id}) e utente 2 (ID: {user2.id}).")
 
     category_repo = CategoryRepository(db_session)

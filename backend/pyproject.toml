@@ -10,9 +10,11 @@ packages = [{include = "app"}]
 python = "^3.11"
 fastapi = "^0.111.0"
 uvicorn = {version = "^0.30.1", extras = ["standard"]}
+python-multipart = "^0.0.9" # Explicitly add for Starlette deprecation warning
 sqlmodel = "^0.0.19"
 alembic = "^1.13.1"
 psycopg = {version = "^3.1.18", extras = ["binary"]}
+psycopg2-binary = "^2.9.9"
 pydantic-settings = "^2.3.4"
 passlib = {version = "^1.7.4", extras = ["bcrypt"]}
 bcrypt = "^4.1.2"
