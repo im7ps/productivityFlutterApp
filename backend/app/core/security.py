@@ -1,7 +1,12 @@
 from passlib.context import CryptContext
 from datetime import datetime, timedelta, timezone
-from jose import jwt
+from jose import jwt, JWTError
 from app.core.config import settings
+from typing import Optional
+
+# Custom Exceptions
+class InvalidTokenError(Exception):
+    pass
 
 # Configurazione per l'hashing delle password
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -19,8 +24,17 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def create_access_token(data: dict):
     to_encode = data.copy()
-
     expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+def decode_access_token(token: str) -> dict:
+    """
+    Decodes the access token.
+    Raises InvalidTokenError if the token is invalid.
+    """
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except JWTError:
+        raise InvalidTokenError("Could not validate credentials")

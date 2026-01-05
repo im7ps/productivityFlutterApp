@@ -5,8 +5,7 @@ from typing import List
 
 from app.database.session import get_session
 from app.schemas.category import CategoryCreate, CategoryRead, CategoryUpdate
-from app.models import User
-from app.api.v1.routers.auth import get_current_user
+from app.api.v1.deps import CurrentUser
 from app.repositories import CategoryRepository
 
 router = APIRouter()
@@ -17,23 +16,23 @@ def get_category_repo(session: AsyncSession = Depends(get_session)) -> CategoryR
 @router.post("", response_model=CategoryRead)
 async def create_category(
     category_data: CategoryCreate,
-    repo: CategoryRepository = Depends(get_category_repo),
-    current_user: User = Depends(get_current_user)
+    current_user: CurrentUser,
+    repo: CategoryRepository = Depends(get_category_repo)
 ):
     return await repo.create(obj_in=category_data, user_id=current_user.id)
 
 @router.get("", response_model=List[CategoryRead])
 async def read_categories(
-    repo: CategoryRepository = Depends(get_category_repo),
-    current_user: User = Depends(get_current_user)
+    current_user: CurrentUser,
+    repo: CategoryRepository = Depends(get_category_repo)
 ):
     return await repo.get_all_by_user(user_id=current_user.id)
 
 @router.get("/{category_id}", response_model=CategoryRead)
 async def read_category(
     category_id: uuid.UUID,
-    repo: CategoryRepository = Depends(get_category_repo),
-    current_user: User = Depends(get_current_user)
+    current_user: CurrentUser,
+    repo: CategoryRepository = Depends(get_category_repo)
 ):
     category = await repo.get_by_id(obj_id=category_id, user_id=current_user.id)
     if not category:
@@ -44,8 +43,8 @@ async def read_category(
 async def update_category(
     category_id: uuid.UUID,
     category_data: CategoryUpdate,
-    repo: CategoryRepository = Depends(get_category_repo),
-    current_user: User = Depends(get_current_user)
+    current_user: CurrentUser,
+    repo: CategoryRepository = Depends(get_category_repo)
 ):
     category = await repo.get_by_id(obj_id=category_id, user_id=current_user.id)
     if not category:
@@ -55,8 +54,8 @@ async def update_category(
 @router.delete("/{category_id}", status_code=204)
 async def delete_category(
     category_id: uuid.UUID,
-    repo: CategoryRepository = Depends(get_category_repo),
-    current_user: User = Depends(get_current_user)
+    current_user: CurrentUser,
+    repo: CategoryRepository = Depends(get_category_repo)
 ):
     category = await repo.get_by_id(obj_id=category_id, user_id=current_user.id)
     if not category:
