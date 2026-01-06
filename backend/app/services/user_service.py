@@ -1,3 +1,6 @@
+from sqlalchemy.exc import IntegrityError
+import uuid
+
 from app.core.exceptions import EntityAlreadyExists
 from app.core.security import get_password_hash
 from app.models.user import User
@@ -12,8 +15,9 @@ class UserService:
     async def create_user(self, user_create: UserCreate) -> User:
         """
         Main service to create a user, handling business logic for validation and creation.
+        Includes a race-condition check using DB integrity constraints.
         """
-        # 1. Check if username or email already exists
+        # 1. Pre-check (Optimization to avoid DB exceptions for common cases)
         existing_user = await self.user_repo.get_by_username(user_create.username)
         if existing_user:
             raise EntityAlreadyExists("Username already registered")
@@ -32,11 +36,22 @@ class UserService:
             hashed_password=hashed_password,
         )
 
-        # 4. Pass the prepared model to the repository
-        return await self.user_repo.create(user_model)
+        # 4. Pass the prepared model to the repository with race-condition handling
+        try:
+            return await self.user_repo.create(user_model)
+        except IntegrityError:
+            # This catches cases where a duplicate was inserted between the pre-check and the commit
+            raise EntityAlreadyExists("User with this email or username already exists")
 
     async def get_user_by_username(self, username: str) -> User | None:
         """
         Service to retrieve a user by username.
         """
         return await self.user_repo.get_by_username(username)
+
+    async def get_user_by_id(self, user_id: uuid.UUID) -> User | None:
+        """
+        Service to retrieve a user by ID.
+        """
+        # Assumes the repository has a generic 'get' method accepting an ID
+        return await self.user_repo.get(user_id)

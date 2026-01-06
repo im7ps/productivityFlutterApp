@@ -20,6 +20,7 @@ class AuthService:
     def create_jwt(self, user: UserPublic) -> dict:
         """
         Create a JWT token for a user.
+        Uses the user's ID (immutable) as the subject, not the username.
         """
-        access_token = create_access_token(data={"sub": user.username})
+        access_token = create_access_token(data={"sub": str(user.id)})
         return {"access_token": access_token, "token_type": "bearer"}

@@ -1,6 +1,6 @@
 from passlib.context import CryptContext
 from datetime import datetime, timedelta, timezone
-from jose import jwt, JWTError
+from jose import jwt, JWTError, ExpiredSignatureError
 from app.core.config import settings
 from typing import Optional
 
@@ -31,10 +31,14 @@ def create_access_token(data: dict):
 def decode_access_token(token: str) -> dict:
     """
     Decodes the access token.
-    Raises InvalidTokenError if the token is invalid.
+    Propagates ExpiredSignatureError for specific handling.
+    Wraps other JWT errors in InvalidTokenError.
     """
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
+    except ExpiredSignatureError:
+        # Re-raise so the caller (deps.py) can handle "Token expired" specifically
+        raise
     except JWTError:
         raise InvalidTokenError("Could not validate credentials")
