@@ -1,5 +1,5 @@
 import pytest
-from fastapi import HTTPException
+from app.core.exceptions import InvalidCredentials
 from unittest.mock import MagicMock
 
 from app.services.auth_service import AuthService
@@ -81,21 +81,20 @@ async def test_authenticate_user_success(auth_service: AuthService, fake_user_re
 @pytest.mark.asyncio
 async def test_authenticate_user_not_found(auth_service: AuthService):
     """
-    Tests that authentication fails if the user does not exist.
+    Tests that authentication fails with InvalidCredentials if the user does not exist.
     """
     # Action & Assert
-    with pytest.raises(HTTPException) as exc_info:
+    with pytest.raises(InvalidCredentials) as exc_info:
         await auth_service.authenticate_user(
             username="nonexistent",
             password="any_password"
         )
-    assert exc_info.value.status_code == 401
-    assert "Incorrect username or password" in exc_info.value.detail
+    assert "Incorrect username or password" in exc_info.value.message
 
 @pytest.mark.asyncio
 async def test_authenticate_user_wrong_password(auth_service: AuthService, fake_user_repo: FakeUserRepository):
     """
-    Tests that authentication fails if the password is incorrect.
+    Tests that authentication fails with InvalidCredentials if the password is incorrect.
     """
     # Arrange: Create a user
     password = "CorrectPassword123!"
@@ -106,13 +105,12 @@ async def test_authenticate_user_wrong_password(auth_service: AuthService, fake_
     await fake_user_repo.create(user)
     
     # Action & Assert
-    with pytest.raises(HTTPException) as exc_info:
+    with pytest.raises(InvalidCredentials) as exc_info:
         await auth_service.authenticate_user(
             username="testuser",
             password="WrongPassword!"
         )
-    assert exc_info.value.status_code == 401
-    assert "Incorrect username or password" in exc_info.value.detail
+    assert "Incorrect username or password" in exc_info.value.message
 
 
 def test_create_jwt(auth_service: AuthService):

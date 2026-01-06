@@ -1,5 +1,5 @@
 import pytest
-from fastapi import HTTPException
+from app.core.exceptions import EntityAlreadyExists
 import uuid
 from datetime import datetime
 
@@ -70,7 +70,7 @@ async def test_create_user_success(user_service: UserService):
 @pytest.mark.asyncio
 async def test_create_user_fails_if_username_exists(user_service: UserService):
     """
-    Tests that creating a user fails with an HTTPException if the username
+    Tests that creating a user fails with EntityAlreadyExists if the username
     is already taken.
     """
     # Arrange: pre-populate the fake repo with an existing user
@@ -89,17 +89,16 @@ async def test_create_user_fails_if_username_exists(user_service: UserService):
     )
     
     # Action & Assert
-    with pytest.raises(HTTPException) as exc_info:
+    with pytest.raises(EntityAlreadyExists) as exc_info:
         await user_service.create_user(new_user_data)
         
-    assert exc_info.value.status_code == 400
-    assert "Username already registered" in exc_info.value.detail
+    assert "Username already registered" in exc_info.value.message
 
 
 @pytest.mark.asyncio
 async def test_create_user_fails_if_email_exists(user_service: UserService):
     """
-    Tests that creating a user fails with an HTTPException if the email
+    Tests that creating a user fails with EntityAlreadyExists if the email
     is already registered.
     """
     # Arrange: pre-populate the fake repo with an existing user
@@ -118,11 +117,10 @@ async def test_create_user_fails_if_email_exists(user_service: UserService):
     )
     
     # Action & Assert
-    with pytest.raises(HTTPException) as exc_info:
+    with pytest.raises(EntityAlreadyExists) as exc_info:
         await user_service.create_user(new_user_data)
         
-    assert exc_info.value.status_code == 400
-    assert "Email already registered" in exc_info.value.detail
+    assert "Email already registered" in exc_info.value.message
 
 
 @pytest.mark.asyncio

@@ -107,18 +107,18 @@ async def test_multi_tenancy_isolation(test_client: AsyncClient, create_user_and
     # GET
     response = await test_client.get(f"/api/v1/categories/{category_id_A}", headers=user_b["headers"])
     assert response.status_code == 404
-    assert "Category not found" in response.json()["detail"]
-
+    assert "not found" in response.json()["detail"]
+    
     # UPDATE
     update_payload = {"name": "Hacked by User B"}
     response = await test_client.put(f"/api/v1/categories/{category_id_A}", json=update_payload, headers=user_b["headers"])
     assert response.status_code == 404
-    assert "Category not found" in response.json()["detail"]
+    assert "not found" in response.json()["detail"]
 
     # DELETE
     response = await test_client.delete(f"/api/v1/categories/{category_id_A}", headers=user_b["headers"])
     assert response.status_code == 404
-    assert "Category not found" in response.json()["detail"]
+    assert "not found" in response.json()["detail"]
 
     # 4. Verify User A's category was not affected
     response = await test_client.get(f"/api/v1/categories/{category_id_A}", headers=user_a["headers"])

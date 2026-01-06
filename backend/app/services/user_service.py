@@ -1,4 +1,4 @@
-from fastapi import HTTPException, status
+from app.core.exceptions import EntityAlreadyExists
 from app.core.security import get_password_hash
 from app.models.user import User
 from app.repositories.user_repo import UserRepository
@@ -16,17 +16,11 @@ class UserService:
         # 1. Check if username or email already exists
         existing_user = await self.user_repo.get_by_username(user_create.username)
         if existing_user:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Username already registered",
-            )
+            raise EntityAlreadyExists("Username already registered")
             
         existing_email = await self.user_repo.get_by_email(user_create.email)
         if existing_email:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email already registered",
-            )
+            raise EntityAlreadyExists("Email already registered")
 
         # 2. Hash the password
         hashed_password = get_password_hash(user_create.password)

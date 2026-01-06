@@ -1,12 +1,13 @@
 import uuid
 from sqlmodel import SQLModel, Field, Relationship
-from typing import Optional, List
-from datetime import datetime, date, timezone
+from typing import Optional, List, TYPE_CHECKING
+from datetime import datetime
+from app.models.utils import get_utc_now
 
-# Utility function to get current UTC time
-def get_utc_now():
-    return datetime.now(timezone.utc)
-
+if TYPE_CHECKING:
+    from app.models.activity_log import ActivityLog
+    from app.models.daily_log import DailyLog
+    from app.models.category import Category
 
 # --- UTENTE ---
 class User(SQLModel, table=True):
@@ -21,44 +22,3 @@ class User(SQLModel, table=True):
     activities: List["ActivityLog"] = Relationship(back_populates="user")
     daily_logs: List["DailyLog"] = Relationship(back_populates="user")
     categories: List["Category"] = Relationship(back_populates="user")
-
-# --- CATEGORIE ---
-class Category(SQLModel, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    name: str
-    icon: str = Field(default="circle")
-    color: str = Field(default="blue")
-
-    user_id: uuid.UUID = Field(foreign_key="user.id")
-    user: Optional[User] = Relationship(back_populates="categories")
-
-    activities: List["ActivityLog"] = Relationship(back_populates="category")
-
-# --- LOG ATTIVITÀ ---
-class ActivityLog(SQLModel, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-
-    start_time: datetime = Field(default_factory=get_utc_now)
-    end_time: Optional[datetime] = Field(default=None)
-    description: Optional[str] = None
-
-    user_id: uuid.UUID = Field(foreign_key="user.id")
-    user: Optional[User] = Relationship(back_populates="activities")
-
-    category_id: Optional[uuid.UUID] = Field(foreign_key="category.id", default=None)
-    category: Optional[Category] = Relationship(back_populates="activities")
-
-# --- LOG GIORNALIERO ---
-class DailyLog(SQLModel, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    day: date = Field(default_factory=date.today)
-
-    sleep_hours: float = Field(default=0.0)
-    sleep_quality: int = Field(default=5)
-    mood_score: int = Field(default=5)
-    diet_quality: int = Field(default=5)
-    exercise_minutes: int = Field(default=0)
-    note: Optional[str] = None
-
-    user_id: uuid.UUID = Field(foreign_key="user.id")
-    user: Optional[User] = Relationship(back_populates="daily_logs")

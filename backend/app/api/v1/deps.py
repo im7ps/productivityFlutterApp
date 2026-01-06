@@ -1,9 +1,10 @@
 from typing import Annotated
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import decode_access_token, InvalidTokenError
+from app.core.exceptions import InvalidCredentials
 from app.database.session import get_session
 from app.models.user import User
 from app.repositories.user_repo import UserRepository
@@ -45,19 +46,11 @@ async def get_current_user(
         if username is None:
             raise InvalidTokenError("Subject not found in token")
     except InvalidTokenError as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=str(e),
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        raise InvalidCredentials(str(e))
 
     user = await user_service.get_user_by_username(username)
     if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        raise InvalidCredentials("User not found")
     return user
 
 CurrentUser = Annotated[User, Depends(get_current_user)]

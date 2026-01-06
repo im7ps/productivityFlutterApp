@@ -1,4 +1,4 @@
-from fastapi import HTTPException, status
+from app.core.exceptions import InvalidCredentials
 from app.core.security import verify_password, create_access_token
 from app.schemas.user import UserPublic
 from app.services.user_service import UserService
@@ -14,11 +14,7 @@ class AuthService:
         """
         user = await self.user_service.get_user_by_username(username)
         if not user or not verify_password(password, user.hashed_password):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect username or password",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
+            raise InvalidCredentials("Incorrect username or password")
         return user
 
     def create_jwt(self, user: UserPublic) -> dict:

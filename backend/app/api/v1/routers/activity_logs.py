@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 import uuid
 from typing import List
@@ -6,59 +6,53 @@ from typing import List
 from app.database.session import get_session
 from app.schemas.activity_log import ActivityLogCreate, ActivityLogRead, ActivityLogUpdate
 from app.api.v1.deps import CurrentUser
-from app.repositories import ActivityLogRepository
+from app.repositories.activity_log_repo import ActivityLogRepository
+from app.services.activity_log_service import ActivityLogService
 
 router = APIRouter()
 
-def get_activity_log_repo(session: AsyncSession = Depends(get_session)) -> ActivityLogRepository:
-    return ActivityLogRepository(session)
+def get_activity_log_service(session: AsyncSession = Depends(get_session)) -> ActivityLogService:
+    repo = ActivityLogRepository(session)
+    return ActivityLogService(repo)
 
 @router.post("", response_model=ActivityLogRead)
 async def create_activity_log(
     log_data: ActivityLogCreate,
     current_user: CurrentUser,
-    repo: ActivityLogRepository = Depends(get_activity_log_repo)
+    service: ActivityLogService = Depends(get_activity_log_service)
 ):
-    return await repo.create(obj_in=log_data, user_id=current_user.id)
+    return await service.create_activity_log(log_create=log_data, user_id=current_user.id)
 
 @router.get("", response_model=List[ActivityLogRead])
 async def read_activity_logs(
     current_user: CurrentUser,
-    repo: ActivityLogRepository = Depends(get_activity_log_repo)
+    service: ActivityLogService = Depends(get_activity_log_service)
 ):
-    return await repo.get_all_by_user(user_id=current_user.id)
+    return await service.get_activity_logs_by_user(user_id=current_user.id)
 
 @router.get("/{log_id}", response_model=ActivityLogRead)
 async def read_activity_log(
     log_id: uuid.UUID,
     current_user: CurrentUser,
-    repo: ActivityLogRepository = Depends(get_activity_log_repo)
+    service: ActivityLogService = Depends(get_activity_log_service)
 ):
-    log = await repo.get_by_id(obj_id=log_id, user_id=current_user.id)
-    if not log:
-        raise HTTPException(status_code=404, detail="Activity log not found")
-    return log
+    return await service.get_activity_log_by_id(log_id=log_id, user_id=current_user.id)
 
 @router.put("/{log_id}", response_model=ActivityLogRead)
 async def update_activity_log(
     log_id: uuid.UUID,
     log_data: ActivityLogUpdate,
     current_user: CurrentUser,
-    repo: ActivityLogRepository = Depends(get_activity_log_repo)
+    service: ActivityLogService = Depends(get_activity_log_service)
 ):
-    log = await repo.get_by_id(obj_id=log_id, user_id=current_user.id)
-    if not log:
-        raise HTTPException(status_code=404, detail="Activity log not found")
-    return await repo.update(db_obj=log, obj_in=log_data)
+    return await service.update_activity_log(
+        log_id=log_id, log_update=log_data, user_id=current_user.id
+    )
 
 @router.delete("/{log_id}", status_code=204)
 async def delete_activity_log(
     log_id: uuid.UUID,
     current_user: CurrentUser,
-    repo: ActivityLogRepository = Depends(get_activity_log_repo)
+    service: ActivityLogService = Depends(get_activity_log_service)
 ):
-    log = await repo.get_by_id(obj_id=log_id, user_id=current_user.id)
-    if not log:
-        raise HTTPException(status_code=404, detail="Activity log not found")
-    await repo.delete(db_obj=log)
-    return
+    await service.delete_activity_log(log_id=log_id, user_id=current_user.id)

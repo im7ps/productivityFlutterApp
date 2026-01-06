@@ -92,7 +92,7 @@ async def test_register_duplicate_username(test_client: AsyncClient, user_creden
     response2 = await test_client.post("/api/v1/auth/register", json=payload2)
 
     # 3. Assert failure
-    assert response2.status_code == 400
+    assert response2.status_code == 409
     assert "Username already registered" in response2.json()["detail"]
 
 
@@ -108,7 +108,7 @@ async def test_register_duplicate_email(test_client: AsyncClient, user_credentia
     response2 = await test_client.post("/api/v1/auth/register", json=payload2)
 
     # 3. Assert failure
-    assert response2.status_code == 400
+    assert response2.status_code == 409
     assert "Email already registered" in response2.json()["detail"]
 
 
