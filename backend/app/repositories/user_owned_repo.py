@@ -3,23 +3,22 @@ from typing import Generic, Type, TypeVar, List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import SQLModel, select
 
-# 1. Definiamo i nostri segnaposto (TypeVar)
+# Generics per le entità possedute da un utente
 ModelType = TypeVar("ModelType", bound=SQLModel)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=SQLModel)
 UpdateSchemaType = TypeVar("UpdateSchemaType", bound=SQLModel)
 
-# 2. Creiamo la classe base, rendendola "Generica"
-class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
-    
-    # 3. L'__init__ riceve il modello specifico con cui dovrà lavorare (es. Category)
+class UserOwnedRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
+    """
+    Repository base per entità che appartengono a un utente specifico.
+    Presuppone che il modello abbia un campo 'user_id'.
+    """
     def __init__(self, model: Type[ModelType], session: AsyncSession):
         self.model = model
         self.session = session
 
-    # 4. Implementiamo i metodi CRUD asincroni
-    
     async def create(self, obj_in: CreateSchemaType, user_id: uuid.UUID) -> ModelType:
-        """Questo metodo generico asincrono sostituisce create_category, create_activity_log, etc."""
+        """Crea un record associandolo all'utente specificato."""
         db_obj = self.model(**obj_in.model_dump(), user_id=user_id)
         self.session.add(db_obj)
         await self.session.commit()
@@ -27,19 +26,19 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return db_obj
 
     async def get_by_id(self, obj_id: uuid.UUID, user_id: uuid.UUID) -> Optional[ModelType]:
-        """Metodo generico asincrono per trovare un oggetto pelo suo ID e l'ID dell'utente."""
+        """Recupera un oggetto solo se appartiene all'utente specificato."""
         statement = select(self.model).where(self.model.id == obj_id, self.model.user_id == user_id)
         result = await self.session.execute(statement)
         return result.scalars().first()
 
     async def get_all_by_user(self, user_id: uuid.UUID) -> List[ModelType]:
-        """Metodo generico asincrono per trovare tutti gli oggetti di un utente."""
+        """Recupera tutti gli oggetti di un utente."""
         statement = select(self.model).where(self.model.user_id == user_id)
         result = await self.session.execute(statement)
         return result.scalars().all()
 
     async def update(self, db_obj: ModelType, obj_in: UpdateSchemaType) -> ModelType:
-        """Metodo generico asincrono per aggiornare un oggetto."""
+        """Aggiorna un oggetto esistente."""
         update_data = obj_in.model_dump(exclude_unset=True)
         for key, value in update_data.items():
             setattr(db_obj, key, value)
@@ -49,6 +48,6 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return db_obj
 
     async def delete(self, db_obj: ModelType) -> None:
-        """Metodo generico asincrono per cancellare un oggetto."""
+        """Cancella un oggetto esistente."""
         await self.session.delete(db_obj)
         await self.session.commit()

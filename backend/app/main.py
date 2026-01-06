@@ -10,18 +10,19 @@ from app.core.exceptions import (
     InvalidCredentials,
     DomainValidationError,
 )
+import logging
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Questo codice viene eseguito all'avvio dell'applicazione
-    print("Avvio dell'applicazione e creazione delle tabelle del database...")
+    logging.info("Avvio dell'applicazione e creazione delle tabelle del database...")
     # NOTA: In un'app di produzione, si preferisce usare Alembic per le migrazioni.
     # async with engine.begin() as conn:
     #     await conn.run_sync(SQLModel.metadata.create_all)
     yield
     # Questo codice viene eseguito allo spegnimento dell'applicazione
-    print("Spegnimento dell'applicazione.")
+    logging.info("Spegnimento dell'applicazione.")
 
 
 app = FastAPI(

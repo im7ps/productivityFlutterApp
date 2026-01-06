@@ -1,14 +1,15 @@
+from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from app.models.user import User
-from app.repositories.base_repo import BaseRepository
-from app.schemas.user import UserCreate, UserUpdate
+from app.schemas.user import UserUpdate
 
 
-class UserRepository(BaseRepository[User, UserCreate, UserUpdate]):
+class UserRepository:
     def __init__(self, session: AsyncSession):
-        super().__init__(User, session)
+        self.session = session
+        self.model = User
 
     async def create(self, user_model: User) -> User:
         """
@@ -36,3 +37,26 @@ class UserRepository(BaseRepository[User, UserCreate, UserUpdate]):
         result = await self.session.execute(statement)
         return result.scalars().first()
 
+    # --- Metodi Aggiunti manualmente (Decoupling da BaseRepo) ---
+
+    async def get(self, id: str) -> Optional[User]:
+        """Recupera un utente per ID."""
+        statement = select(self.model).where(self.model.id == id)
+        result = await self.session.execute(statement)
+        return result.scalars().first()
+
+    async def update(self, db_user: User, user_update: UserUpdate) -> User:
+        """Aggiorna i dati dell'utente."""
+        update_data = user_update.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(db_user, key, value)
+        
+        self.session.add(db_user)
+        await self.session.commit()
+        await self.session.refresh(db_user)
+        return db_user
+
+    async def delete(self, db_user: User) -> None:
+        """Elimina l'utente."""
+        await self.session.delete(db_user)
+        await self.session.commit()

@@ -10,7 +10,7 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 ASYNC_DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://")
 
 # L'engine asincrono è il punto d'ingresso per le connessioni al database in un'app asincrona.
-async_engine = create_async_engine(ASYNC_DATABASE_URL, echo=True, future=True)
+async_engine = create_async_engine(ASYNC_DATABASE_URL, echo=False, future=True)
 
 # La session factory crea nuove sessioni asincrone.
 AsyncSessionFactory = sessionmaker(
