@@ -1,25 +1,22 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, status
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+import logging
+
 from app.api.v1.routers import auth, users, categories, activity_logs, daily_logs
-from app.database.session import async_engine
-from sqlmodel import SQLModel
 from app.core.exceptions import (
     ResourceNotFound,
     EntityAlreadyExists,
     InvalidCredentials,
     DomainValidationError,
 )
-import logging
-
+from app.core.config import settings
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Questo codice viene eseguito all'avvio dell'applicazione
-    logging.info("Avvio dell'applicazione e creazione delle tabelle del database...")
-    # NOTA: In un'app di produzione, si preferisce usare Alembic per le migrazioni.
-    # async with engine.begin() as conn:
-    #     await conn.run_sync(SQLModel.metadata.create_all)
+    logging.info("Avvio dell'applicazione...")
     yield
     # Questo codice viene eseguito allo spegnimento dell'applicazione
     logging.info("Spegnimento dell'applicazione.")
@@ -30,6 +27,16 @@ app = FastAPI(
     description="Backend for the What I've Done productivity tracker.",
     version="0.1.0",
     lifespan=lifespan
+)
+
+# Configurazione CORS
+app.add_middleware(
+    CORSMiddleware,
+    # Conversione rigorosa da AnyHttpUrl a stringa per evitare errori di serializzazione
+    allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 @app.exception_handler(ResourceNotFound)
@@ -51,7 +58,6 @@ async def invalid_credentials_handler(request: Request, exc: InvalidCredentials)
     return JSONResponse(
         status_code=status.HTTP_401_UNAUTHORIZED,
         content={"detail": exc.message},
-        # Headers can be added if needed, e.g., WWW-Authenticate
     )
 
 @app.exception_handler(DomainValidationError)

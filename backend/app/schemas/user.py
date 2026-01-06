@@ -1,22 +1,11 @@
-from sqlmodel import SQLModel
-import uuid
-from datetime import datetime
-from typing import Optional
-
-from sqlmodel import SQLModel
+from sqlmodel import SQLModel, Field
 import uuid
 from datetime import datetime
 from typing import Optional
 import re
-from pydantic import field_validator, ConfigDict
-
+from pydantic import field_validator, EmailStr, ConfigDict
 
 from .base import TunableBaseModel
-import uuid
-from datetime import datetime
-from typing import Optional
-import re
-from pydantic import field_validator, EmailStr
 
 # Schema per la REGISTRAZIONE (quello che invia Flutter)
 class UserCreate(TunableBaseModel):
@@ -28,6 +17,8 @@ class UserCreate(TunableBaseModel):
     def validate_password(cls, v: str) -> str:
         if len(v) < 8:
             raise ValueError("Password must be at least 8 characters long")
+        if len(v) > 72:
+            raise ValueError("Password must not exceed 72 characters")
         if not re.search(r"[A-Z]", v):
             raise ValueError("Password must contain at least one uppercase letter")
         if not re.search(r"[a-z]", v):
@@ -63,6 +54,8 @@ class UserUpdate(TunableBaseModel):
             return v
         if len(v) < 8:
             raise ValueError("Password must be at least 8 characters long")
+        if len(v) > 72:
+            raise ValueError("Password must not exceed 72 characters")
         if not re.search(r"[A-Z]", v):
             raise ValueError("Password must contain at least one uppercase letter")
         if not re.search(r"[a-z]", v):

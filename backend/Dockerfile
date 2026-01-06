@@ -17,5 +17,7 @@ FROM python:3.11-slim as production
 WORKDIR /app
 COPY --from=builder /app/.venv ./.venv
 COPY ./app ./app
+COPY ./alembic.ini .
+COPY ./alembic ./alembic
 ENV PATH="/app/.venv/bin:$PATH"
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

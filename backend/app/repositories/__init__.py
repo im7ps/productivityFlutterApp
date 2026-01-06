@@ -1,4 +1,4 @@
-from .base_repo import BaseRepository
+from .user_owned_repo import UserOwnedRepository
 from .user_repo import UserRepository
 from .category_repo import CategoryRepository
 from .activity_log_repo import ActivityLogRepository
