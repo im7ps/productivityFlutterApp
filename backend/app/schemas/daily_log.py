@@ -2,13 +2,10 @@ from sqlmodel import SQLModel
 import uuid
 from datetime import date
 from typing import Optional
-from pydantic import field_validator, ConfigDict
+from pydantic import field_validator
 
 from .base import TunableBaseModel
-import uuid
-from datetime import date, datetime
-from typing import Optional
-from pydantic import field_validator
+from .validators import validate_score_range, validate_non_negative
 
 # --- Schemi DailyLog ---
 
@@ -28,22 +25,18 @@ class DailyLogCreate(TunableBaseModel):
         return v
 
     @field_validator("sleep_quality", "mood_score", "diet_quality")
-    def validate_quality_scores(cls, v: int) -> int:
-        if not (1 <= v <= 5):
-            raise ValueError("Score must be between 1 and 5")
-        return v
+    def validate_scores(cls, v: int) -> int:
+        return validate_score_range(v)
 
     @field_validator("sleep_hours")
     def validate_sleep_hours(cls, v: float) -> float:
         if not (0 <= v <= 24):
             raise ValueError("Sleep hours must be between 0 and 24")
-        return v
+        return validate_non_negative(v)
     
     @field_validator("exercise_minutes")
-    def validate_non_negative(cls, v: float) -> float:
-        if v < 0:
-            raise ValueError("Value cannot be negative")
-        return v
+    def validate_minutes(cls, v: int) -> int:
+        return int(validate_non_negative(float(v)))
 
 
 class DailyLogUpdate(TunableBaseModel):
@@ -55,28 +48,22 @@ class DailyLogUpdate(TunableBaseModel):
     note: Optional[str] = None
 
     @field_validator("sleep_quality", "mood_score", "diet_quality")
-    def validate_quality_scores(cls, v: int) -> int:
-        if v is None:
-            return v
-        if not (1 <= v <= 5):
-            raise ValueError("Score must be between 1 and 5")
-        return v
+    def validate_scores(cls, v: Optional[int]) -> Optional[int]:
+        return validate_score_range(v)
 
     @field_validator("sleep_hours")
-    def validate_sleep_hours(cls, v: float) -> float:
+    def validate_sleep_hours(cls, v: Optional[float]) -> Optional[float]:
         if v is None:
             return v
         if not (0 <= v <= 24):
             raise ValueError("Sleep hours must be between 0 and 24")
-        return v
+        return validate_non_negative(v)
 
     @field_validator("exercise_minutes")
-    def validate_non_negative(cls, v: float) -> float:
+    def validate_minutes(cls, v: Optional[int]) -> Optional[int]:
         if v is None:
             return v
-        if v < 0:
-            raise ValueError("Value cannot be negative")
-        return v
+        return int(validate_non_negative(float(v)))
 
 class DailyLogRead(SQLModel):
     id: uuid.UUID

@@ -1,13 +1,13 @@
-from sqlmodel import SQLModel, Field
+from sqlmodel import SQLModel
 import uuid
 from datetime import datetime
 from typing import Optional
-import re
-from pydantic import field_validator, EmailStr, ConfigDict
+from pydantic import field_validator, EmailStr
 
 from .base import TunableBaseModel
+from .validators import validate_password_strength, validate_username_format
 
-# Schema per la REGISTRAZIONE (quello che invia Flutter)
+# Schema per la REGISTRAZIONE
 class UserCreate(TunableBaseModel):
     username: str
     email: EmailStr
@@ -15,82 +15,45 @@ class UserCreate(TunableBaseModel):
 
     @field_validator("password")
     def validate_password(cls, v: str) -> str:
-        if len(v) < 8:
-            raise ValueError("Password must be at least 8 characters long")
-        if len(v) > 72:
-            raise ValueError("Password must not exceed 72 characters")
-        if not re.search(r"[A-Z]", v):
-            raise ValueError("Password must contain at least one uppercase letter")
-        if not re.search(r"[a-z]", v):
-            raise ValueError("Password must contain at least one lowercase letter")
-        if not re.search(r"\d", v):
-            raise ValueError("Password must contain at least one digit")
-        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", v):
-            raise ValueError("Password must contain at least one special character")
-        return v
+        return validate_password_strength(v)
 
     @field_validator("username")
     def validate_username(cls, v: str) -> str:
-        if not (3 <= len(v) <= 20):
-            raise ValueError("Username must be between 3 and 20 characters")
-        if not v.isalnum():
-            raise ValueError("Username must be alphanumeric")
-        return v
+        return validate_username_format(v)
 
     @field_validator("email", mode='before')
     def validate_email(cls, v: str) -> str:
         return v.lower()
 
 
-# Schema per l'AGGIORNAMENTO (campi opzionali)
+# Schema per l'AGGIORNAMENTO
 class UserUpdate(TunableBaseModel):
     username: Optional[str] = None
     email: Optional[EmailStr] = None
     password: Optional[str] = None
 
     @field_validator("password")
-    def validate_password(cls, v: str) -> str:
-        if v is None:
-            return v
-        if len(v) < 8:
-            raise ValueError("Password must be at least 8 characters long")
-        if len(v) > 72:
-            raise ValueError("Password must not exceed 72 characters")
-        if not re.search(r"[A-Z]", v):
-            raise ValueError("Password must contain at least one uppercase letter")
-        if not re.search(r"[a-z]", v):
-            raise ValueError("Password must contain at least one lowercase letter")
-        if not re.search(r"\d", v):
-            raise ValueError("Password must contain at least one digit")
-        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", v):
-            raise ValueError("Password must contain at least one special character")
-        return v
+    def validate_password(cls, v: Optional[str]) -> Optional[str]:
+        return validate_password_strength(v)
 
     @field_validator("username")
-    def validate_username(cls, v: str) -> str:
-        if v is None:
-            return v
-        if not (3 <= len(v) <= 20):
-            raise ValueError("Username must be between 3 and 20 characters")
-        if not v.isalnum():
-            raise ValueError("Username must be alphanumeric")
-        return v
+    def validate_username(cls, v: Optional[str]) -> Optional[str]:
+        return validate_username_format(v)
 
     @field_validator("email", mode='before')
-    def validate_email(cls, v: str) -> str:
+    def validate_email(cls, v: Optional[str]) -> Optional[str]:
         if v is None:
             return v
         return v.lower()
 
-# Schema per la RISPOSTA (quello che torna a Flutter, senza password!)
+# Schema per la RISPOSTA
 class UserPublic(SQLModel):
     id: uuid.UUID
     username: str
     email: str
     created_at: datetime
 
-
-# Schema per la risposta del Login
+# Schema per il TOKEN
 class Token(SQLModel):
     access_token: str
     token_type: str = "bearer"
