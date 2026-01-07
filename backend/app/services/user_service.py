@@ -27,7 +27,9 @@ class UserService:
             raise EntityAlreadyExists("Email already registered")
 
         # 2. Hash the password
-        hashed_password = get_password_hash(user_create.password)
+        import asyncio
+        loop = asyncio.get_running_loop()
+        hashed_password = await loop.run_in_executor(None, get_password_hash, user_create.password)
 
         # 3. Create the User model instance
         user_model = User(

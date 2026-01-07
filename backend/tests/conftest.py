@@ -17,8 +17,10 @@ def event_loop_policy():
     return asyncio.get_event_loop_policy()
 
 # Set environment variables BEFORE importing the app
+# Use a non-existent placeholder. 
+# We intentionally use a format that satisfies SQLAlchemy/SQLModel but won't accidentally connect to a real DB.
 os.environ["SECRET_KEY"] = "test_secret_key_for_users_of_this_project"
-os.environ["DATABASE_URL"] = "postgresql+psycopg://test:test@localhost:5432/testdb"
+os.environ["DATABASE_URL"] = "postgresql+psycopg://placeholder:placeholder@localhost:5432/placeholder"
 
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, AsyncEngine
@@ -31,8 +33,17 @@ from sqlmodel import SQLModel
 # Import your FastAPI app
 from app.main import app
 from app.database.session import get_session
+from app.core.rate_limit import limiter
 
 
+# --- GLOBAL TEST CONFIGURATION ---
+@pytest.fixture(scope="session", autouse=True)
+def disable_rate_limiting():
+    """
+    Globally disables rate limiting for the entire test session.
+    This prevents 429 errors during rapid-fire integration tests.
+    """
+    limiter.enabled = False
 
 
 # --- INFRASTRUTTURA TESTCONTAINERS ---

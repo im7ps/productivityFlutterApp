@@ -14,12 +14,12 @@ class ActivityLog(SQLModel, table=True):
     
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
 
-    start_time: datetime = Field(default_factory=get_utc_now)
+    start_time: datetime = Field(default_factory=get_utc_now, index=True)
     end_time: Optional[datetime] = Field(default=None)
     description: Optional[str] = None
 
-    user_id: uuid.UUID = Field(foreign_key="user.id")
+    user_id: uuid.UUID = Field(foreign_key="user.id", index=True)
     user: Optional["User"] = Relationship(back_populates="activities")
 
-    category_id: Optional[uuid.UUID] = Field(foreign_key="category.id", default=None)
+    category_id: Optional[uuid.UUID] = Field(foreign_key="category.id", default=None, index=True)
     category: Optional["Category"] = Relationship(back_populates="activities")

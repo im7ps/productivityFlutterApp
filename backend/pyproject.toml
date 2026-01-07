@@ -19,6 +19,7 @@ pydantic-settings = "^2.3.4"
 passlib = {version = "^1.7.4", extras = ["bcrypt"]}
 bcrypt = "^4.1.2"
 python-jose = {version = "^3.3.0", extras = ["cryptography"]}
+slowapi = "^0.1.9"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.2"
@@ -29,6 +30,7 @@ ruff = "^0.4.10"
 mypy = "^1.10.0"
 black = "^24.4.2"
 hypothesis = "^6.149.0"
+locust = "^2.43.0"
 
 [build-system]
 requires = ["poetry-core"]

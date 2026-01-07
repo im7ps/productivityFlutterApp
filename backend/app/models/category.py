@@ -13,7 +13,7 @@ class Category(SQLModel, table=True):
     icon: str = Field(default="circle")
     color: str = Field(default="blue")
 
-    user_id: uuid.UUID = Field(foreign_key="user.id")
+    user_id: uuid.UUID = Field(foreign_key="user.id", index=True)
     user: Optional["User"] = Relationship(back_populates="categories")
 
     activities: List["ActivityLog"] = Relationship(back_populates="category")

@@ -12,8 +12,16 @@ class AuthService:
         """
         Authenticate a user by username and password.
         """
+        import asyncio
+        
         user = await self.user_service.get_user_by_username(username)
-        if not user or not verify_password(password, user.hashed_password):
+        if not user:
+            raise InvalidCredentials("Incorrect username or password")
+            
+        loop = asyncio.get_running_loop()
+        is_valid = await loop.run_in_executor(None, verify_password, password, user.hashed_password)
+        
+        if not is_valid:
             raise InvalidCredentials("Incorrect username or password")
         return user
 

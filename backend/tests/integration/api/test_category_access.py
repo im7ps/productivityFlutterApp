@@ -162,13 +162,15 @@ async def test_mass_assignment_vulnerability(test_client: AsyncClient, create_us
     # 3. User A attempts to re-assign the category to User B via mass assignment
     malicious_payload = {
         "name": "Re-assigned Category",
-        "user_id": user_b["user_id"]  # Attempting to change ownership
+        "user_id": user_b["user_id"]  # Attempting to change ownership (Forbidden field)
     }
     response = await test_client.put(f"/api/v1/categories/{category_id}", json=malicious_payload, headers=user_a["headers"])
-    assert response.status_code == 200 # The request is valid from User A's perspective
     
-    # 4. CRITICAL: Verify the user_id was NOT changed in the database
-    # We need to bypass the API's tenancy checks to see the true state of the object.
+    # NOW: The request should fail because 'user_id' is not a permitted field in the schema (extra='forbid')
+    assert response.status_code == 422
+    assert "extra fields not permitted" in response.text.lower()
+    
+    # 4. CRITICAL: Verify the database state remains unchanged for protected fields
     from app.models import Category
     from sqlmodel import select
     
@@ -176,10 +178,9 @@ async def test_mass_assignment_vulnerability(test_client: AsyncClient, create_us
     
     stmt = select(Category).where(Category.id == category_id)
     result = await db_session.execute(stmt)
-    updated_category_from_db = result.scalars().one()
+    category_from_db = result.scalars().one()
     
-    assert updated_category_from_db is not None
-    # The owner should still be User A
-    assert str(updated_category_from_db.user_id) == user_a["user_id"]
-    # The name should be updated
-    assert updated_category_from_db.name == "Re-assigned Category"
+    # The owner must still be User A
+    assert str(category_from_db.user_id) == user_a["user_id"]
+    # The name should NOT have been updated (because the whole request failed)
+    assert category_from_db.name == "User A's Category"

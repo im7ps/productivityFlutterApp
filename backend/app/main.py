@@ -12,6 +12,9 @@ from app.core.exceptions import (
     DomainValidationError,
 )
 from app.core.config import settings
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from app.core.rate_limit import limiter
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -28,6 +31,10 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan
 )
+
+# Configurazione Rate Limiting
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Configurazione CORS
 app.add_middleware(
