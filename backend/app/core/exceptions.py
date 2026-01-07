@@ -23,3 +23,13 @@ class InvalidCredentials(DomainException):
 class DomainValidationError(DomainException):
     """Raised when a domain validation rule is violated."""
     pass
+
+
+class AccessTokenExpired(DomainException):
+    """Raised when the JWT access token has expired."""
+    pass
+
+
+class InvalidToken(DomainException):
+    """Raised when the JWT token is invalid (malformed, bad signature, etc.)."""
+    pass
