@@ -20,6 +20,7 @@ passlib = {version = "^1.7.4", extras = ["bcrypt"]}
 bcrypt = "^4.1.2"
 python-jose = {version = "^3.3.0", extras = ["cryptography"]}
 slowapi = "^0.1.9"
+structlog = "^25.5.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.2"

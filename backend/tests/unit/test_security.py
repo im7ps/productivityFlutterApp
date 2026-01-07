@@ -1,14 +1,14 @@
 import pytest
 from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
-from jose import jwt, ExpiredSignatureError
+from jose import jwt
 
+from app.core.exceptions import AccessTokenExpired, InvalidToken
 from app.core.security import (
     get_password_hash,
     verify_password,
     create_access_token,
     decode_access_token,
-    InvalidTokenError,
     SECRET_KEY,
     ALGORITHM,
 )
@@ -78,14 +78,14 @@ def test_decode_expired_token():
     # Manually encode using jose to bypass create_access_token's logic
     expired_token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
     
-    # Assert that decoding it raises the specific ExpiredSignatureError
-    with pytest.raises(ExpiredSignatureError):
+    # Assert that decoding it raises the specific AccessTokenExpired
+    with pytest.raises(AccessTokenExpired):
         decode_access_token(expired_token)
 
 
 def test_decode_invalid_token_signature():
     """
-    Tests that decoding a token with an invalid signature raises InvalidTokenError.
+    Tests that decoding a token with an invalid signature raises InvalidToken.
     """
     payload = {"sub": "user@example.com"}
     token = create_access_token(data=payload)
@@ -93,15 +93,15 @@ def test_decode_invalid_token_signature():
     # Tamper with the token
     tampered_token = token + "invalid_signature"
 
-    with pytest.raises(InvalidTokenError):
+    with pytest.raises(InvalidToken):
         decode_access_token(tampered_token)
 
 def test_decode_malformed_token():
     """
-    Tests that decoding a malformed token raises InvalidTokenError.
+    Tests that decoding a malformed token raises InvalidToken.
     """
     malformed_token = "this.is.not.a.valid.jwt"
-    with pytest.raises(InvalidTokenError):
+    with pytest.raises(InvalidToken):
         decode_access_token(malformed_token)
 
 def test_create_access_token_has_correct_expiry():

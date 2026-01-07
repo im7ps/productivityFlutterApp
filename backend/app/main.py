@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-import logging
+import structlog
 
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
@@ -14,17 +14,22 @@ from app.core.exceptions import (
     DomainValidationError,
 )
 from app.core.config import settings
+from app.core.logging import configure_logging
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from app.core.rate_limit import limiter
 
+# Inizializza il logging strutturato prima della creazione dell'app
+configure_logging()
+logger = structlog.get_logger()
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Questo codice viene eseguito all'avvio dell'applicazione
-    logging.info("Avvio dell'applicazione...")
+    logger.info("Application starting", env=settings.ENVIRONMENT)
     yield
     # Questo codice viene eseguito allo spegnimento dell'applicazione
-    logging.info("Spegnimento dell'applicazione.")
+    logger.info("Application shutting down")
 
 
 app = FastAPI(
