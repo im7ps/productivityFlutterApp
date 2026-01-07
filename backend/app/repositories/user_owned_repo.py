@@ -21,7 +21,7 @@ class UserOwnedRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]
         """Crea un record associandolo all'utente specificato."""
         db_obj = self.model(**obj_in.model_dump(), user_id=user_id)
         self.session.add(db_obj)
-        await self.session.commit()
+        await self.session.flush()
         await self.session.refresh(db_obj)
         return db_obj
 
@@ -43,11 +43,11 @@ class UserOwnedRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]
         for key, value in update_data.items():
             setattr(db_obj, key, value)
         self.session.add(db_obj)
-        await self.session.commit()
+        await self.session.flush()
         await self.session.refresh(db_obj)
         return db_obj
 
     async def delete(self, db_obj: ModelType) -> None:
         """Cancella un oggetto esistente."""
         await self.session.delete(db_obj)
-        await self.session.commit()
+        await self.session.flush()

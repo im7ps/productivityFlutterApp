@@ -8,8 +8,11 @@ from app.repositories.user_repo import UserRepository
 from app.schemas.user import UserCreate
 
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
 class UserService:
-    def __init__(self, user_repo: UserRepository):
+    def __init__(self, session: AsyncSession, user_repo: UserRepository):
+        self.session = session
         self.user_repo = user_repo
 
     async def create_user(self, user_create: UserCreate) -> User:
@@ -40,10 +43,16 @@ class UserService:
 
         # 4. Pass the prepared model to the repository with race-condition handling
         try:
-            return await self.user_repo.create(user_model)
+            created_user = await self.user_repo.create(user_model)
+            await self.session.commit()
+            return created_user
         except IntegrityError:
+            await self.session.rollback()
             # This catches cases where a duplicate was inserted between the pre-check and the commit
             raise EntityAlreadyExists("User with this email or username already exists")
+        except Exception:
+            await self.session.rollback()
+            raise
 
     async def get_user_by_username(self, username: str) -> User | None:
         """

@@ -17,7 +17,7 @@ class UserRepository:
         Password must already be hashed.
         """
         self.session.add(user_model)
-        await self.session.commit()
+        await self.session.flush()
         await self.session.refresh(user_model)
         return user_model
 
@@ -52,11 +52,11 @@ class UserRepository:
             setattr(db_user, key, value)
         
         self.session.add(db_user)
-        await self.session.commit()
+        await self.session.flush()
         await self.session.refresh(db_user)
         return db_user
 
     async def delete(self, db_user: User) -> None:
         """Elimina l'utente."""
         await self.session.delete(db_user)
-        await self.session.commit()
+        await self.session.flush()

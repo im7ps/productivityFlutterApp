@@ -13,7 +13,7 @@ router = APIRouter()
 
 def get_activity_log_service(session: AsyncSession = Depends(get_session)) -> ActivityLogService:
     repo = ActivityLogRepository(session)
-    return ActivityLogService(repo)
+    return ActivityLogService(session=session, activity_log_repo=repo)
 
 @router.post("", response_model=ActivityLogRead)
 async def create_activity_log(

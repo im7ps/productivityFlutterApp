@@ -5,17 +5,21 @@ from app.core.exceptions import ResourceNotFound
 from app.models.category import Category
 from app.repositories.category_repo import CategoryRepository
 from app.schemas.category import CategoryCreate, CategoryUpdate
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class CategoryService:
-    def __init__(self, category_repo: CategoryRepository):
+    def __init__(self, session: AsyncSession, category_repo: CategoryRepository):
+        self.session = session
         self.category_repo = category_repo
 
     async def create_category(self, category_create: CategoryCreate, user_id: uuid.UUID) -> Category:
         """
         Create a new category for the user.
         """
-        return await self.category_repo.create(obj_in=category_create, user_id=user_id)
+        category = await self.category_repo.create(obj_in=category_create, user_id=user_id)
+        await self.session.commit()
+        return category
 
     async def get_categories_by_user(self, user_id: uuid.UUID) -> List[Category]:
         """
@@ -42,7 +46,9 @@ class CategoryService:
         """
         # Ensure category exists and belongs to user
         category = await self.get_category_by_id(category_id, user_id)
-        return await self.category_repo.update(db_obj=category, obj_in=category_update)
+        updated_category = await self.category_repo.update(db_obj=category, obj_in=category_update)
+        await self.session.commit()
+        return updated_category
 
     async def delete_category(self, category_id: uuid.UUID, user_id: uuid.UUID) -> None:
         """
@@ -52,3 +58,4 @@ class CategoryService:
         # Ensure category exists and belongs to user
         category = await self.get_category_by_id(category_id, user_id)
         await self.category_repo.delete(db_obj=category)
+        await self.session.commit()

@@ -20,8 +20,11 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 def get_user_repo(session: Annotated[AsyncSession, Depends(get_session)]) -> UserRepository:
     return UserRepository(session)
 
-def get_user_service(repo: Annotated[UserRepository, Depends(get_user_repo)]) -> UserService:
-    return UserService(repo)
+def get_user_service(
+    session: Annotated[AsyncSession, Depends(get_session)],
+    repo: Annotated[UserRepository, Depends(get_user_repo)]
+) -> UserService:
+    return UserService(session=session, user_repo=repo)
 
 def get_auth_service(user_service: Annotated[UserService, Depends(get_user_service)]) -> AuthService:
     return AuthService(user_service)

@@ -7,6 +7,8 @@ from app.services.user_service import UserService
 from app.schemas.user import UserCreate
 from app.models.user import User
 
+from unittest.mock import AsyncMock
+
 # --- Fake Repository for Testing ---
 
 class FakeUserRepository:
@@ -34,8 +36,8 @@ class FakeUserRepository:
 
 @pytest.fixture
 def user_service() -> UserService:
-    """Provides a UserService instance with a fresh FakeUserRepository."""
-    return UserService(user_repo=FakeUserRepository())
+    """Provides a UserService instance with a fresh FakeUserRepository and a mock session."""
+    return UserService(session=AsyncMock(), user_repo=FakeUserRepository())
 
 @pytest.mark.asyncio
 async def test_create_user_success(user_service: UserService):

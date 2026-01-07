@@ -13,7 +13,7 @@ router = APIRouter()
 
 def get_category_service(session: AsyncSession = Depends(get_session)) -> CategoryService:
     repo = CategoryRepository(session)
-    return CategoryService(repo)
+    return CategoryService(session=session, category_repo=repo)
 
 @router.post("", response_model=CategoryRead)
 async def create_category(

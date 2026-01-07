@@ -13,7 +13,7 @@ router = APIRouter()
 
 def get_daily_log_service(session: AsyncSession = Depends(get_session)) -> DailyLogService:
     repo = DailyLogRepository(session)
-    return DailyLogService(repo)
+    return DailyLogService(session=session, daily_log_repo=repo)
 
 @router.post("", response_model=DailyLogRead)
 async def create_daily_log(

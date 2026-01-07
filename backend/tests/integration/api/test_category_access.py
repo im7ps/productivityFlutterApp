@@ -168,7 +168,7 @@ async def test_mass_assignment_vulnerability(test_client: AsyncClient, create_us
     
     # NOW: The request should fail because 'user_id' is not a permitted field in the schema (extra='forbid')
     assert response.status_code == 422
-    assert "extra fields not permitted" in response.text.lower()
+    assert "extra_forbidden" in response.text.lower() or "extra fields not permitted" in response.text.lower()
     
     # 4. CRITICAL: Verify the database state remains unchanged for protected fields
     from app.models import Category

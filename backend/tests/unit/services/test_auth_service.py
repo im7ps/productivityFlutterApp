@@ -1,6 +1,6 @@
 import pytest
 from app.core.exceptions import InvalidCredentials
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock
 
 from app.services.auth_service import AuthService
 from app.services.user_service import UserService
@@ -41,8 +41,8 @@ def fake_user_repo() -> FakeUserRepository:
 
 @pytest.fixture
 def user_service(fake_user_repo: FakeUserRepository) -> UserService:
-    """Provides a UserService instance with a fake repository."""
-    return UserService(user_repo=fake_user_repo)
+    """Provides a UserService instance with a fake repository and mock session."""
+    return UserService(session=AsyncMock(), user_repo=fake_user_repo)
 
 @pytest.fixture
 def auth_service(user_service: UserService) -> AuthService:
