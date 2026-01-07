@@ -4,6 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import logging
 
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
+
 from app.api.v1.routers import auth, users, categories, activity_logs, daily_logs
 from app.core.exceptions import (
     ResourceNotFound,
@@ -31,6 +33,9 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan
 )
+
+# Configurazione Proxy Headers
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=["*"])
 
 # Configurazione Rate Limiting
 app.state.limiter = limiter
