@@ -2,6 +2,7 @@ import uuid
 from sqlmodel import SQLModel, Field, Relationship
 from typing import Optional, List, TYPE_CHECKING
 from datetime import datetime
+from sqlalchemy import func
 from app.models.utils import get_utc_now
 
 if TYPE_CHECKING:
@@ -18,6 +19,10 @@ class User(SQLModel, table=True):
     is_active: bool = Field(default=True)
     # Usa la funzione helper, non la lambda, per massima pulizia
     created_at: datetime = Field(default_factory=get_utc_now)
+    updated_at: Optional[datetime] = Field(
+        default=None, 
+        sa_column_kwargs={"onupdate": func.now()}
+    )
 
     activities: List["ActivityLog"] = Relationship(back_populates="user")
     daily_logs: List["DailyLog"] = Relationship(back_populates="user")
