@@ -83,9 +83,9 @@ def monkeypatch_session():
 def postgres_container() -> Generator[Optional[PostgresContainer], None, None]:
     """
     Provides a PostgresContainer for local testing.
-    Yields None if TEST_DATABASE_URL is set (e.g. CI/Docker), skipping container launch.
+    Yields None if DATABASE_URL is set (e.g. CI/Docker), skipping container launch.
     """
-    if os.environ.get("TEST_DATABASE_URL"):
+    if os.environ.get("DATABASE_URL"):
         yield None
         return
 
@@ -105,7 +105,7 @@ async def db_engine(postgres_container: Optional[PostgresContainer]) -> AsyncGen
     Creates the SQLAlchemy AsyncEngine.
     Selects the connection URL based on the environment (Hybrid Logic).
     """
-    external_url = os.environ.get("TEST_DATABASE_URL")
+    external_url = os.environ.get("DATABASE_URL")
     
     if external_url:
         # Use provided external DB (Docker Service / CI)
@@ -114,7 +114,7 @@ async def db_engine(postgres_container: Optional[PostgresContainer]) -> AsyncGen
         # Use local Testcontainer
         url = postgres_container.get_connection_url().replace("postgresql://", "postgresql+psycopg://")
     else:
-        raise RuntimeError("No database configuration found (neither Testcontainers nor TEST_DATABASE_URL).")
+        raise RuntimeError("No database configuration found (neither Testcontainers nor DATABASE_URL).")
     
     engine = create_async_engine(url, echo=False, future=True)
     

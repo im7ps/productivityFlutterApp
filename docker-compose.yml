@@ -67,9 +67,7 @@ services:
       # Le variabili monkeypatched nel conftest vincono, ma queste servono per Pydantic Settings
       - SECRET_KEY=test_secret_key_fixed_for_all_tests
       - ALGORITHM=HS256
-      # Questa variabile ATTIVA la modalità "Service Container" nel tuo conftest.py
       - DATABASE_URL=postgresql+psycopg://test_user:test_password@db-test:5432/test_db
-      - TEST_DATABASE_URL=postgresql+psycopg://test_user:test_password@db-test:5432/test_db
     # Aggiunto -v per verbosità e --color=yes per log leggibili
     command: pytest -v --color=yes
 

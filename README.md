@@ -1,16 +1,41 @@
-# whativedone
+🚀 Quick Start (Come eseguire i test)
+Hai due modalità per eseguire i test, a seconda del tuo contesto operativo.
 
-A new Flutter project.
+1. Esecuzione via Docker (Consigliato per CI & Clean Checks)
+Questa modalità utilizza il profilo test definito nel docker-compose.yml. Avvia un database Postgres ottimizzato (in RAM tramite tmpfs) e un container dedicato per i test.
 
-## Getting Started
+# Esegui l'intera suite di test integrativi e unitari
+docker compose --profile test up tests
 
-This project is a starting point for a Flutter application.
+oppure per test di carico
 
-A few resources to get you started if this is your first Flutter project:
+# Esegui il test di carico
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+docker compose --profile load up load-tests
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Nota: Questo comando avvierà automaticamente anche il servizio backend e il database principale (db), poiché Locust deve testare l'applicazione reale in esecuzione.
+
+Interfaccia Web: Una volta avviato, apri il browser all'indirizzo: 👉 http://localhost:8089
+
+Dalla dashboard potrai:
+
+Impostare il numero di utenti simulati (es. 100).
+
+Impostare lo "Spawn rate" (utenti al secondo).
+
+Avviare il test e visualizzare grafici in tempo reale su RPS (Richieste per Secondo), tempi di risposta e failure rate.
+
+File di configurazione: Gli scenari di test sono definiti in backend/tests/locustfile.py. Modifica questo file per aggiungere nuovi endpoint o comportamenti utente da simulare.
+
+# Per pulire le risorse di test dopo l'esecuzione
+docker compose --profile test down
+
+⚠️ Troubleshooting
+Errore: ConnectionRefused in locale
+
+Assicurati che Docker sia avviato. Testcontainers ne ha bisogno per alzare il DB effimero.
+
+Errore: Dirty Database in Docker
+
+Se interrompi bruscamente i test Docker, il volume tmpfs si pulisce al riavvio del container, ma per sicurezza puoi forzare una pulizia:
+docker compose --profile test down -v
