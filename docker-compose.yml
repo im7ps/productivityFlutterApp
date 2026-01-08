@@ -32,8 +32,53 @@ services:
       - SECRET_KEY=${SECRET_KEY}
       - ALGORITHM=${ALGORITHM}
       - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
-
     restart: always
+
+  # --- TEST INFRASTRUCTURE ---
+  db-test:
+    image: postgres:15
+    tmpfs: 
+      - /var/lib/postgresql/data # DB in RAM per velocità massima e pulizia automatica
+    environment:
+      - POSTGRES_USER=test_user
+      - POSTGRES_PASSWORD=test_password
+      - POSTGRES_DB=test_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test_user -d test_db"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+
+  tests:
+    build:
+      context: ./backend
+      target: development
+    volumes:
+      - ./backend:/app
+      - /app/.venv # Volume anonimo per preservare venv del container
+    depends_on:
+      db-test:
+        condition: service_healthy
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - ALGORITHM=${ALGORITHM}
+      # URL per connettersi al db-test interno al compose
+      # Nota: usiamo postgresql+psycopg per il driver async
+      - TEST_DATABASE_URL=postgresql+psycopg://test_user:test_password@db-test:5432/test_db
+    command: pytest
+
+  load-tests:
+    build:
+      context: ./backend
+      target: development
+    depends_on:
+      - backend
+    volumes:
+      - ./backend:/app
+      - /app/.venv
+    ports:
+      - "8089:8089"
+    command: locust -f tests/locustfile.py --host http://backend:8000
 
 volumes:
   postgres_data:

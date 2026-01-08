@@ -2,7 +2,7 @@ import pytest
 import os
 import sys
 import asyncio
-from typing import AsyncGenerator, Generator
+from typing import AsyncGenerator, Generator, Optional
 
 # --- CONFIGURAZIONE AMBIENTE ---
 # --- GESTIONE EVENT LOOP POLICY (MODO MODERNO) ---
@@ -19,6 +19,7 @@ def event_loop_policy():
 # Set environment variables BEFORE importing the app
 # Use a non-existent placeholder. 
 # We intentionally use a format that satisfies SQLAlchemy/SQLModel but won't accidentally connect to a real DB.
+# NOTE: If running in Docker with a dedicated test DB, TEST_DATABASE_URL will be used dynamically.
 os.environ["SECRET_KEY"] = "test_secret_key_for_users_of_this_project"
 os.environ["DATABASE_URL"] = "postgresql+psycopg://placeholder:placeholder@localhost:5432/placeholder"
 
@@ -48,10 +49,15 @@ def disable_rate_limiting():
 
 # --- INFRASTRUTTURA TESTCONTAINERS ---
 @pytest.fixture(scope="session")
-def postgres_container() -> Generator[PostgresContainer, None, None]:
+def postgres_container() -> Generator[Optional[PostgresContainer], None, None]:
     """
-    Starts a Postgres container for the test session.
+    Starts a Postgres container for the test session UNLESS a generic
+    TEST_DATABASE_URL is provided (e.g. from docker-compose).
     """
+    if os.environ.get("TEST_DATABASE_URL"):
+        yield None
+        return
+
     # Nota: driver="psycopg" qui è opzionale per testcontainers, ma utile per chiarezza.
     postgres = PostgresContainer("postgres:15-alpine", driver="psycopg")
     
@@ -66,12 +72,19 @@ def postgres_container() -> Generator[PostgresContainer, None, None]:
 
 # --- DATABASE SETUP ---
 @pytest_asyncio.fixture(scope="session")
-async def db_engine(postgres_container: PostgresContainer) -> AsyncGenerator[AsyncEngine, None]:
-    """Provides a database engine connected to the test container."""
+async def db_engine(postgres_container: Optional[PostgresContainer]) -> AsyncGenerator[AsyncEngine, None]:
+    """Provides a database engine connected to the test container OR external DB."""
     
-    # Assicuriamo che l'URL usi il driver asincrono corretto (psycopg 3)
-    # connection_url example: postgresql+psycopg://user:pass@localhost:port/db
-    async_db_url = postgres_container.get_connection_url().replace("postgresql://", "postgresql+psycopg://")
+    external_url = os.environ.get("TEST_DATABASE_URL")
+    
+    if external_url:
+        async_db_url = external_url
+    elif postgres_container:
+        # Assicuriamo che l'URL usi il driver asincrono corretto (psycopg 3)
+        # connection_url example: postgresql+psycopg://user:pass@localhost:port/db
+        async_db_url = postgres_container.get_connection_url().replace("postgresql://", "postgresql+psycopg://")
+    else:
+        raise RuntimeError("No database configuration found (neither Testcontainers nor TEST_DATABASE_URL).")
     
     engine = create_async_engine(async_db_url, echo=False, future=True)
     
