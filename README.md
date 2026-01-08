@@ -1,7 +1,7 @@
 🚀 Quick Start (Come eseguire i test)
 Hai due modalità per eseguire i test, a seconda del tuo contesto operativo.
 
-1. Esecuzione via Docker (Consigliato per CI & Clean Checks)
+# Esecuzione via Docker
 Questa modalità utilizza il profilo test definito nel docker-compose.yml. Avvia un database Postgres ottimizzato (in RAM tramite tmpfs) e un container dedicato per i test.
 
 # Esegui l'intera suite di test integrativi e unitari
