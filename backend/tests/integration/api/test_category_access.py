@@ -2,56 +2,19 @@ import pytest
 from httpx import AsyncClient
 import uuid
 
-from app.repositories import UserRepository # For direct DB interaction in tests
-from app.models import User # For type hinting
+from app.repositories import UserRepository
+from app.models import User
 
 # Mark all tests in this file as async and needing a DB connection
 pytestmark = [pytest.mark.asyncio, pytest.mark.db]
 
 
-# --- Helper Fixtures ---
-
-@pytest.fixture
-def create_user_and_login(test_client: AsyncClient):
-    """
-    A helper fixture factory that creates a new user, registers them,
-    and returns their auth headers.
-    """
-    async def _create_user_and_login(username_suffix: str) -> dict:
-        user_credentials = {
-            "username": f"catuser{username_suffix}",
-            "email": f"cat_user_{username_suffix}@example.com",
-            "password": "ValidPassword123!",
-        }
-        
-        # Register
-        reg_response = await test_client.post("/api/v1/auth/register", json=user_credentials)
-        assert reg_response.status_code == 201
-        user_id = reg_response.json()["id"]
-
-        # Login
-        login_payload = {
-            "username": user_credentials["username"],
-            "password": user_credentials["password"],
-        }
-        log_response = await test_client.post("/api/v1/auth/login", data=login_payload)
-        assert log_response.status_code == 200
-        token = log_response.json()["access_token"]
-        
-        return {
-            "headers": {"Authorization": f"Bearer {token}"},
-            "user_id": user_id
-        }
-
-    return _create_user_and_login
-
-
 # --- API Tests ---
 
-async def test_category_crud_lifecycle(test_client: AsyncClient, create_user_and_login):
+async def test_category_crud_lifecycle(test_client: AsyncClient, auth_user_context):
     """Tests the full Create, Read, Update, Delete lifecycle for categories."""
     # 1. Setup: Create and log in a user
-    user_a_context = await create_user_and_login("crud")
+    user_a_context = await auth_user_context("crud")
     headers = user_a_context["headers"]
 
     # 2. Create
@@ -88,14 +51,14 @@ async def test_category_crud_lifecycle(test_client: AsyncClient, create_user_and
     assert response.status_code == 404
 
 
-async def test_multi_tenancy_isolation(test_client: AsyncClient, create_user_and_login):
+async def test_multi_tenancy_isolation(test_client: AsyncClient, auth_user_context):
     """
     CRITICAL: Ensures one user cannot access, modify, or delete another user's resources.
     Asserts that the API returns 404 Not Found, not 403 Forbidden, to prevent ID guessing.
     """
     # 1. Setup: Create two separate, logged-in users
-    user_a = await create_user_and_login("A")
-    user_b = await create_user_and_login("B")
+    user_a = await auth_user_context("A")
+    user_b = await auth_user_context("B")
 
     # 2. User A creates a category
     create_payload = {"name": "User A's Private Category"}
@@ -131,9 +94,9 @@ async def test_multi_tenancy_isolation(test_client: AsyncClient, create_user_and
     ("PUT", ""),
     ("DELETE", ""),
 ])
-async def test_access_nonexistent_category(test_client: AsyncClient, create_user_and_login, method: str, endpoint_suffix: str):
+async def test_access_nonexistent_category(test_client: AsyncClient, auth_user_context, method: str, endpoint_suffix: str):
     """Tests that accessing a non-existent UUID returns a 404."""
-    user = await create_user_and_login("edgecase")
+    user = await auth_user_context("edgecase")
     non_existent_id = uuid.uuid4()
     
     url = f"/api/v1/categories/{non_existent_id}{endpoint_suffix}"
@@ -143,14 +106,14 @@ async def test_access_nonexistent_category(test_client: AsyncClient, create_user
     assert response.status_code == 404
 
 
-async def test_mass_assignment_vulnerability(test_client: AsyncClient, create_user_and_login, db_session):
+async def test_mass_assignment_vulnerability(test_client: AsyncClient, auth_user_context, db_session):
     """
     Tests for mass assignment vulnerability by attempting to change the user_id of a category.
     The update operation should ignore the 'user_id' field in the payload.
     """
     # 1. Setup: Create two users
-    user_a = await create_user_and_login("owner")
-    user_b = await create_user_and_login("victim")
+    user_a = await auth_user_context("owner")
+    user_b = await auth_user_context("victim")
 
     # 2. User A creates a category
     create_payload = {"name": "User A's Category"}

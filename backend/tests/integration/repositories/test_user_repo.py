@@ -46,39 +46,27 @@ async def test_create_and_retrieve_user(user_repo: UserRepository):
     assert retrieved_user.username == "testuser"
 
 
-async def test_get_by_email_is_case_insensitive(user_repo: UserRepository, db_session: AsyncSession):
+async def test_get_by_email_is_case_insensitive(user_repo: UserRepository):
     """
     Tests that retrieving a user by email is case-insensitive.
-    Note: This behavior often depends on the database's collation.
-    PostgreSQL's default collation is case-sensitive, so we must query using `ilike` or `lower`.
-    Let's check if the current implementation supports it. If not, this test will fail
-    and highlight a need for improvement in the repository.
+    The repository MUST handle this (e.g., using ilike in PostgreSQL).
     """
     # Arrange
+    email = "Case.Test@Example.Com"
     user_model = User(
         username="caseuser",
-        email="case.test@example.com", # stored in lowercase
+        email=email.lower(),
         hashed_password=get_password_hash("password")
     )
     await user_repo.create(user_model)
     
-    # Action: Retrieve with a different case
-    # The original repo uses `==`, which is case-sensitive in PostgreSQL.
-    # We will perform a manual query to demonstrate the correct way and check the repo method.
-    
-    # 1. Test the repository's current behavior
-    retrieved_user_case_sensitive = await user_repo.get_by_email("CASE.TEST@example.com")
-    
-    # 2. Perform a correct case-insensitive query for comparison
-    stmt = select(User).where(User.email.ilike("CASE.TEST@example.com"))
-    result = await db_session.execute(stmt)
-    retrieved_user_case_insensitive = result.scalars().first()
+    # Action: Retrieve with a different case (UPPERCASE)
+    retrieved_user = await user_repo.get_by_email(email.upper())
 
     # Assert
-    assert retrieved_user_case_insensitive is not None, "Case-insensitive query should find the user"
-    # This assertion checks our repository logic. If it fails, the repo needs a fix.
-    assert retrieved_user_case_sensitive is not None, "Repository's get_by_email should be case-insensitive"
-    assert retrieved_user_case_sensitive.username == "caseuser"
+    assert retrieved_user is not None, f"Repository should find user by email {email.upper()} regardless of case"
+    assert retrieved_user.username == "caseuser"
+    assert retrieved_user.email == email.lower()
 
 
 async def test_create_user_raises_integrity_error_for_duplicate_username(user_repo: UserRepository):

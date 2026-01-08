@@ -1,11 +1,12 @@
 services:
+  # --- PRODUCTION/DEV INFRASTRUCTURE ---
   db:
     image: postgres:15
     healthcheck:
-        test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}",]
-        interval: 5s
-        timeout: 5s
-        retries: 5
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
@@ -34,11 +35,12 @@ services:
       - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
     restart: always
 
-  # --- TEST INFRASTRUCTURE ---
+  # --- TEST INFRASTRUCTURE (Profile: test) ---
   db-test:
     image: postgres:15
+    profiles: ["test"]  # <--- FONDAMENTALE: Non parte con 'docker compose up' standard
     tmpfs: 
-      - /var/lib/postgresql/data # DB in RAM per velocità massima e pulizia automatica
+      - /var/lib/postgresql/data # DB in RAM: rapidissimo e sempre pulito al riavvio
     environment:
       - POSTGRES_USER=test_user
       - POSTGRES_PASSWORD=test_password
@@ -48,29 +50,35 @@ services:
       interval: 2s
       timeout: 5s
       retries: 10
+    # Non esponiamo porte sull'host per evitare conflitti con la porta 5432 o 5433 locali
 
   tests:
     build:
       context: ./backend
       target: development
+    profiles: ["test"] # Parte solo se richiesto esplicitamente
     volumes:
-      - ./backend:/app
-      - /app/.venv # Volume anonimo per preservare venv del container
+      - ./backend:/app # Mount del codice per hot-reloading dei test
+      - /app/.venv # Preserva il venv del container linux, ignorando quello dell'host
     depends_on:
       db-test:
         condition: service_healthy
     environment:
-      - SECRET_KEY=${SECRET_KEY}
-      - ALGORITHM=${ALGORITHM}
-      # URL per connettersi al db-test interno al compose
-      # Nota: usiamo postgresql+psycopg per il driver async
+      # Le variabili monkeypatched nel conftest vincono, ma queste servono per Pydantic Settings
+      - SECRET_KEY=test_secret_key_fixed_for_all_tests
+      - ALGORITHM=HS256
+      # Questa variabile ATTIVA la modalità "Service Container" nel tuo conftest.py
+      - DATABASE_URL=postgresql+psycopg://test_user:test_password@db-test:5432/test_db
       - TEST_DATABASE_URL=postgresql+psycopg://test_user:test_password@db-test:5432/test_db
-    command: pytest
+    # Aggiunto -v per verbosità e --color=yes per log leggibili
+    command: pytest -v --color=yes
 
+  # --- LOAD TESTING (Profile: load) ---
   load-tests:
     build:
       context: ./backend
       target: development
+    profiles: ["load"] # Separato per non appesantire
     depends_on:
       - backend
     volumes:

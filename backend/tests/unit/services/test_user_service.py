@@ -8,29 +8,7 @@ from app.schemas.user import UserCreate
 from app.models.user import User
 
 from unittest.mock import AsyncMock
-
-# --- Fake Repository for Testing ---
-
-class FakeUserRepository:
-    """
-    A fake, in-memory repository that mimics the interface of UserRepository
-    for unit testing the UserService in isolation.
-    """
-    def __init__(self):
-        self.users: list[User] = []
-
-    async def create(self, user_model: User) -> User:
-        # Assign a fake ID and timestamp for realism
-        user_model.id = uuid.uuid4()
-        user_model.created_at = datetime.utcnow()
-        self.users.append(user_model)
-        return user_model
-
-    async def get_by_username(self, username: str) -> User | None:
-        return next((u for u in self.users if u.username == username), None)
-    
-    async def get_by_email(self, email: str) -> User | None:
-        return next((u for u in self.users if u.email == email), None)
+from tests.unit.fakes import FakeUserRepository
 
 # --- UserService Unit Tests ---
 

@@ -1,9 +1,21 @@
 import pytest
+import string
 from pydantic import ValidationError
 from hypothesis import given, strategies as st, settings, HealthCheck
-import re
 
 from app.schemas.user import UserCreate
+# Import constants directly from source (Single Source of Truth)
+from app.schemas.validators import (
+    USERNAME_MIN_LEN,
+    USERNAME_MAX_LEN,
+    USERNAME_REGEX,
+    PASSWORD_MIN_LEN,
+    PASSWORD_MAX_LEN,
+    PASSWORD_REQ_UPPER,
+    PASSWORD_REQ_LOWER,
+    PASSWORD_REQ_DIGIT,
+    PASSWORD_REQ_SPECIAL
+)
 
 # --- Standard Pytest Validation Tests ---
 
@@ -42,43 +54,57 @@ def test_user_create_invalid_email(invalid_email):
 
 def test_user_create_invalid_password_too_short():
     """Tests that UserCreate raises a ValidationError for a password that is too short."""
-    with pytest.raises(ValidationError, match="Password must be at least 8 characters long"):
-        UserCreate(username="testuser", email="test@example.com", password="short")
+    expected_msg = f"Password must be at least {PASSWORD_MIN_LEN} characters long"
+    with pytest.raises(ValidationError, match=expected_msg):
+        UserCreate(username="testuser", email="test@example.com", password="s")
 
 
-@pytest.mark.parametrize("invalid_password, reason", [
-    ("nouppercase1!", "no uppercase"),
-    ("NOLOWERCASE1!", "no lowercase"),
-    ("NoDigits!!", "no digits"),
-    ("NoSpecial123", "no special char"),
+@pytest.mark.parametrize("invalid_password, match_msg", [
+    ("nouppercase1!", "uppercase letter"),
+    ("NOLOWERCASE1!", "lowercase letter"),
+    ("NoDigits!!", "digit"),
+    ("NoSpecial123", "special character"),
 ])
-def test_user_create_invalid_password_missing_chars(invalid_password, reason):
+def test_user_create_invalid_password_missing_chars(invalid_password, match_msg):
     """Tests that UserCreate raises a ValidationError for passwords missing required characters."""
-    with pytest.raises(ValidationError, match="Password must contain at least one"):
+    with pytest.raises(ValidationError, match=match_msg):
         UserCreate(username="testuser", email="test@example.com", password=invalid_password)
 
 
-@pytest.mark.parametrize("invalid_username, reason", [
-    ("sh", "too short"),
-    ("a_very_long_username_that_is_invalid", "too long"),
-    ("invalid-char", "not alphanumeric"),
-    ("invalid space", "not alphanumeric"),
+@pytest.mark.parametrize("invalid_username, match_msg", [
+    ("a" * (USERNAME_MIN_LEN - 1), "between"),
+    ("a" * (USERNAME_MAX_LEN + 1), "between"),
+    ("invalid-char", "alphanumeric"),
+    ("invalid space", "alphanumeric"),
 ])
-def test_user_create_invalid_username(invalid_username, reason):
+def test_user_create_invalid_username(invalid_username, match_msg):
     """Tests that UserCreate raises a ValidationError for invalid usernames."""
-    with pytest.raises(ValidationError, match="Username must be"):
+    with pytest.raises(ValidationError, match=match_msg):
         UserCreate(username=invalid_username, email="test@example.com", password="ValidPassword123!")
 
 # --- Property-Based Tests with Hypothesis ---
 
-# Strategy for generating valid passwords
-valid_password_st = st.from_regex(
-    r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?\":{}|<>])[A-Za-z\d!@#$%^&*(),.?\":{}|<>]{8,72}$",
+# Strategy for generating valid usernames based on application constants
+# We strip ^, $, and the + quantifier to apply our own length constraint
+username_char_class = USERNAME_REGEX.lstrip('^').rstrip('$').replace('+', '')
+valid_username_st = st.from_regex(
+    rf"^{username_char_class}{{{USERNAME_MIN_LEN},{USERNAME_MAX_LEN}}}$", 
     fullmatch=True
 )
 
-# Strategy for generating valid usernames
-valid_username_st = st.from_regex(r"^[a-zA-Z0-9]{3,20}$", fullmatch=True)
+# For passwords, we build a strategy that satisfies all individual regex requirements
+# and the length constraints.
+valid_password_st = st.text(
+    alphabet=string.ascii_letters + string.digits + string.punctuation,
+    min_size=PASSWORD_MIN_LEN, 
+    max_size=PASSWORD_MAX_LEN
+).filter(
+    lambda p: (
+        any(c.isupper() for c in p) and 
+        any(c.islower() for c in p) and 
+        any(c.isdigit() for c in p) and 
+        any(c in "!@#$%^&*(),.?\":{}|<>" for c in p))
+)
 
 @settings(max_examples=50, suppress_health_check=[HealthCheck.too_slow, HealthCheck.filter_too_much])
 @given(
@@ -94,6 +120,4 @@ def test_user_create_hypothesis_valid_data(username, email, password):
     user = UserCreate(username=username, email=email, password=password)
     assert user.username == username
     assert user.password == password
-    # We don't assert email equality directly, as Pydantic performs
-    # normalization (e.g., for international domains) which is the correct behavior.
     assert user.email is not None

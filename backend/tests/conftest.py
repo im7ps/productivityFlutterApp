@@ -4,25 +4,6 @@ import sys
 import asyncio
 from typing import AsyncGenerator, Generator, Optional
 
-# --- CONFIGURAZIONE AMBIENTE ---
-# --- GESTIONE EVENT LOOP POLICY (MODO MODERNO) ---
-@pytest.fixture(scope="session")
-def event_loop_policy():
-    """
-    Returns the event loop policy to be used by pytest-asyncio.
-    Sets WindowsSelectorEventLoopPolicy on Windows for compatibility with psycopg.
-    """
-    if sys.platform == "win32":
-        return asyncio.WindowsSelectorEventLoopPolicy()
-    return asyncio.get_event_loop_policy()
-
-# Set environment variables BEFORE importing the app
-# Use a non-existent placeholder. 
-# We intentionally use a format that satisfies SQLAlchemy/SQLModel but won't accidentally connect to a real DB.
-# NOTE: If running in Docker with a dedicated test DB, TEST_DATABASE_URL will be used dynamically.
-os.environ["SECRET_KEY"] = "test_secret_key_for_users_of_this_project"
-os.environ["DATABASE_URL"] = "postgresql+psycopg://placeholder:placeholder@localhost:5432/placeholder"
-
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, AsyncEngine
 from sqlalchemy.orm import sessionmaker
@@ -31,37 +12,85 @@ from testcontainers.core.wait_strategies import LogMessageWaitStrategy
 from httpx import AsyncClient, ASGITransport
 from sqlmodel import SQLModel
 
-# Import your FastAPI app
+# Import application components
 from app.main import app
 from app.database.session import get_session
 from app.core.rate_limit import limiter
+from app.core import security # Imported for monkeypatching
+import uuid
+
+# --- ENVIRONMENT CONFIGURATION ---
+
+@pytest.fixture(scope="session", autouse=True)
+def enforce_test_environment_variables():
+    """
+    Sets critical environment variables to safe test values globally.
+    This runs before any other fixture or test logic.
+    """
+    os.environ["SECRET_KEY"] = "test_secret_key_fixed_for_all_tests"
+    os.environ["ALGORITHM"] = "HS256"
+    os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"] = "15"
+    # Note: DATABASE_URL handling is done dynamically in the db_engine fixture.
 
 
-# --- GLOBAL TEST CONFIGURATION ---
+@pytest.fixture(scope="session")
+def event_loop_policy():
+    """
+    Sets the event loop policy. On Windows, uses WindowsSelectorEventLoopPolicy
+    for compatibility with psycopg.
+    """
+    if sys.platform == "win32":
+        return asyncio.WindowsSelectorEventLoopPolicy()
+    return asyncio.get_event_loop_policy()
+
+
 @pytest.fixture(scope="session", autouse=True)
 def disable_rate_limiting():
-    """
-    Globally disables rate limiting for the entire test session.
-    This prevents 429 errors during rapid-fire integration tests.
-    """
+    """Globally disables rate limiting to prevent 429 errors during testing."""
     limiter.enabled = False
 
 
-# --- INFRASTRUTTURA TESTCONTAINERS ---
+@pytest.fixture(scope="session", autouse=True)
+def security_settings(monkeypatch_session):
+    """
+    Forces security settings to known test values using monkeypatch.
+    Uses a session-scoped monkeypatch (requires pytest-monkeypatch or custom fixture).
+    Since default monkeypatch is function-scoped, we apply these manually or assume the env vars above cover it.
+    The os.environ fixture above is actually sufficient for env-based config like Pydantic Settings.
+    However, if code imports constants directly, we might need to patch the module.
+    """
+    # Patching module-level constants if they were imported before env vars were set
+    monkeypatch_session.setattr(security, "SECRET_KEY", "test_secret_key_fixed_for_all_tests")
+    monkeypatch_session.setattr(security, "ALGORITHM", "HS256")
+
+
+# --- CUSTOM SESSION SCOPED MONKEYPATCH ---
+@pytest.fixture(scope="session")
+def monkeypatch_session():
+    """
+    Pytest's built-in monkeypatch is function-scoped. 
+    This is a custom session-scoped monkeypatch fixture.
+    """
+    from _pytest.monkeypatch import MonkeyPatch
+    mp = MonkeyPatch()
+    yield mp
+    mp.undo()
+
+
+# --- HYBRID DATABASE INFRASTRUCTURE ---
+
 @pytest.fixture(scope="session")
 def postgres_container() -> Generator[Optional[PostgresContainer], None, None]:
     """
-    Starts a Postgres container for the test session UNLESS a generic
-    TEST_DATABASE_URL is provided (e.g. from docker-compose).
+    Provides a PostgresContainer for local testing.
+    Yields None if TEST_DATABASE_URL is set (e.g. CI/Docker), skipping container launch.
     """
     if os.environ.get("TEST_DATABASE_URL"):
         yield None
         return
 
-    # Nota: driver="psycopg" qui è opzionale per testcontainers, ma utile per chiarezza.
+    # Local fallback: Launch Testcontainer
     postgres = PostgresContainer("postgres:15-alpine", driver="psycopg")
-    
-    # La tua strategia custom è ottima per evitare race conditions
     postgres.wait_for_waiting_strategy = LogMessageWaitStrategy(
         "database system is ready to accept connections", times=1
     )
@@ -70,76 +99,81 @@ def postgres_container() -> Generator[Optional[PostgresContainer], None, None]:
         yield container
 
 
-# --- DATABASE SETUP ---
 @pytest_asyncio.fixture(scope="session")
 async def db_engine(postgres_container: Optional[PostgresContainer]) -> AsyncGenerator[AsyncEngine, None]:
-    """Provides a database engine connected to the test container OR external DB."""
-    
+    """
+    Creates the SQLAlchemy AsyncEngine.
+    Selects the connection URL based on the environment (Hybrid Logic).
+    """
     external_url = os.environ.get("TEST_DATABASE_URL")
     
     if external_url:
-        async_db_url = external_url
+        # Use provided external DB (Docker Service / CI)
+        url = external_url
     elif postgres_container:
-        # Assicuriamo che l'URL usi il driver asincrono corretto (psycopg 3)
-        # connection_url example: postgresql+psycopg://user:pass@localhost:port/db
-        async_db_url = postgres_container.get_connection_url().replace("postgresql://", "postgresql+psycopg://")
+        # Use local Testcontainer
+        url = postgres_container.get_connection_url().replace("postgresql://", "postgresql+psycopg://")
     else:
         raise RuntimeError("No database configuration found (neither Testcontainers nor TEST_DATABASE_URL).")
     
-    engine = create_async_engine(async_db_url, echo=False, future=True)
+    engine = create_async_engine(url, echo=False, future=True)
     
+    # Initialize Schema
+    async with engine.begin() as conn:
+        await conn.run_sync(SQLModel.metadata.drop_all)
+        await conn.run_sync(SQLModel.metadata.create_all)
+        
     yield engine
     
     await engine.dispose()
 
 
-@pytest_asyncio.fixture(scope="session")
-async def setup_database(db_engine: AsyncEngine):
-    """
-    Set up the database schema once for the entire test session.
-    All tables are dropped and recreated at the beginning of the session.
-    """
-    async with db_engine.begin() as conn:
-        await conn.run_sync(SQLModel.metadata.drop_all)
-        await conn.run_sync(SQLModel.metadata.create_all)
-    yield
+# --- TRANSACTION MANAGEMENT (ISOLATION) ---
 
-
-# --- SESSIONE TRANSAZIONALE (ROLLBACK) ---
 @pytest_asyncio.fixture(scope="function")
-async def db_session(db_engine: AsyncEngine, setup_database) -> AsyncGenerator[AsyncSession, None]:
+async def db_session(db_engine: AsyncEngine) -> AsyncGenerator[AsyncSession, None]:
     """
-    Provides a clean, transactional session for each test function.
-    Rolls back at the end to keep DB clean.
+    Yields an AsyncSession wrapped in a NESTED TRANSACTION (SAVEPOINT).
+    Rolls back at the end of every test to guarantee pristine state.
     """
+    # Connect to the database
     connection = await db_engine.connect()
-    transaction = await connection.begin()
     
+    # Begin a generic transaction
+    trans = await connection.begin()
+    
+    # Begin a NESTED transaction (SAVEPOINT) for the test
+    # This allows the test to commit/rollback its own inner transactions 
+    # without affecting the outer transaction which we will rollback.
+    nested = await connection.begin_nested()
+    
+    # Create the session bound to this specific connection
     SessionLocal = sessionmaker(
         bind=connection,
         class_=AsyncSession,
         expire_on_commit=False,
-        autoflush=False, # Importante nei test per evitare scritture implicite indesiderate
+        autoflush=False,
     )
-    
+
     async with SessionLocal() as session:
         yield session
-        # Non serve commit, il rollback della transazione padre annulla tutto
+        
+        # In case the test code committed/rolled back the nested transaction,
+        # we don't need to do anything as the outer 'trans' rollback covers it.
+        # But if the session is still open, we close it.
     
-    # Clean up
-    if transaction.is_active:
-        await transaction.rollback()
+    # Rollback the outer transaction to discard ALL changes (including committed nested ones)
+    await trans.rollback()
     await connection.close()
 
 
-# --- CLIENT API ---
+# --- CLIENT API FIXTURE ---
+
 @pytest_asyncio.fixture(scope="function")
 async def test_client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
     """
-    Creates an AsyncClient for API testing, overriding the `get_session` 
-    dependency to use the isolated test database session.
+    Yields an AsyncClient configured to use the isolated test db_session.
     """
-    # Definiamo l'override come async generator per coerenza completa
     async def override_get_session():
         yield db_session
 
@@ -150,3 +184,41 @@ async def test_client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, N
     
     app.dependency_overrides.clear()
 
+
+# --- AUTH HELPERS ---
+
+@pytest.fixture
+def auth_user_context(test_client: AsyncClient):
+    """
+    A helper fixture factory that creates a new user, registers them,
+    and returns their auth headers.
+    Moved from test_category_access.py to be globally available.
+    """
+    async def _create_user_and_login(username_suffix: str) -> dict:
+        user_credentials = {
+            "username": f"user{username_suffix}{uuid.uuid4().hex[:4]}",
+            "email": f"user_{username_suffix}_{uuid.uuid4().hex[:4]}@example.com",
+            "password": "ValidPassword123!",
+        }
+        
+        # Register
+        reg_response = await test_client.post("/api/v1/auth/register", json=user_credentials)
+        assert reg_response.status_code == 201, f"Registration failed: {reg_response.text}"
+        user_id = reg_response.json()["id"]
+
+        # Login
+        login_payload = {
+            "username": user_credentials["username"],
+            "password": user_credentials["password"],
+        }
+        log_response = await test_client.post("/api/v1/auth/login", data=login_payload)
+        assert log_response.status_code == 200, f"Login failed: {log_response.text}"
+        token = log_response.json()["access_token"]
+        
+        return {
+            "headers": {"Authorization": f"Bearer {token}"},
+            "user_id": user_id,
+            "username": user_credentials["username"]
+        }
+
+    return _create_user_and_login
