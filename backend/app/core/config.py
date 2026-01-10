@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     # Environment Tier: controlla il comportamento di sicurezza
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
 
+    # Rate Limiting
+    RATE_LIMIT_ENABLED: bool = True
+
     # CORS Origins: Validazione stretta degli URL.
     # In produzione DEVE essere popolato e NON deve contenere localhost.
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []

@@ -1,26 +1,27 @@
 # Flutter/Dart
-.dart_tool/
-.flutter-plugins
-.flutter-plugins-dependencies
-.pub-cache/
-.pub/
-build/
+frontend/.dart_tool/
+frontend/.flutter-plugins
+frontend/.flutter-plugins-dependencies
+frontend/.pub-cache/
+frontend/.pub/
+frontend/build/
 
 # Android Studio / Gradle
-/android/app/build/
-/android/build/
-/android/.gradle/
-/android/local.properties
-/android/.idea/
-/android/captures/
-/android/key.properties
-/android/app/key.properties
+frontend/android/app/build/
+frontend/android/build/
+frontend/android/.gradle/
+frontend/android/local.properties
+frontend/android/.idea/
+frontend/android/captures/
+frontend/android/key.properties
+frontend/android/app/key.properties
 
 # IntelliJ
 *.iml
 *.ipr
 *.iws
 .idea/
+frontend/.idea/
 
 # Misc
 *.log
@@ -28,15 +29,18 @@ build/
 *.swp
 .DS_Store
 
-# Ignora piattaforme che non usi
-/ios/
-/macos/
-/linux/
-/web/
+# Ignora piattaforme che non usi (o build artifacts)
+frontend/ios/Flutter/Generated.xcconfig
+frontend/ios/Flutter/app.flx
+frontend/ios/Flutter/app.zip
+frontend/ios/Flutter/flutter_assets/
+frontend/ios/Flutter/service_definitions.json
+frontend/ios/Runner/GeneratedPluginRegistrant.*
 
 # Python
 __pycache__/
 backend/__pycache__/
+backend/alembic/__pycache__/
 
 # Env virtuale
 venv/
@@ -50,14 +54,13 @@ env/
 # Bytecode Python
 *.pyc
 
-# Cartelle di migrazione di Alembic (vogliamo solo le versions e l'env.py, non la cache)
-backend/alembic/__pycache__/
-
-# Database locale (se mai dovessi montare un volume locale invece che named volume)
+# Database locale
 postgres_data/
 pgdata/
-.aider*
-node_modules
 
-# Hipothesis testing cache
+# Tools
+.aider*
+node_modules/
+package-lock.json
+package.json
 .hypothesis/

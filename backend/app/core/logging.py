@@ -21,34 +21,41 @@ def configure_logging():
         structlog.processors.UnicodeDecoder(),
     ]
 
-    if settings.ENVIRONMENT == "local":
-        # Development processors (Human readable)
-        processors = shared_processors + [
-            structlog.dev.ConsoleRenderer()
-        ]
-    else:
-        # Production processors (Machine readable JSON)
-        processors = shared_processors + [
-            structlog.processors.dict_tracebacks,
-            structlog.processors.JSONRenderer()
-        ]
+    # Pipeline for structlog.get_logger() calls
+    structlog_processors = shared_processors + [
+        # Prepare event dict for stdlib logging (prevents double-rendering)
+        structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
+    ]
 
     structlog.configure(
-        processors=processors,
+        processors=structlog_processors,
         logger_factory=structlog.stdlib.LoggerFactory(),
         wrapper_class=structlog.stdlib.BoundLogger,
         cache_logger_on_first_use=True,
     )
 
+    # Renderer selection based on environment
+    if settings.ENVIRONMENT == "local":
+        renderer = structlog.dev.ConsoleRenderer()
+        final_processors = [
+            # Remove internal keys added by wrap_for_formatter
+            structlog.stdlib.ProcessorFormatter.remove_processors_meta,
+            renderer
+        ]
+    else:
+        renderer = structlog.processors.JSONRenderer()
+        final_processors = [
+            structlog.stdlib.ProcessorFormatter.remove_processors_meta,
+            structlog.processors.dict_tracebacks,
+            renderer
+        ]
+
     # Configure standard library logging to use structlog
-    # This captures logs from Uvicorn, SQLAlchemy, etc.
     formatter = structlog.stdlib.ProcessorFormatter(
-        # These run solely on standard library log records
+        # Foreign logs (e.g. uvicorn, sqlalchemy) go through shared processors
         foreign_pre_chain=shared_processors,
-        # These run on all log records
-        processors=[
-            structlog.dev.ConsoleRenderer() if settings.ENVIRONMENT == "local" else structlog.processors.JSONRenderer()
-        ],
+        # All logs (structlog + foreign) go through final processors (rendering)
+        processors=final_processors,
     )
 
     # Reset root logger handlers

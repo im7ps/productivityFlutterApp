@@ -33,6 +33,7 @@ services:
       - SECRET_KEY=${SECRET_KEY}
       - ALGORITHM=${ALGORITHM}
       - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
+      - RATE_LIMIT_ENABLED=${RATE_LIMIT_ENABLED:-False}
     restart: always
 
   # --- TEST INFRASTRUCTURE (Profile: test) ---
