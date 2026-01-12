@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../data/auth_repository.dart';
 
 // Un semplice provider per gestire lo stato del caricamento
@@ -43,31 +44,54 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         email: _emailController.text,
         password: _passwordController.text,
       );
-      // Signup returns UserPublic, not Token. Usually after signup we want to login automatically 
-      // or ask user to login. For simplicity now, we just show success.
       _handleResult(result); 
     }
   }
 
   void _handleResult(dynamic result) {
-    ref.read(loginLoadingProvider.notifier).state = false;
-    if (!mounted) return;
+    // Note: Do not disable loading here immediately for Login mode, 
+    // because we have a subsequent async call (getCurrentUser)
+    
+    if (!mounted) {
+       ref.read(loginLoadingProvider.notifier).state = false;
+       return;
+    }
 
     result.fold(
       (failure) {
-         // Cast failure to Failure to access message if needed, or just toString()
-         // In our implementation, failure is typed as Failure
+        ref.read(loginLoadingProvider.notifier).state = false;
          ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Errore: ${failure.message}'), backgroundColor: Colors.red),
         );
       },
-      (success) {
+      (success) async {
         if (_isLoginMode) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Login Successo!'), backgroundColor: Colors.green),
+          // Success is Token. Now fetch user profile to check onboarding status.
+          final authRepo = ref.read(authRepositoryProvider);
+          final userResult = await authRepo.getCurrentUser();
+          
+          ref.read(loginLoadingProvider.notifier).state = false;
+          if (!mounted) return;
+
+          userResult.fold(
+            (failure) => ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Errore profilo: ${failure.message}'), backgroundColor: Colors.red),
+            ),
+            (user) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Login Successo!'), backgroundColor: Colors.green),
+              );
+              
+              if (user.isOnboardingCompleted) {
+                context.go('/');
+              } else {
+                context.go('/onboarding');
+              }
+            },
           );
-           // context.go('/'); // Uncomment when ready to navigate
         } else {
+          // Signup mode (Success is UserPublic)
+          ref.read(loginLoadingProvider.notifier).state = false;
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Registrazione Successo! Ora fai il login.'), backgroundColor: Colors.green),
           );

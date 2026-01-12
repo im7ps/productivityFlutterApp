@@ -102,7 +102,13 @@ def test_create_jwt(auth_service: AuthService):
         id=uuid.uuid4(),
         username="testuser",
         email="test@example.com",
-        created_at=datetime.utcnow()
+        created_at=datetime.utcnow(),
+        is_onboarding_completed=False,
+        daily_reached_goal=0,
+        stat_strength=10,
+        stat_endurance=10,
+        stat_intelligence=10,
+        stat_focus=10
     )
     
     # Action

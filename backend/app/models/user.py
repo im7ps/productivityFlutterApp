@@ -17,6 +17,17 @@ class User(SQLModel, table=True):
     email: str = Field(unique=True)
     hashed_password: str
     is_active: bool = Field(default=True)
+    
+    # --- ONBOARDING & RPG STATS ---
+    is_onboarding_completed: bool = Field(default=False)
+    daily_reached_goal: int = Field(default=0)
+    
+    # Primary Stats
+    stat_strength: int = Field(default=10)
+    stat_endurance: int = Field(default=10)
+    stat_intelligence: int = Field(default=10)
+    stat_focus: int = Field(default=10)
+
     # Usa la funzione helper, non la lambda, per massima pulizia
     created_at: datetime = Field(default_factory=get_utc_now)
     updated_at: Optional[datetime] = Field(

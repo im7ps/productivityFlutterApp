@@ -5,7 +5,7 @@ from app.core.exceptions import EntityAlreadyExists
 from app.core.security import get_password_hash
 from app.models.user import User
 from app.repositories.user_repo import UserRepository
-from app.schemas.user import UserCreate
+from app.schemas.user import UserCreate, UserUpdate, UserUpdateDB
 
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -14,6 +14,39 @@ class UserService:
     def __init__(self, session: AsyncSession, user_repo: UserRepository):
         self.session = session
         self.user_repo = user_repo
+
+    async def update_user(self, user: User, user_in: UserUpdate) -> User:
+        """
+        Updates the user's profile.
+        Handles password hashing if password is updated.
+        """
+        # --- DTO TRANSFORMATION (Mapping) ---
+        # Convertiamo il DTO di Input (UserUpdate) in un dizionario temporaneo
+        # per manipolare i dati prima della persistenza.
+        update_data = user_in.model_dump(exclude_unset=True)
+        
+        hashed_password = None
+        if "password" in update_data and update_data["password"]:
+             # SECURITY: Intercettiamo la password in chiaro.
+             # La hashiamo immediatamente e la rimuoviamo dal set di dati
+             # per evitare che giri in chiaro all'interno dell'applicazione.
+             import asyncio
+             loop = asyncio.get_running_loop()
+             hashed_password = await loop.run_in_executor(None, get_password_hash, update_data["password"])
+             del update_data["password"]
+        
+        # Creiamo il DTO Interno (UserUpdateDB).
+        # Questo passaggio "sigilla" la trasformazione: da qui in poi,
+        # il sistema lavora solo con dati sicuri e tipizzati (hashed_password).
+        user_update_db = UserUpdateDB(**update_data)
+        if hashed_password:
+            user_update_db.hashed_password = hashed_password
+
+        # Delegate to repository using the typed schema
+        updated_user = await self.user_repo.update(user, user_update_db)
+        await self.session.commit()
+        await self.session.refresh(updated_user)
+        return updated_user
 
     async def create_user(self, user_create: UserCreate) -> User:
         """

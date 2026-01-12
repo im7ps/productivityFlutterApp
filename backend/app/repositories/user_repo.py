@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from app.models.user import User
-from app.schemas.user import UserUpdate
+from app.schemas.user import UserUpdateDB
 
 
 class UserRepository:
@@ -45,7 +45,7 @@ class UserRepository:
         result = await self.session.execute(statement)
         return result.scalars().first()
 
-    async def update(self, db_user: User, user_update: UserUpdate) -> User:
+    async def update(self, db_user: User, user_update: UserUpdateDB) -> User:
         """Aggiorna i dati dell'utente."""
         update_data = user_update.model_dump(exclude_unset=True)
         for key, value in update_data.items():

@@ -803,9 +803,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           }
@@ -1137,7 +1135,7 @@
           "sleep_hours": {
             "type": "number",
             "title": "Sleep Hours",
-            "default": 0
+            "default": 0.0
           },
           "sleep_quality": {
             "type": "integer",
@@ -1383,6 +1381,30 @@
             "type": "string",
             "format": "date-time",
             "title": "Created At"
+          },
+          "is_onboarding_completed": {
+            "type": "boolean",
+            "title": "Is Onboarding Completed"
+          },
+          "daily_reached_goal": {
+            "type": "integer",
+            "title": "Daily Reached Goal"
+          },
+          "stat_strength": {
+            "type": "integer",
+            "title": "Stat Strength"
+          },
+          "stat_endurance": {
+            "type": "integer",
+            "title": "Stat Endurance"
+          },
+          "stat_intelligence": {
+            "type": "integer",
+            "title": "Stat Intelligence"
+          },
+          "stat_focus": {
+            "type": "integer",
+            "title": "Stat Focus"
           }
         },
         "type": "object",
@@ -1390,7 +1412,13 @@
           "id",
           "username",
           "email",
-          "created_at"
+          "created_at",
+          "is_onboarding_completed",
+          "daily_reached_goal",
+          "stat_strength",
+          "stat_endurance",
+          "stat_intelligence",
+          "stat_focus"
         ],
         "title": "UserPublic"
       },
@@ -1433,9 +1461,7 @@
         "type": "oauth2",
         "flows": {
           "password": {
-            "scopes": {
-
-            },
+            "scopes": {},
             "tokenUrl": "/api/v1/auth/login"
           }
         }

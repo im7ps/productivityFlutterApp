@@ -79,6 +79,31 @@ class AuthRepository {
       return Left(ServerFailure(e.toString()));
     }
   }
+
+  Future<Either<Failure, UserPublic>> getCurrentUser() async {
+    try {
+      final response = await _dio.get('/api/v1/users/me');
+      return Right(UserPublic.fromJson(response.data));
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  Future<Either<Failure, UserPublic>> updateUser(Map<String, dynamic> data) async {
+    try {
+      final response = await _dio.patch(
+        '/api/v1/users/me',
+        data: data,
+      );
+      return Right(UserPublic.fromJson(response.data));
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
   
   Future<void> logout() async {
       await _storage.delete(key: StorageKeys.accessToken);

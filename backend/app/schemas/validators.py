@@ -4,7 +4,7 @@ from typing import Optional
 # --- CONSTANTS (Single Source of Truth) ---
 USERNAME_MIN_LEN = 3
 USERNAME_MAX_LEN = 20
-USERNAME_REGEX = r"^[a-zA-Z0-9]+$" # Alphanumeric only
+USERNAME_REGEX = r"^[a-zA-Z0-9_]+$" # Alphanumeric only + underscore
 
 PASSWORD_MIN_LEN = 8
 PASSWORD_MAX_LEN = 72

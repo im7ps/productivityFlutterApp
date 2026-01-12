@@ -222,6 +222,12 @@ mixin _$UserPublic {
   String get username => throw _privateConstructorUsedError;
   String get email => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
+  bool get isOnboardingCompleted => throw _privateConstructorUsedError;
+  int get dailyReachedGoal => throw _privateConstructorUsedError;
+  int get statStrength => throw _privateConstructorUsedError;
+  int get statEndurance => throw _privateConstructorUsedError;
+  int get statIntelligence => throw _privateConstructorUsedError;
+  int get statFocus => throw _privateConstructorUsedError;
 
   /// Serializes this UserPublic to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -240,7 +246,18 @@ abstract class $UserPublicCopyWith<$Res> {
     $Res Function(UserPublic) then,
   ) = _$UserPublicCopyWithImpl<$Res, UserPublic>;
   @useResult
-  $Res call({String id, String username, String email, DateTime createdAt});
+  $Res call({
+    String id,
+    String username,
+    String email,
+    DateTime createdAt,
+    bool isOnboardingCompleted,
+    int dailyReachedGoal,
+    int statStrength,
+    int statEndurance,
+    int statIntelligence,
+    int statFocus,
+  });
 }
 
 /// @nodoc
@@ -262,6 +279,12 @@ class _$UserPublicCopyWithImpl<$Res, $Val extends UserPublic>
     Object? username = null,
     Object? email = null,
     Object? createdAt = null,
+    Object? isOnboardingCompleted = null,
+    Object? dailyReachedGoal = null,
+    Object? statStrength = null,
+    Object? statEndurance = null,
+    Object? statIntelligence = null,
+    Object? statFocus = null,
   }) {
     return _then(
       _value.copyWith(
@@ -281,6 +304,30 @@ class _$UserPublicCopyWithImpl<$Res, $Val extends UserPublic>
                 ? _value.createdAt
                 : createdAt // ignore: cast_nullable_to_non_nullable
                       as DateTime,
+            isOnboardingCompleted: null == isOnboardingCompleted
+                ? _value.isOnboardingCompleted
+                : isOnboardingCompleted // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            dailyReachedGoal: null == dailyReachedGoal
+                ? _value.dailyReachedGoal
+                : dailyReachedGoal // ignore: cast_nullable_to_non_nullable
+                      as int,
+            statStrength: null == statStrength
+                ? _value.statStrength
+                : statStrength // ignore: cast_nullable_to_non_nullable
+                      as int,
+            statEndurance: null == statEndurance
+                ? _value.statEndurance
+                : statEndurance // ignore: cast_nullable_to_non_nullable
+                      as int,
+            statIntelligence: null == statIntelligence
+                ? _value.statIntelligence
+                : statIntelligence // ignore: cast_nullable_to_non_nullable
+                      as int,
+            statFocus: null == statFocus
+                ? _value.statFocus
+                : statFocus // ignore: cast_nullable_to_non_nullable
+                      as int,
           )
           as $Val,
     );
@@ -296,7 +343,18 @@ abstract class _$$UserPublicImplCopyWith<$Res>
   ) = __$$UserPublicImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String id, String username, String email, DateTime createdAt});
+  $Res call({
+    String id,
+    String username,
+    String email,
+    DateTime createdAt,
+    bool isOnboardingCompleted,
+    int dailyReachedGoal,
+    int statStrength,
+    int statEndurance,
+    int statIntelligence,
+    int statFocus,
+  });
 }
 
 /// @nodoc
@@ -317,6 +375,12 @@ class __$$UserPublicImplCopyWithImpl<$Res>
     Object? username = null,
     Object? email = null,
     Object? createdAt = null,
+    Object? isOnboardingCompleted = null,
+    Object? dailyReachedGoal = null,
+    Object? statStrength = null,
+    Object? statEndurance = null,
+    Object? statIntelligence = null,
+    Object? statFocus = null,
   }) {
     return _then(
       _$UserPublicImpl(
@@ -336,6 +400,30 @@ class __$$UserPublicImplCopyWithImpl<$Res>
             ? _value.createdAt
             : createdAt // ignore: cast_nullable_to_non_nullable
                   as DateTime,
+        isOnboardingCompleted: null == isOnboardingCompleted
+            ? _value.isOnboardingCompleted
+            : isOnboardingCompleted // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        dailyReachedGoal: null == dailyReachedGoal
+            ? _value.dailyReachedGoal
+            : dailyReachedGoal // ignore: cast_nullable_to_non_nullable
+                  as int,
+        statStrength: null == statStrength
+            ? _value.statStrength
+            : statStrength // ignore: cast_nullable_to_non_nullable
+                  as int,
+        statEndurance: null == statEndurance
+            ? _value.statEndurance
+            : statEndurance // ignore: cast_nullable_to_non_nullable
+                  as int,
+        statIntelligence: null == statIntelligence
+            ? _value.statIntelligence
+            : statIntelligence // ignore: cast_nullable_to_non_nullable
+                  as int,
+        statFocus: null == statFocus
+            ? _value.statFocus
+            : statFocus // ignore: cast_nullable_to_non_nullable
+                  as int,
       ),
     );
   }
@@ -349,6 +437,12 @@ class _$UserPublicImpl implements _UserPublic {
     required this.username,
     required this.email,
     required this.createdAt,
+    required this.isOnboardingCompleted,
+    required this.dailyReachedGoal,
+    required this.statStrength,
+    required this.statEndurance,
+    required this.statIntelligence,
+    required this.statFocus,
   });
 
   factory _$UserPublicImpl.fromJson(Map<String, dynamic> json) =>
@@ -362,10 +456,22 @@ class _$UserPublicImpl implements _UserPublic {
   final String email;
   @override
   final DateTime createdAt;
+  @override
+  final bool isOnboardingCompleted;
+  @override
+  final int dailyReachedGoal;
+  @override
+  final int statStrength;
+  @override
+  final int statEndurance;
+  @override
+  final int statIntelligence;
+  @override
+  final int statFocus;
 
   @override
   String toString() {
-    return 'UserPublic(id: $id, username: $username, email: $email, createdAt: $createdAt)';
+    return 'UserPublic(id: $id, username: $username, email: $email, createdAt: $createdAt, isOnboardingCompleted: $isOnboardingCompleted, dailyReachedGoal: $dailyReachedGoal, statStrength: $statStrength, statEndurance: $statEndurance, statIntelligence: $statIntelligence, statFocus: $statFocus)';
   }
 
   @override
@@ -378,12 +484,36 @@ class _$UserPublicImpl implements _UserPublic {
                 other.username == username) &&
             (identical(other.email, email) || other.email == email) &&
             (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt));
+                other.createdAt == createdAt) &&
+            (identical(other.isOnboardingCompleted, isOnboardingCompleted) ||
+                other.isOnboardingCompleted == isOnboardingCompleted) &&
+            (identical(other.dailyReachedGoal, dailyReachedGoal) ||
+                other.dailyReachedGoal == dailyReachedGoal) &&
+            (identical(other.statStrength, statStrength) ||
+                other.statStrength == statStrength) &&
+            (identical(other.statEndurance, statEndurance) ||
+                other.statEndurance == statEndurance) &&
+            (identical(other.statIntelligence, statIntelligence) ||
+                other.statIntelligence == statIntelligence) &&
+            (identical(other.statFocus, statFocus) ||
+                other.statFocus == statFocus));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, username, email, createdAt);
+  int get hashCode => Object.hash(
+    runtimeType,
+    id,
+    username,
+    email,
+    createdAt,
+    isOnboardingCompleted,
+    dailyReachedGoal,
+    statStrength,
+    statEndurance,
+    statIntelligence,
+    statFocus,
+  );
 
   /// Create a copy of UserPublic
   /// with the given fields replaced by the non-null parameter values.
@@ -405,6 +535,12 @@ abstract class _UserPublic implements UserPublic {
     required final String username,
     required final String email,
     required final DateTime createdAt,
+    required final bool isOnboardingCompleted,
+    required final int dailyReachedGoal,
+    required final int statStrength,
+    required final int statEndurance,
+    required final int statIntelligence,
+    required final int statFocus,
   }) = _$UserPublicImpl;
 
   factory _UserPublic.fromJson(Map<String, dynamic> json) =
@@ -418,6 +554,18 @@ abstract class _UserPublic implements UserPublic {
   String get email;
   @override
   DateTime get createdAt;
+  @override
+  bool get isOnboardingCompleted;
+  @override
+  int get dailyReachedGoal;
+  @override
+  int get statStrength;
+  @override
+  int get statEndurance;
+  @override
+  int get statIntelligence;
+  @override
+  int get statFocus;
 
   /// Create a copy of UserPublic
   /// with the given fields replaced by the non-null parameter values.

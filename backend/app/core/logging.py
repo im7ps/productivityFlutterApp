@@ -11,7 +11,7 @@ def configure_logging():
     """
     shared_processors = [
         structlog.contextvars.merge_contextvars,
-        structlog.stdlib.filter_by_level,
+        # structlog.stdlib.filter_by_level, # Removed to fix AttributeError with foreign logs
         structlog.processors.TimeStamper(fmt="iso"),
         structlog.stdlib.add_logger_name,
         structlog.stdlib.add_log_level,
