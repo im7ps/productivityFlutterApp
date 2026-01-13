@@ -72,3 +72,43 @@ class ProductivityUser(HttpUser):
             # Category ID opzionale, lo omettiamo per semplicità
         }
         self.client.post("/api/v1/activity-logs", json=activity_data, headers=headers)
+
+    @task(1)
+    def do_onboarding(self):
+        """
+        Simula il flusso di onboarding:
+        1. Scarica il quiz
+        2. Invia risposte random
+        """
+        if not self.token:
+            return
+        
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        # 1. Fetch Quiz
+        with self.client.get("/api/v1/onboarding/quiz", headers=headers, catch_response=True) as response:
+            if response.status_code != 200:
+                response.failure(f"Get Quiz failed: {response.status_code}")
+                return
+            quiz_data = response.json()
+        
+        # 2. Build Answers
+        answers = []
+        for category in quiz_data.get("categories", []):
+            for question in category.get("questions", []):
+                options = question.get("options", [])
+                if options:
+                    # Pick a random option
+                    selected = random.choice(options)
+                    answers.append({
+                        "question_id": question["id"],
+                        "selected_value": selected["value"]
+                    })
+        
+        # 3. Submit
+        payload = {"answers": answers}
+        with self.client.post("/api/v1/onboarding/submit", json=payload, headers=headers, catch_response=True) as response:
+            if response.status_code == 200:
+                response.success()
+            else:
+                response.failure(f"Submit Quiz failed: {response.text}")

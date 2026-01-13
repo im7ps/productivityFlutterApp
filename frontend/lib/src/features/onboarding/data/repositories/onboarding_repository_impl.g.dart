@@ -1,26 +1,29 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'quiz_controller.dart';
+part of 'onboarding_repository_impl.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$quizControllerHash() => r'a8d44022e9e1881e24f3510bfa26b09933d93ef9';
+String _$onboardingRepositoryHash() =>
+    r'92c28231e07a322a603c96cef7932561ade59e7a';
 
-/// See also [QuizController].
-@ProviderFor(QuizController)
-final quizControllerProvider =
-    AutoDisposeAsyncNotifierProvider<QuizController, QuizState>.internal(
-      QuizController.new,
-      name: r'quizControllerProvider',
+/// See also [onboardingRepository].
+@ProviderFor(onboardingRepository)
+final onboardingRepositoryProvider =
+    AutoDisposeProvider<OnboardingRepository>.internal(
+      onboardingRepository,
+      name: r'onboardingRepositoryProvider',
       debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
-          : _$quizControllerHash,
+          : _$onboardingRepositoryHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
 
-typedef _$QuizController = AutoDisposeAsyncNotifier<QuizState>;
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef OnboardingRepositoryRef = AutoDisposeProviderRef<OnboardingRepository>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

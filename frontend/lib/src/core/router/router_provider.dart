@@ -4,7 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/auth/presentation/login_screen.dart';
-import '../../features/onboarding/presentation/lifestyle_quiz_screen.dart';
+import '../../features/onboarding/presentation/screens/quiz_screen.dart';
 
 part 'router_provider.g.dart';
 
@@ -19,7 +19,7 @@ GoRouter router(Ref ref) {
       ),
       GoRoute(
         path: '/onboarding',
-        builder: (context, state) => const LifestyleQuizScreen(),
+        builder: (context, state) => const QuizScreen(),
       ),
       GoRoute(
         path: '/',

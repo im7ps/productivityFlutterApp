@@ -15,6 +15,10 @@ class Settings(BaseSettings):
     # Rate Limiting
     RATE_LIMIT_ENABLED: bool = True
 
+    # Database Settings
+    POSTGRES_POOL_SIZE: int = 5  # Default SQLAlchemy
+    POSTGRES_MAX_OVERFLOW: int = 10  # Default SQLAlchemy
+
     # CORS Origins: Validazione stretta degli URL.
     # In produzione DEVE essere popolato e NON deve contenere localhost.
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []

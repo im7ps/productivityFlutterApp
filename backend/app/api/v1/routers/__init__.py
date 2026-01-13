@@ -1,1 +1,1 @@
-from . import auth, users, categories, activity_logs, daily_logs
+from . import auth, users, categories, activity_logs, daily_logs, onboarding
