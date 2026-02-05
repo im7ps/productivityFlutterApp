@@ -8,11 +8,11 @@ part 'onboarding_providers.g.dart';
 
 // 1. Fetch Quiz Configuration
 @riverpod
-Future<QuizManifest> quizManifest(QuizManifestRef ref) async {
+Future<QuizManifest> quizManifest(Ref ref) async {
   final repo = ref.watch(onboardingRepositoryProvider);
   final result = await repo.getQuizManifest();
   return result.fold(
-    (failure) => throw Exception(failure.message),
+    (failure) => throw Exception(failure.displayMessage),
     (manifest) => manifest,
   );
 }
@@ -42,21 +42,21 @@ class OnboardingSubmitController extends _$OnboardingSubmitController {
 
   Future<bool> submit() async {
     state = const AsyncLoading();
-    
+
     final answersMap = ref.read(onboardingAnswersProvider);
     // Convert Map to List<QuizAnswer>
     final answersList = answersMap.entries
         .map((e) => QuizAnswer(questionId: e.key, selectedValue: e.value))
         .toList();
-    
+
     final submission = QuizSubmission(answers: answersList);
-    
+
     final repo = ref.read(onboardingRepositoryProvider);
     final result = await repo.submitQuiz(submission);
-    
+
     return result.fold(
       (failure) {
-        state = AsyncError(failure.message, StackTrace.current);
+        state = AsyncError(failure.displayMessage, StackTrace.current);
         return false;
       },
       (successResult) {

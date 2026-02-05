@@ -20,24 +20,25 @@ class QuestionCard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              question.text,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
+            Text(question.text, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 12),
             ...question.options.map((option) {
               return RadioListTile<int>(
                 title: Text(option.label),
-                subtitle: option.description != null ? Text(option.description!) : null,
+                subtitle: option.description != null
+                    ? Text(option.description!)
+                    : null,
                 value: option.value,
                 groupValue: selectedValue,
                 onChanged: (val) {
                   if (val != null) {
-                    ref.read(onboardingAnswersProvider.notifier).selectAnswer(question.id, val);
+                    ref
+                        .read(onboardingAnswersProvider.notifier)
+                        .selectAnswer(question.id, val);
                   }
                 },
               );
-            }).toList(),
+            }),
           ],
         ),
       ),

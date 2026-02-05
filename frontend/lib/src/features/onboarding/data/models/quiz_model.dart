@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../../../../features/auth/data/models/user.dart';
 
 part 'quiz_model.freezed.dart';
 part 'quiz_model.g.dart';
@@ -42,9 +43,8 @@ class QuizCategory with _$QuizCategory {
 
 @freezed
 class QuizManifest with _$QuizManifest {
-  const factory QuizManifest({
-    required List<QuizCategory> categories,
-  }) = _QuizManifest;
+  const factory QuizManifest({required List<QuizCategory> categories}) =
+      _QuizManifest;
 
   factory QuizManifest.fromJson(Map<String, dynamic> json) =>
       _$QuizManifestFromJson(json);
@@ -55,8 +55,8 @@ class QuizManifest with _$QuizManifest {
 @freezed
 class QuizAnswer with _$QuizAnswer {
   const factory QuizAnswer({
-    @JsonKey(name: 'question_id') required String questionId,
-    @JsonKey(name: 'selected_value') required int selectedValue,
+    required String questionId,
+    required int selectedValue,
   }) = _QuizAnswer;
 
   factory QuizAnswer.fromJson(Map<String, dynamic> json) =>
@@ -65,9 +65,8 @@ class QuizAnswer with _$QuizAnswer {
 
 @freezed
 class QuizSubmission with _$QuizSubmission {
-  const factory QuizSubmission({
-    required List<QuizAnswer> answers,
-  }) = _QuizSubmission;
+  const factory QuizSubmission({required List<QuizAnswer> answers}) =
+      _QuizSubmission;
 
   factory QuizSubmission.fromJson(Map<String, dynamic> json) =>
       _$QuizSubmissionFromJson(json);
@@ -78,11 +77,9 @@ class QuizSubmission with _$QuizSubmission {
 @freezed
 class OnboardingResult with _$OnboardingResult {
   const factory OnboardingResult({
-    // User object might be complex, simplified for now as Map or we reuse User model if available.
-    // Assuming backend returns "user" field. We can use dynamic for now or map it later.
-    required Map<String, dynamic> user, 
+    required UserPublic user,
     required String message,
-    @JsonKey(name: 'stats_gained') required Map<String, int> statsGained,
+    required Map<String, int> statsGained,
   }) = _OnboardingResult;
 
   factory OnboardingResult.fromJson(Map<String, dynamic> json) =>

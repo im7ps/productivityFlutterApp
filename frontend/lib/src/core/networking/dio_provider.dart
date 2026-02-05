@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../storage/storage_provider.dart';
 import 'auth_interceptor.dart';
+import 'error_interceptor.dart';
 
 part 'dio_provider.g.dart';
 
@@ -26,6 +27,7 @@ Dio dio(Ref ref) {
   );
 
   dio.interceptors.add(AuthInterceptor(storage));
+  dio.interceptors.add(ErrorInterceptor());
   dio.interceptors.add(LogInterceptor(responseBody: true, requestBody: true)); // Debug
 
   return dio;

@@ -47,3 +47,27 @@ Map<String, dynamic> _$$UserPublicImplToJson(_$UserPublicImpl instance) =>
       'stat_intelligence': instance.statIntelligence,
       'stat_focus': instance.statFocus,
     };
+
+_$UserUpdateImpl _$$UserUpdateImplFromJson(Map<String, dynamic> json) =>
+    _$UserUpdateImpl(
+      username: json['username'] as String?,
+      email: json['email'] as String?,
+      password: json['password'] as String?,
+      isOnboardingCompleted: json['is_onboarding_completed'] as bool?,
+      statStrength: (json['stat_strength'] as num?)?.toInt(),
+      statEndurance: (json['stat_endurance'] as num?)?.toInt(),
+      statIntelligence: (json['stat_intelligence'] as num?)?.toInt(),
+      statFocus: (json['stat_focus'] as num?)?.toInt(),
+    );
+
+Map<String, dynamic> _$$UserUpdateImplToJson(_$UserUpdateImpl instance) =>
+    <String, dynamic>{
+      'username': instance.username,
+      'email': instance.email,
+      'password': instance.password,
+      'is_onboarding_completed': instance.isOnboardingCompleted,
+      'stat_strength': instance.statStrength,
+      'stat_endurance': instance.statEndurance,
+      'stat_intelligence': instance.statIntelligence,
+      'stat_focus': instance.statFocus,
+    };

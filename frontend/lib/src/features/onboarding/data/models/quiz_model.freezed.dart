@@ -816,9 +816,7 @@ QuizAnswer _$QuizAnswerFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$QuizAnswer {
-  @JsonKey(name: 'question_id')
   String get questionId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'selected_value')
   int get selectedValue => throw _privateConstructorUsedError;
 
   /// Serializes this QuizAnswer to a JSON map.
@@ -838,10 +836,7 @@ abstract class $QuizAnswerCopyWith<$Res> {
     $Res Function(QuizAnswer) then,
   ) = _$QuizAnswerCopyWithImpl<$Res, QuizAnswer>;
   @useResult
-  $Res call({
-    @JsonKey(name: 'question_id') String questionId,
-    @JsonKey(name: 'selected_value') int selectedValue,
-  });
+  $Res call({String questionId, int selectedValue});
 }
 
 /// @nodoc
@@ -884,10 +879,7 @@ abstract class _$$QuizAnswerImplCopyWith<$Res>
   ) = __$$QuizAnswerImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    @JsonKey(name: 'question_id') String questionId,
-    @JsonKey(name: 'selected_value') int selectedValue,
-  });
+  $Res call({String questionId, int selectedValue});
 }
 
 /// @nodoc
@@ -923,18 +915,16 @@ class __$$QuizAnswerImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$QuizAnswerImpl implements _QuizAnswer {
   const _$QuizAnswerImpl({
-    @JsonKey(name: 'question_id') required this.questionId,
-    @JsonKey(name: 'selected_value') required this.selectedValue,
+    required this.questionId,
+    required this.selectedValue,
   });
 
   factory _$QuizAnswerImpl.fromJson(Map<String, dynamic> json) =>
       _$$QuizAnswerImplFromJson(json);
 
   @override
-  @JsonKey(name: 'question_id')
   final String questionId;
   @override
-  @JsonKey(name: 'selected_value')
   final int selectedValue;
 
   @override
@@ -973,18 +963,16 @@ class _$QuizAnswerImpl implements _QuizAnswer {
 
 abstract class _QuizAnswer implements QuizAnswer {
   const factory _QuizAnswer({
-    @JsonKey(name: 'question_id') required final String questionId,
-    @JsonKey(name: 'selected_value') required final int selectedValue,
+    required final String questionId,
+    required final int selectedValue,
   }) = _$QuizAnswerImpl;
 
   factory _QuizAnswer.fromJson(Map<String, dynamic> json) =
       _$QuizAnswerImpl.fromJson;
 
   @override
-  @JsonKey(name: 'question_id')
   String get questionId;
   @override
-  @JsonKey(name: 'selected_value')
   int get selectedValue;
 
   /// Create a copy of QuizAnswer
@@ -1163,11 +1151,8 @@ OnboardingResult _$OnboardingResultFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$OnboardingResult {
-  // User object might be complex, simplified for now as Map or we reuse User model if available.
-  // Assuming backend returns "user" field. We can use dynamic for now or map it later.
-  Map<String, dynamic> get user => throw _privateConstructorUsedError;
+  UserPublic get user => throw _privateConstructorUsedError;
   String get message => throw _privateConstructorUsedError;
-  @JsonKey(name: 'stats_gained')
   Map<String, int> get statsGained => throw _privateConstructorUsedError;
 
   /// Serializes this OnboardingResult to a JSON map.
@@ -1187,11 +1172,9 @@ abstract class $OnboardingResultCopyWith<$Res> {
     $Res Function(OnboardingResult) then,
   ) = _$OnboardingResultCopyWithImpl<$Res, OnboardingResult>;
   @useResult
-  $Res call({
-    Map<String, dynamic> user,
-    String message,
-    @JsonKey(name: 'stats_gained') Map<String, int> statsGained,
-  });
+  $Res call({UserPublic user, String message, Map<String, int> statsGained});
+
+  $UserPublicCopyWith<$Res> get user;
 }
 
 /// @nodoc
@@ -1218,7 +1201,7 @@ class _$OnboardingResultCopyWithImpl<$Res, $Val extends OnboardingResult>
             user: null == user
                 ? _value.user
                 : user // ignore: cast_nullable_to_non_nullable
-                      as Map<String, dynamic>,
+                      as UserPublic,
             message: null == message
                 ? _value.message
                 : message // ignore: cast_nullable_to_non_nullable
@@ -1231,6 +1214,16 @@ class _$OnboardingResultCopyWithImpl<$Res, $Val extends OnboardingResult>
           as $Val,
     );
   }
+
+  /// Create a copy of OnboardingResult
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $UserPublicCopyWith<$Res> get user {
+    return $UserPublicCopyWith<$Res>(_value.user, (value) {
+      return _then(_value.copyWith(user: value) as $Val);
+    });
+  }
 }
 
 /// @nodoc
@@ -1242,11 +1235,10 @@ abstract class _$$OnboardingResultImplCopyWith<$Res>
   ) = __$$OnboardingResultImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    Map<String, dynamic> user,
-    String message,
-    @JsonKey(name: 'stats_gained') Map<String, int> statsGained,
-  });
+  $Res call({UserPublic user, String message, Map<String, int> statsGained});
+
+  @override
+  $UserPublicCopyWith<$Res> get user;
 }
 
 /// @nodoc
@@ -1270,9 +1262,9 @@ class __$$OnboardingResultImplCopyWithImpl<$Res>
     return _then(
       _$OnboardingResultImpl(
         user: null == user
-            ? _value._user
+            ? _value.user
             : user // ignore: cast_nullable_to_non_nullable
-                  as Map<String, dynamic>,
+                  as UserPublic,
         message: null == message
             ? _value.message
             : message // ignore: cast_nullable_to_non_nullable
@@ -1290,32 +1282,20 @@ class __$$OnboardingResultImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$OnboardingResultImpl implements _OnboardingResult {
   const _$OnboardingResultImpl({
-    required final Map<String, dynamic> user,
+    required this.user,
     required this.message,
-    @JsonKey(name: 'stats_gained') required final Map<String, int> statsGained,
-  }) : _user = user,
-       _statsGained = statsGained;
+    required final Map<String, int> statsGained,
+  }) : _statsGained = statsGained;
 
   factory _$OnboardingResultImpl.fromJson(Map<String, dynamic> json) =>
       _$$OnboardingResultImplFromJson(json);
 
-  // User object might be complex, simplified for now as Map or we reuse User model if available.
-  // Assuming backend returns "user" field. We can use dynamic for now or map it later.
-  final Map<String, dynamic> _user;
-  // User object might be complex, simplified for now as Map or we reuse User model if available.
-  // Assuming backend returns "user" field. We can use dynamic for now or map it later.
   @override
-  Map<String, dynamic> get user {
-    if (_user is EqualUnmodifiableMapView) return _user;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableMapView(_user);
-  }
-
+  final UserPublic user;
   @override
   final String message;
   final Map<String, int> _statsGained;
   @override
-  @JsonKey(name: 'stats_gained')
   Map<String, int> get statsGained {
     if (_statsGained is EqualUnmodifiableMapView) return _statsGained;
     // ignore: implicit_dynamic_type
@@ -1332,7 +1312,7 @@ class _$OnboardingResultImpl implements _OnboardingResult {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$OnboardingResultImpl &&
-            const DeepCollectionEquality().equals(other._user, _user) &&
+            (identical(other.user, user) || other.user == user) &&
             (identical(other.message, message) || other.message == message) &&
             const DeepCollectionEquality().equals(
               other._statsGained,
@@ -1344,7 +1324,7 @@ class _$OnboardingResultImpl implements _OnboardingResult {
   @override
   int get hashCode => Object.hash(
     runtimeType,
-    const DeepCollectionEquality().hash(_user),
+    user,
     message,
     const DeepCollectionEquality().hash(_statsGained),
   );
@@ -1368,22 +1348,19 @@ class _$OnboardingResultImpl implements _OnboardingResult {
 
 abstract class _OnboardingResult implements OnboardingResult {
   const factory _OnboardingResult({
-    required final Map<String, dynamic> user,
+    required final UserPublic user,
     required final String message,
-    @JsonKey(name: 'stats_gained') required final Map<String, int> statsGained,
+    required final Map<String, int> statsGained,
   }) = _$OnboardingResultImpl;
 
   factory _OnboardingResult.fromJson(Map<String, dynamic> json) =
       _$OnboardingResultImpl.fromJson;
 
-  // User object might be complex, simplified for now as Map or we reuse User model if available.
-  // Assuming backend returns "user" field. We can use dynamic for now or map it later.
   @override
-  Map<String, dynamic> get user;
+  UserPublic get user;
   @override
   String get message;
   @override
-  @JsonKey(name: 'stats_gained')
   Map<String, int> get statsGained;
 
   /// Create a copy of OnboardingResult

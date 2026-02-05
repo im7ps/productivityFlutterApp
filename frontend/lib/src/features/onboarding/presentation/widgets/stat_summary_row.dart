@@ -31,27 +31,27 @@ class StatSummaryRow extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
           ),
           // Visualizzazione Totale
           Text(
             '$totalValue',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blueAccent,
-                ),
+              fontWeight: FontWeight.bold,
+              color: Colors.blueAccent,
+            ),
           ),
           const SizedBox(width: 8),
           // Visualizzazione Breakdown (10 + X)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: deltaColor.withOpacity(0.1),
+              color: deltaColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: deltaColor.withOpacity(0.5)),
+              border: Border.all(color: deltaColor.withValues(alpha: 0.5)),
             ),
             child: Text(
               '($baseValue $sign $delta)',

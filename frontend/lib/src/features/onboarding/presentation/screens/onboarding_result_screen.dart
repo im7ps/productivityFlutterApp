@@ -20,8 +20,8 @@ class OnboardingResultScreen extends ConsumerWidget {
       {'key': 'stat_focus', 'label': 'Focus', 'icon': Icons.filter_center_focus},
     ];
 
-    // User data map from result
-    final userMap = result.user;
+    // User data from result
+    final user = result.user;
     final statsGained = result.statsGained;
 
     return Scaffold(
@@ -60,7 +60,15 @@ class OnboardingResultScreen extends ConsumerWidget {
                     final label = config['label'] as String;
                     final icon = config['icon'] as IconData;
                     
-                    final total = userMap[key] as int? ?? 10;
+                    // Access properties based on key
+                    final int total = switch (key) {
+                      'stat_strength' => user.statStrength,
+                      'stat_endurance' => user.statEndurance,
+                      'stat_intelligence' => user.statIntelligence,
+                      'stat_focus' => user.statFocus,
+                      _ => 10,
+                    };
+                    
                     final delta = statsGained[key] ?? 0;
 
                     return StatSummaryRow(

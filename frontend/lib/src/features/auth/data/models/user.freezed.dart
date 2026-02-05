@@ -574,3 +574,323 @@ abstract class _UserPublic implements UserPublic {
   _$$UserPublicImplCopyWith<_$UserPublicImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
+
+UserUpdate _$UserUpdateFromJson(Map<String, dynamic> json) {
+  return _UserUpdate.fromJson(json);
+}
+
+/// @nodoc
+mixin _$UserUpdate {
+  String? get username => throw _privateConstructorUsedError;
+  String? get email => throw _privateConstructorUsedError;
+  String? get password => throw _privateConstructorUsedError;
+  bool? get isOnboardingCompleted => throw _privateConstructorUsedError;
+  int? get statStrength => throw _privateConstructorUsedError;
+  int? get statEndurance => throw _privateConstructorUsedError;
+  int? get statIntelligence => throw _privateConstructorUsedError;
+  int? get statFocus => throw _privateConstructorUsedError;
+
+  /// Serializes this UserUpdate to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of UserUpdate
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $UserUpdateCopyWith<UserUpdate> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $UserUpdateCopyWith<$Res> {
+  factory $UserUpdateCopyWith(
+    UserUpdate value,
+    $Res Function(UserUpdate) then,
+  ) = _$UserUpdateCopyWithImpl<$Res, UserUpdate>;
+  @useResult
+  $Res call({
+    String? username,
+    String? email,
+    String? password,
+    bool? isOnboardingCompleted,
+    int? statStrength,
+    int? statEndurance,
+    int? statIntelligence,
+    int? statFocus,
+  });
+}
+
+/// @nodoc
+class _$UserUpdateCopyWithImpl<$Res, $Val extends UserUpdate>
+    implements $UserUpdateCopyWith<$Res> {
+  _$UserUpdateCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of UserUpdate
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? username = freezed,
+    Object? email = freezed,
+    Object? password = freezed,
+    Object? isOnboardingCompleted = freezed,
+    Object? statStrength = freezed,
+    Object? statEndurance = freezed,
+    Object? statIntelligence = freezed,
+    Object? statFocus = freezed,
+  }) {
+    return _then(
+      _value.copyWith(
+            username: freezed == username
+                ? _value.username
+                : username // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            email: freezed == email
+                ? _value.email
+                : email // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            password: freezed == password
+                ? _value.password
+                : password // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            isOnboardingCompleted: freezed == isOnboardingCompleted
+                ? _value.isOnboardingCompleted
+                : isOnboardingCompleted // ignore: cast_nullable_to_non_nullable
+                      as bool?,
+            statStrength: freezed == statStrength
+                ? _value.statStrength
+                : statStrength // ignore: cast_nullable_to_non_nullable
+                      as int?,
+            statEndurance: freezed == statEndurance
+                ? _value.statEndurance
+                : statEndurance // ignore: cast_nullable_to_non_nullable
+                      as int?,
+            statIntelligence: freezed == statIntelligence
+                ? _value.statIntelligence
+                : statIntelligence // ignore: cast_nullable_to_non_nullable
+                      as int?,
+            statFocus: freezed == statFocus
+                ? _value.statFocus
+                : statFocus // ignore: cast_nullable_to_non_nullable
+                      as int?,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$UserUpdateImplCopyWith<$Res>
+    implements $UserUpdateCopyWith<$Res> {
+  factory _$$UserUpdateImplCopyWith(
+    _$UserUpdateImpl value,
+    $Res Function(_$UserUpdateImpl) then,
+  ) = __$$UserUpdateImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    String? username,
+    String? email,
+    String? password,
+    bool? isOnboardingCompleted,
+    int? statStrength,
+    int? statEndurance,
+    int? statIntelligence,
+    int? statFocus,
+  });
+}
+
+/// @nodoc
+class __$$UserUpdateImplCopyWithImpl<$Res>
+    extends _$UserUpdateCopyWithImpl<$Res, _$UserUpdateImpl>
+    implements _$$UserUpdateImplCopyWith<$Res> {
+  __$$UserUpdateImplCopyWithImpl(
+    _$UserUpdateImpl _value,
+    $Res Function(_$UserUpdateImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of UserUpdate
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? username = freezed,
+    Object? email = freezed,
+    Object? password = freezed,
+    Object? isOnboardingCompleted = freezed,
+    Object? statStrength = freezed,
+    Object? statEndurance = freezed,
+    Object? statIntelligence = freezed,
+    Object? statFocus = freezed,
+  }) {
+    return _then(
+      _$UserUpdateImpl(
+        username: freezed == username
+            ? _value.username
+            : username // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        email: freezed == email
+            ? _value.email
+            : email // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        password: freezed == password
+            ? _value.password
+            : password // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        isOnboardingCompleted: freezed == isOnboardingCompleted
+            ? _value.isOnboardingCompleted
+            : isOnboardingCompleted // ignore: cast_nullable_to_non_nullable
+                  as bool?,
+        statStrength: freezed == statStrength
+            ? _value.statStrength
+            : statStrength // ignore: cast_nullable_to_non_nullable
+                  as int?,
+        statEndurance: freezed == statEndurance
+            ? _value.statEndurance
+            : statEndurance // ignore: cast_nullable_to_non_nullable
+                  as int?,
+        statIntelligence: freezed == statIntelligence
+            ? _value.statIntelligence
+            : statIntelligence // ignore: cast_nullable_to_non_nullable
+                  as int?,
+        statFocus: freezed == statFocus
+            ? _value.statFocus
+            : statFocus // ignore: cast_nullable_to_non_nullable
+                  as int?,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$UserUpdateImpl implements _UserUpdate {
+  const _$UserUpdateImpl({
+    this.username,
+    this.email,
+    this.password,
+    this.isOnboardingCompleted,
+    this.statStrength,
+    this.statEndurance,
+    this.statIntelligence,
+    this.statFocus,
+  });
+
+  factory _$UserUpdateImpl.fromJson(Map<String, dynamic> json) =>
+      _$$UserUpdateImplFromJson(json);
+
+  @override
+  final String? username;
+  @override
+  final String? email;
+  @override
+  final String? password;
+  @override
+  final bool? isOnboardingCompleted;
+  @override
+  final int? statStrength;
+  @override
+  final int? statEndurance;
+  @override
+  final int? statIntelligence;
+  @override
+  final int? statFocus;
+
+  @override
+  String toString() {
+    return 'UserUpdate(username: $username, email: $email, password: $password, isOnboardingCompleted: $isOnboardingCompleted, statStrength: $statStrength, statEndurance: $statEndurance, statIntelligence: $statIntelligence, statFocus: $statFocus)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$UserUpdateImpl &&
+            (identical(other.username, username) ||
+                other.username == username) &&
+            (identical(other.email, email) || other.email == email) &&
+            (identical(other.password, password) ||
+                other.password == password) &&
+            (identical(other.isOnboardingCompleted, isOnboardingCompleted) ||
+                other.isOnboardingCompleted == isOnboardingCompleted) &&
+            (identical(other.statStrength, statStrength) ||
+                other.statStrength == statStrength) &&
+            (identical(other.statEndurance, statEndurance) ||
+                other.statEndurance == statEndurance) &&
+            (identical(other.statIntelligence, statIntelligence) ||
+                other.statIntelligence == statIntelligence) &&
+            (identical(other.statFocus, statFocus) ||
+                other.statFocus == statFocus));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+    runtimeType,
+    username,
+    email,
+    password,
+    isOnboardingCompleted,
+    statStrength,
+    statEndurance,
+    statIntelligence,
+    statFocus,
+  );
+
+  /// Create a copy of UserUpdate
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$UserUpdateImplCopyWith<_$UserUpdateImpl> get copyWith =>
+      __$$UserUpdateImplCopyWithImpl<_$UserUpdateImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$UserUpdateImplToJson(this);
+  }
+}
+
+abstract class _UserUpdate implements UserUpdate {
+  const factory _UserUpdate({
+    final String? username,
+    final String? email,
+    final String? password,
+    final bool? isOnboardingCompleted,
+    final int? statStrength,
+    final int? statEndurance,
+    final int? statIntelligence,
+    final int? statFocus,
+  }) = _$UserUpdateImpl;
+
+  factory _UserUpdate.fromJson(Map<String, dynamic> json) =
+      _$UserUpdateImpl.fromJson;
+
+  @override
+  String? get username;
+  @override
+  String? get email;
+  @override
+  String? get password;
+  @override
+  bool? get isOnboardingCompleted;
+  @override
+  int? get statStrength;
+  @override
+  int? get statEndurance;
+  @override
+  int? get statIntelligence;
+  @override
+  int? get statFocus;
+
+  /// Create a copy of UserUpdate
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$UserUpdateImplCopyWith<_$UserUpdateImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}

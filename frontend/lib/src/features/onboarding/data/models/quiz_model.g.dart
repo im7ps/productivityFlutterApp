@@ -94,7 +94,7 @@ Map<String, dynamic> _$$QuizSubmissionImplToJson(
 _$OnboardingResultImpl _$$OnboardingResultImplFromJson(
   Map<String, dynamic> json,
 ) => _$OnboardingResultImpl(
-  user: json['user'] as Map<String, dynamic>,
+  user: UserPublic.fromJson(json['user'] as Map<String, dynamic>),
   message: json['message'] as String,
   statsGained: Map<String, int>.from(json['stats_gained'] as Map),
 );
@@ -102,7 +102,7 @@ _$OnboardingResultImpl _$$OnboardingResultImplFromJson(
 Map<String, dynamic> _$$OnboardingResultImplToJson(
   _$OnboardingResultImpl instance,
 ) => <String, dynamic>{
-  'user': instance.user,
+  'user': instance.user.toJson(),
   'message': instance.message,
   'stats_gained': instance.statsGained,
 };

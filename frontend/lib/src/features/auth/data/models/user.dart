@@ -31,3 +31,19 @@ class UserPublic with _$UserPublic {
 
   factory UserPublic.fromJson(Map<String, dynamic> json) => _$UserPublicFromJson(json);
 }
+
+@freezed
+class UserUpdate with _$UserUpdate {
+  const factory UserUpdate({
+    String? username,
+    String? email,
+    String? password,
+    bool? isOnboardingCompleted,
+    int? statStrength,
+    int? statEndurance,
+    int? statIntelligence,
+    int? statFocus,
+  }) = _UserUpdate;
+
+  factory UserUpdate.fromJson(Map<String, dynamic> json) => _$UserUpdateFromJson(json);
+}

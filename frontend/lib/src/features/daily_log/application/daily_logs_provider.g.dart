@@ -1,26 +1,29 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'auth_controller.dart';
+part of 'daily_logs_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$authControllerHash() => r'e463681ca676280c29d3be6e4d4763bc1e22d4d4';
+String _$dailyLogsNotifierHash() => r'cabf8c6c5a321999ca0f719b6cc10a252bc79b00';
 
-/// See also [AuthController].
-@ProviderFor(AuthController)
-final authControllerProvider =
-    AutoDisposeAsyncNotifierProvider<AuthController, void>.internal(
-      AuthController.new,
-      name: r'authControllerProvider',
+/// See also [DailyLogsNotifier].
+@ProviderFor(DailyLogsNotifier)
+final dailyLogsNotifierProvider =
+    AutoDisposeAsyncNotifierProvider<
+      DailyLogsNotifier,
+      List<DailyLogRead>
+    >.internal(
+      DailyLogsNotifier.new,
+      name: r'dailyLogsNotifierProvider',
       debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
-          : _$authControllerHash,
+          : _$dailyLogsNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
 
-typedef _$AuthController = AutoDisposeAsyncNotifier<void>;
+typedef _$DailyLogsNotifier = AutoDisposeAsyncNotifier<List<DailyLogRead>>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

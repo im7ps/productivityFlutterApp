@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../../data/models/quiz_model.dart';
 import '../providers/onboarding_providers.dart';
 import '../widgets/question_card.dart';
@@ -54,7 +53,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
     final success = await ref
         .read(onboardingSubmitControllerProvider.notifier)
         .submit();
-    
+
     if (!context.mounted) return;
 
     if (success) {

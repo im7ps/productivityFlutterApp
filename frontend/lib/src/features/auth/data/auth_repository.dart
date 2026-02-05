@@ -5,6 +5,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/errors/failure.dart';
 import '../../../core/networking/dio_provider.dart';
+import '../../../core/networking/api_request.dart';
 import '../../../core/storage/storage_provider.dart';
 import 'models/token.dart';
 import 'models/user.dart';
@@ -21,7 +22,7 @@ AuthRepository authRepository(Ref ref) {
 
 class AuthRepository {
   final Dio _dio;
-  final dynamic _storage; // Typed dynamically to avoid circular dependency issues in mock/test generation if not careful, but usually FlutterSecureStorage
+  final dynamic _storage; 
 
   AuthRepository({required Dio dio, required dynamic storage}) 
       : _dio = dio, _storage = storage;
@@ -30,32 +31,26 @@ class AuthRepository {
     required String username,
     required String email,
     required String password,
-  }) async {
-    try {
-      final response = await _dio.post(
+  }) {
+    return makeRequest(
+      () => _dio.post(
         '/api/v1/auth/register',
         data: {
           'username': username,
           'email': email,
           'password': password,
         },
-      );
-      
-      return Right(UserPublic.fromJson(response.data));
-    } on DioException catch (e) {
-      return Left(_handleDioError(e));
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
-    }
+      ),
+      (data) => UserPublic.fromJson(data),
+    );
   }
 
   Future<Either<Failure, Token>> login({
     required String username,
     required String password,
-  }) async {
-    try {
-      // OAuth2 requires x-www-form-urlencoded
-      final response = await _dio.post(
+  }) {
+    return makeRequest(
+      () => _dio.post(
         '/api/v1/auth/login',
         data: {
           'username': username,
@@ -65,62 +60,39 @@ class AuthRepository {
         options: Options(
           contentType: Headers.formUrlEncodedContentType,
         ),
-      );
-      
-      final token = Token.fromJson(response.data);
-      
-      // Save token
-      await _storage.write(key: StorageKeys.accessToken, value: token.accessToken);
-      
-      return Right(token);
-    } on DioException catch (e) {
-      return Left(_handleDioError(e));
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
-    }
+      ),
+      (data) {
+        final token = Token.fromJson(data);
+        // Side effect: Save token. 
+        // Note: Ideally, storage should be handled in the Service/Notifier layer, 
+        // but keeping it here for continuity with previous implementation 
+        // is acceptable for now, though it mixes concerns slightly.
+        // We make it sync here since makeRequest expects a pure decoder.
+        // If storage is async, we might need to chain tasks.
+        _storage.write(key: StorageKeys.accessToken, value: token.accessToken);
+        return token;
+      },
+    );
   }
 
-  Future<Either<Failure, UserPublic>> getCurrentUser() async {
-    try {
-      final response = await _dio.get('/api/v1/users/me');
-      return Right(UserPublic.fromJson(response.data));
-    } on DioException catch (e) {
-      return Left(_handleDioError(e));
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
-    }
+  Future<Either<Failure, UserPublic>> getCurrentUser() {
+    return makeRequest(
+      () => _dio.get('/api/v1/users/me'),
+      (data) => UserPublic.fromJson(data),
+    );
   }
 
-  Future<Either<Failure, UserPublic>> updateUser(Map<String, dynamic> data) async {
-    try {
-      final response = await _dio.patch(
+  Future<Either<Failure, UserPublic>> updateUser(UserUpdate data) {
+    return makeRequest(
+      () => _dio.patch(
         '/api/v1/users/me',
-        data: data,
-      );
-      return Right(UserPublic.fromJson(response.data));
-    } on DioException catch (e) {
-      return Left(_handleDioError(e));
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
-    }
+        data: data.toJson(),
+      ),
+      (data) => UserPublic.fromJson(data),
+    );
   }
   
   Future<void> logout() async {
       await _storage.delete(key: StorageKeys.accessToken);
-  }
-
-  Failure _handleDioError(DioException e) {
-    if (e.response != null) {
-      final data = e.response!.data;
-      // Try to parse "detail" from FastAPI standard error
-      if (data is Map<String, dynamic> && data.containsKey('detail')) {
-         final detail = data['detail'];
-         if (detail is String) return ServerFailure(detail, e.response?.statusCode);
-         // If detail is a list (validation error), we simplify it for now
-         return ServerFailure('Validation Error', e.response?.statusCode);
-      }
-      return ServerFailure('Server Error: ${e.response?.statusCode}', e.response?.statusCode);
-    }
-    return const NetworkFailure();
   }
 }

@@ -6,7 +6,7 @@ part of 'onboarding_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$quizManifestHash() => r'e9046629e09de89514832b4dc058e5ee1358b200';
+String _$quizManifestHash() => r'8e614f8aa2bb705c0c9727b44ca1c7ce8c6f5195';
 
 /// See also [quizManifest].
 @ProviderFor(quizManifest)
@@ -40,7 +40,7 @@ final onboardingAnswersProvider =
 
 typedef _$OnboardingAnswers = AutoDisposeNotifier<Map<String, int>>;
 String _$onboardingSubmitControllerHash() =>
-    r'd2429ac584d74f18fea78cb9e33786dfcff2d5d5';
+    r'fb047e27bff03a2d42154d1008c2e68b2ef342d6';
 
 /// See also [OnboardingSubmitController].
 @ProviderFor(OnboardingSubmitController)
