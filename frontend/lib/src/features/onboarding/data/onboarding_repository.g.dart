@@ -1,26 +1,29 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'router_notifier.dart';
+part of 'onboarding_repository.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$routerNotifierHash() => r'99592426ad5ed1ecf4c45264cc95ac5f0446bc41';
+String _$onboardingRepositoryHash() =>
+    r'878e97f1fe30e63416e2894d009afa0bc83b1392';
 
-/// See also [RouterNotifier].
-@ProviderFor(RouterNotifier)
-final routerNotifierProvider =
-    AutoDisposeNotifierProvider<RouterNotifier, void>.internal(
-      RouterNotifier.new,
-      name: r'routerNotifierProvider',
+/// See also [onboardingRepository].
+@ProviderFor(onboardingRepository)
+final onboardingRepositoryProvider =
+    AutoDisposeProvider<OnboardingRepository>.internal(
+      onboardingRepository,
+      name: r'onboardingRepositoryProvider',
       debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
-          : _$routerNotifierHash,
+          : _$onboardingRepositoryHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
 
-typedef _$RouterNotifier = AutoDisposeNotifier<void>;
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef OnboardingRepositoryRef = AutoDisposeProviderRef<OnboardingRepository>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

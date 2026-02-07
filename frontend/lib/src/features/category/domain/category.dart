@@ -10,6 +10,7 @@ class Category with _$Category {
     required String name,
     required String icon,
     required String color,
+    @Default('mind') String dimension,
   }) = _Category;
 
   factory Category.fromJson(Map<String, dynamic> json) => _$CategoryFromJson(json);
@@ -21,6 +22,7 @@ class CategoryCreate with _$CategoryCreate {
     required String name,
     @Default('circle') String icon,
     @Default('blue') String color,
+    @Default('mind') String dimension,
   }) = _CategoryCreate;
 
   factory CategoryCreate.fromJson(Map<String, dynamic> json) => _$CategoryCreateFromJson(json);

@@ -12,6 +12,7 @@ _$CategoryImpl _$$CategoryImplFromJson(Map<String, dynamic> json) =>
       name: json['name'] as String,
       icon: json['icon'] as String,
       color: json['color'] as String,
+      dimension: json['dimension'] as String? ?? 'mind',
     );
 
 Map<String, dynamic> _$$CategoryImplToJson(_$CategoryImpl instance) =>
@@ -20,6 +21,7 @@ Map<String, dynamic> _$$CategoryImplToJson(_$CategoryImpl instance) =>
       'name': instance.name,
       'icon': instance.icon,
       'color': instance.color,
+      'dimension': instance.dimension,
     };
 
 _$CategoryCreateImpl _$$CategoryCreateImplFromJson(Map<String, dynamic> json) =>
@@ -27,6 +29,7 @@ _$CategoryCreateImpl _$$CategoryCreateImplFromJson(Map<String, dynamic> json) =>
       name: json['name'] as String,
       icon: json['icon'] as String? ?? 'circle',
       color: json['color'] as String? ?? 'blue',
+      dimension: json['dimension'] as String? ?? 'mind',
     );
 
 Map<String, dynamic> _$$CategoryCreateImplToJson(
@@ -35,4 +38,5 @@ Map<String, dynamic> _$$CategoryCreateImplToJson(
   'name': instance.name,
   'icon': instance.icon,
   'color': instance.color,
+  'dimension': instance.dimension,
 };

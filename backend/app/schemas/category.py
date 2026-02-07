@@ -5,6 +5,7 @@ from pydantic import field_validator
 
 from .base import TunableBaseModel
 from .validators import validate_xss_basic
+from app.models.category import Dimension
 
 # --- Schemi Categoria ---
 
@@ -12,6 +13,7 @@ class CategoryCreate(TunableBaseModel):
     name: str
     icon: str = "circle"
     color: str = "blue"
+    dimension: Dimension = Dimension.MIND
 
     @field_validator("name")
     def validate_name(cls, v: str) -> str:
@@ -23,6 +25,7 @@ class CategoryUpdate(TunableBaseModel):
     name: Optional[str] = None
     icon: Optional[str] = None
     color: Optional[str] = None
+    dimension: Optional[Dimension] = None
 
     @field_validator("name")
     def validate_name(cls, v: Optional[str]) -> Optional[str]:
@@ -37,3 +40,4 @@ class CategoryRead(SQLModel):
     name: str
     icon: str
     color: str
+    dimension: Dimension

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../features/auth/presentation/auth_state_provider.dart';
+import '../../features/onboarding/presentation/onboarding_controller.dart';
 
 part 'router_notifier.g.dart';
 
@@ -8,23 +9,35 @@ part 'router_notifier.g.dart';
 class RouterNotifier extends _$RouterNotifier implements Listenable {
   VoidCallback? _routerListener;
   bool _isLoggedIn = false;
+  bool _isOnboardingSeen = false;
+  bool _isLoading = true;
 
   @override
   void build() {
-    // Ascolta i cambiamenti dell'auth state
+    // Watch Auth State
     final authState = ref.watch(authStateProvider);
+    // Watch Onboarding State
+    final onboardingState = ref.watch(onboardingControllerProvider);
     
-    // Calcola il nuovo stato
     final newLoginState = authState.valueOrNull ?? false;
+    final newOnboardingState = onboardingState.valueOrNull ?? false;
+    final newLoadingState = authState.isLoading || onboardingState.isLoading;
 
-    // Se lo stato è cambiato, notifica il router
-    if (_isLoggedIn != newLoginState) {
+    if (_isLoggedIn != newLoginState || 
+        _isOnboardingSeen != newOnboardingState || 
+        _isLoading != newLoadingState) {
+      
       _isLoggedIn = newLoginState;
+      _isOnboardingSeen = newOnboardingState;
+      _isLoading = newLoadingState;
+      
       _routerListener?.call();
     }
   }
 
   bool get isLoggedIn => _isLoggedIn;
+  bool get isOnboardingSeen => _isOnboardingSeen;
+  bool get isLoading => _isLoading;
 
   @override
   void addListener(VoidCallback listener) {

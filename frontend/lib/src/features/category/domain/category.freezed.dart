@@ -25,6 +25,7 @@ mixin _$Category {
   String get name => throw _privateConstructorUsedError;
   String get icon => throw _privateConstructorUsedError;
   String get color => throw _privateConstructorUsedError;
+  String get dimension => throw _privateConstructorUsedError;
 
   /// Serializes this Category to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -41,7 +42,13 @@ abstract class $CategoryCopyWith<$Res> {
   factory $CategoryCopyWith(Category value, $Res Function(Category) then) =
       _$CategoryCopyWithImpl<$Res, Category>;
   @useResult
-  $Res call({String id, String name, String icon, String color});
+  $Res call({
+    String id,
+    String name,
+    String icon,
+    String color,
+    String dimension,
+  });
 }
 
 /// @nodoc
@@ -63,6 +70,7 @@ class _$CategoryCopyWithImpl<$Res, $Val extends Category>
     Object? name = null,
     Object? icon = null,
     Object? color = null,
+    Object? dimension = null,
   }) {
     return _then(
       _value.copyWith(
@@ -82,6 +90,10 @@ class _$CategoryCopyWithImpl<$Res, $Val extends Category>
                 ? _value.color
                 : color // ignore: cast_nullable_to_non_nullable
                       as String,
+            dimension: null == dimension
+                ? _value.dimension
+                : dimension // ignore: cast_nullable_to_non_nullable
+                      as String,
           )
           as $Val,
     );
@@ -97,7 +109,13 @@ abstract class _$$CategoryImplCopyWith<$Res>
   ) = __$$CategoryImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String id, String name, String icon, String color});
+  $Res call({
+    String id,
+    String name,
+    String icon,
+    String color,
+    String dimension,
+  });
 }
 
 /// @nodoc
@@ -118,6 +136,7 @@ class __$$CategoryImplCopyWithImpl<$Res>
     Object? name = null,
     Object? icon = null,
     Object? color = null,
+    Object? dimension = null,
   }) {
     return _then(
       _$CategoryImpl(
@@ -137,6 +156,10 @@ class __$$CategoryImplCopyWithImpl<$Res>
             ? _value.color
             : color // ignore: cast_nullable_to_non_nullable
                   as String,
+        dimension: null == dimension
+            ? _value.dimension
+            : dimension // ignore: cast_nullable_to_non_nullable
+                  as String,
       ),
     );
   }
@@ -150,6 +173,7 @@ class _$CategoryImpl implements _Category {
     required this.name,
     required this.icon,
     required this.color,
+    this.dimension = 'mind',
   });
 
   factory _$CategoryImpl.fromJson(Map<String, dynamic> json) =>
@@ -163,10 +187,13 @@ class _$CategoryImpl implements _Category {
   final String icon;
   @override
   final String color;
+  @override
+  @JsonKey()
+  final String dimension;
 
   @override
   String toString() {
-    return 'Category(id: $id, name: $name, icon: $icon, color: $color)';
+    return 'Category(id: $id, name: $name, icon: $icon, color: $color, dimension: $dimension)';
   }
 
   @override
@@ -177,12 +204,15 @@ class _$CategoryImpl implements _Category {
             (identical(other.id, id) || other.id == id) &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.icon, icon) || other.icon == icon) &&
-            (identical(other.color, color) || other.color == color));
+            (identical(other.color, color) || other.color == color) &&
+            (identical(other.dimension, dimension) ||
+                other.dimension == dimension));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, name, icon, color);
+  int get hashCode =>
+      Object.hash(runtimeType, id, name, icon, color, dimension);
 
   /// Create a copy of Category
   /// with the given fields replaced by the non-null parameter values.
@@ -204,6 +234,7 @@ abstract class _Category implements Category {
     required final String name,
     required final String icon,
     required final String color,
+    final String dimension,
   }) = _$CategoryImpl;
 
   factory _Category.fromJson(Map<String, dynamic> json) =
@@ -217,6 +248,8 @@ abstract class _Category implements Category {
   String get icon;
   @override
   String get color;
+  @override
+  String get dimension;
 
   /// Create a copy of Category
   /// with the given fields replaced by the non-null parameter values.
@@ -235,6 +268,7 @@ mixin _$CategoryCreate {
   String get name => throw _privateConstructorUsedError;
   String get icon => throw _privateConstructorUsedError;
   String get color => throw _privateConstructorUsedError;
+  String get dimension => throw _privateConstructorUsedError;
 
   /// Serializes this CategoryCreate to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -253,7 +287,7 @@ abstract class $CategoryCreateCopyWith<$Res> {
     $Res Function(CategoryCreate) then,
   ) = _$CategoryCreateCopyWithImpl<$Res, CategoryCreate>;
   @useResult
-  $Res call({String name, String icon, String color});
+  $Res call({String name, String icon, String color, String dimension});
 }
 
 /// @nodoc
@@ -270,7 +304,12 @@ class _$CategoryCreateCopyWithImpl<$Res, $Val extends CategoryCreate>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? name = null, Object? icon = null, Object? color = null}) {
+  $Res call({
+    Object? name = null,
+    Object? icon = null,
+    Object? color = null,
+    Object? dimension = null,
+  }) {
     return _then(
       _value.copyWith(
             name: null == name
@@ -284,6 +323,10 @@ class _$CategoryCreateCopyWithImpl<$Res, $Val extends CategoryCreate>
             color: null == color
                 ? _value.color
                 : color // ignore: cast_nullable_to_non_nullable
+                      as String,
+            dimension: null == dimension
+                ? _value.dimension
+                : dimension // ignore: cast_nullable_to_non_nullable
                       as String,
           )
           as $Val,
@@ -300,7 +343,7 @@ abstract class _$$CategoryCreateImplCopyWith<$Res>
   ) = __$$CategoryCreateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String name, String icon, String color});
+  $Res call({String name, String icon, String color, String dimension});
 }
 
 /// @nodoc
@@ -316,7 +359,12 @@ class __$$CategoryCreateImplCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? name = null, Object? icon = null, Object? color = null}) {
+  $Res call({
+    Object? name = null,
+    Object? icon = null,
+    Object? color = null,
+    Object? dimension = null,
+  }) {
     return _then(
       _$CategoryCreateImpl(
         name: null == name
@@ -331,6 +379,10 @@ class __$$CategoryCreateImplCopyWithImpl<$Res>
             ? _value.color
             : color // ignore: cast_nullable_to_non_nullable
                   as String,
+        dimension: null == dimension
+            ? _value.dimension
+            : dimension // ignore: cast_nullable_to_non_nullable
+                  as String,
       ),
     );
   }
@@ -343,6 +395,7 @@ class _$CategoryCreateImpl implements _CategoryCreate {
     required this.name,
     this.icon = 'circle',
     this.color = 'blue',
+    this.dimension = 'mind',
   });
 
   factory _$CategoryCreateImpl.fromJson(Map<String, dynamic> json) =>
@@ -356,10 +409,13 @@ class _$CategoryCreateImpl implements _CategoryCreate {
   @override
   @JsonKey()
   final String color;
+  @override
+  @JsonKey()
+  final String dimension;
 
   @override
   String toString() {
-    return 'CategoryCreate(name: $name, icon: $icon, color: $color)';
+    return 'CategoryCreate(name: $name, icon: $icon, color: $color, dimension: $dimension)';
   }
 
   @override
@@ -369,12 +425,14 @@ class _$CategoryCreateImpl implements _CategoryCreate {
             other is _$CategoryCreateImpl &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.icon, icon) || other.icon == icon) &&
-            (identical(other.color, color) || other.color == color));
+            (identical(other.color, color) || other.color == color) &&
+            (identical(other.dimension, dimension) ||
+                other.dimension == dimension));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, name, icon, color);
+  int get hashCode => Object.hash(runtimeType, name, icon, color, dimension);
 
   /// Create a copy of CategoryCreate
   /// with the given fields replaced by the non-null parameter values.
@@ -398,6 +456,7 @@ abstract class _CategoryCreate implements CategoryCreate {
     required final String name,
     final String icon,
     final String color,
+    final String dimension,
   }) = _$CategoryCreateImpl;
 
   factory _CategoryCreate.fromJson(Map<String, dynamic> json) =
@@ -409,6 +468,8 @@ abstract class _CategoryCreate implements CategoryCreate {
   String get icon;
   @override
   String get color;
+  @override
+  String get dimension;
 
   /// Create a copy of CategoryCreate
   /// with the given fields replaced by the non-null parameter values.
