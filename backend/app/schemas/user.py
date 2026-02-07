@@ -31,13 +31,6 @@ class UserUpdate(TunableBaseModel):
     username: Optional[str] = None
     email: Optional[EmailStr] = None
     password: Optional[str] = None
-    
-    # Onboarding & Stats Update
-    is_onboarding_completed: Optional[bool] = None
-    stat_strength: Optional[int] = None
-    stat_endurance: Optional[int] = None
-    stat_intelligence: Optional[int] = None
-    stat_focus: Optional[int] = None
 
     @field_validator("password")
     def validate_password(cls, v: Optional[str]) -> Optional[str]:
@@ -64,13 +57,6 @@ class UserUpdateDB(TunableBaseModel):
     username: Optional[str] = None
     email: Optional[EmailStr] = None
     hashed_password: Optional[str] = None
-    
-    # Onboarding & Stats Update
-    is_onboarding_completed: Optional[bool] = None
-    stat_strength: Optional[int] = None
-    stat_endurance: Optional[int] = None
-    stat_intelligence: Optional[int] = None
-    stat_focus: Optional[int] = None
 
 # Schema per la RISPOSTA
 class UserPublic(SQLModel):
@@ -78,14 +64,6 @@ class UserPublic(SQLModel):
     username: str
     email: str
     created_at: datetime
-    
-    # Onboarding & Stats
-    is_onboarding_completed: bool
-    daily_reached_goal: int
-    stat_strength: int
-    stat_endurance: int
-    stat_intelligence: int
-    stat_focus: int
 
 # Schema per il TOKEN
 class Token(SQLModel):

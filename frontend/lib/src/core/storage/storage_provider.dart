@@ -17,6 +17,4 @@ Future<SharedPreferences> sharedPreferences(Ref ref) {
 
 class StorageKeys {
   static const accessToken = 'access_token';
-  static const quizIndex = 'quiz_index';
-  static const quizStats = 'quiz_stats';
 }

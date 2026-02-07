@@ -11,7 +11,6 @@ from app.models.user import User
 from app.repositories.user_repo import UserRepository
 from app.services.user_service import UserService
 from app.services.auth_service import AuthService
-from app.services.onboarding_service import OnboardingService
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
@@ -29,16 +28,12 @@ def get_user_service(
 def get_auth_service(user_service: Annotated[UserService, Depends(get_user_service)]) -> AuthService:
     return AuthService(user_service)
 
-def get_onboarding_service(repo: Annotated[UserRepository, Depends(get_user_repo)]) -> OnboardingService:
-    return OnboardingService(user_repo=repo)
-
 
 # --- Type Aliases for Dependencies ---
 
 TokenDep = Annotated[str, Depends(oauth2_scheme)]
 UserServiceDep = Annotated[UserService, Depends(get_user_service)]
 AuthServiceDep = Annotated[AuthService, Depends(get_auth_service)]
-OnboardingServiceDep = Annotated[OnboardingService, Depends(get_onboarding_service)]
 
 # --- Dependency for Getting Current User ---
 

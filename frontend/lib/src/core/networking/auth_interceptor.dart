@@ -4,8 +4,9 @@ import '../storage/storage_provider.dart';
 
 class AuthInterceptor extends Interceptor {
   final FlutterSecureStorage _storage;
+  final VoidCallback? onUnauthorized;
 
-  AuthInterceptor(this._storage);
+  AuthInterceptor(this._storage, {this.onUnauthorized});
 
   @override
   Future<void> onRequest(
@@ -20,4 +21,17 @@ class AuthInterceptor extends Interceptor {
     
     return handler.next(options);
   }
+
+  @override
+  void onError(DioException err, ErrorInterceptorHandler handler) {
+    if (err.response?.statusCode == 401) {
+      // Token scaduto o non valido.
+      // Triggeriamo la callback di logout se fornita.
+      onUnauthorized?.call();
+    }
+    super.onError(err, handler);
+  }
 }
+
+// Typedef per pulizia
+typedef VoidCallback = void Function();

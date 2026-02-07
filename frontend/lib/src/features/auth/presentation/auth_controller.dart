@@ -1,6 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../data/auth_repository.dart';
 import '../data/models/user.dart';
+import 'auth_state_provider.dart';
 
 part 'auth_controller.g.dart';
 
@@ -35,6 +36,8 @@ class AuthController extends _$AuthController {
           },
           (user) {
             state = const AsyncData(null);
+            // Invalida l'auth state per triggerare il redirect del router
+            ref.invalidate(authStateProvider);
             return user;
           }
         );
@@ -63,34 +66,18 @@ class AuthController extends _$AuthController {
       },
       (user) {
         state = const AsyncData(null);
+        // Anche dopo il signup potremmo voler invalidare se facciamo auto-login
+        // In questo caso il controller fa solo signup, l'utente dovrà fare login.
         return true;
       },
     );
   }
 
-  Future<void> completeOnboarding(Map<String, int> stats) async {
+  Future<void> logout() async {
     state = const AsyncLoading();
-
-    // Costruiamo il payload per l'aggiornamento
-    final updateData = UserUpdate(
-      isOnboardingCompleted: true,
-      statStrength: stats['stat_strength'],
-      statEndurance: stats['stat_endurance'],
-      statIntelligence: stats['stat_intelligence'],
-      statFocus: stats['stat_focus'],
-    );
-
     final repository = ref.read(authRepositoryProvider);
-
-    final result = await repository.updateUser(updateData);
-
-    state = result.fold(
-      (failure) => AsyncError(failure.displayMessage, StackTrace.current),
-      (success) => const AsyncData(null),
-    );
-
-    if (state.hasError) {
-      throw Exception(state.error.toString());
-    }
+    await repository.logout();
+    ref.invalidate(authStateProvider);
+    state = const AsyncData(null);
   }
 }

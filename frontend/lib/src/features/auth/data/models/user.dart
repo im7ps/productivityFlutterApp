@@ -21,12 +21,6 @@ class UserPublic with _$UserPublic {
     required String username,
     required String email,
     required DateTime createdAt,
-    required bool isOnboardingCompleted,
-    required int dailyReachedGoal,
-    required int statStrength,
-    required int statEndurance,
-    required int statIntelligence,
-    required int statFocus,
   }) = _UserPublic;
 
   factory UserPublic.fromJson(Map<String, dynamic> json) => _$UserPublicFromJson(json);
@@ -38,11 +32,6 @@ class UserUpdate with _$UserUpdate {
     String? username,
     String? email,
     String? password,
-    bool? isOnboardingCompleted,
-    int? statStrength,
-    int? statEndurance,
-    int? statIntelligence,
-    int? statFocus,
   }) = _UserUpdate;
 
   factory UserUpdate.fromJson(Map<String, dynamic> json) => _$UserUpdateFromJson(json);

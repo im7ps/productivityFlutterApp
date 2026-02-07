@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+import '../../../core/constants/app_strings.dart';
 import 'auth_controller.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -27,25 +27,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _onSubmit() async {
     final controller = ref.read(authControllerProvider.notifier);
-    
-    // Clear previous errors if any? 
-    // Riverpod AsyncNotifier handles state replacements.
 
     if (_isLoginMode) {
       final user = await controller.login(
         username: _usernameController.text,
         password: _passwordController.text,
       );
-      
+
       if (user != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login Successo!'), backgroundColor: Colors.green),
+          const SnackBar(
+            content: Text(AppStrings.loginSuccess),
+            backgroundColor: Colors.green,
+          ),
         );
-        if (user.isOnboardingCompleted) {
-          context.go('/');
-        } else {
-          context.go('/onboarding');
-        }
       }
     } else {
       final success = await controller.signUp(
@@ -56,7 +51,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
       if (success && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Registrazione Successo! Ora fai il login.'), backgroundColor: Colors.green),
+          const SnackBar(
+            content: Text(AppStrings.signupSuccess),
+            backgroundColor: Colors.green,
+          ),
         );
         setState(() => _isLoginMode = true);
       }
@@ -68,17 +66,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final authState = ref.watch(authControllerProvider);
     final isLoading = authState.isLoading;
 
-    // Listen for errors to show SnackBars
     ref.listen(authControllerProvider, (previous, next) {
       if (next.hasError && !next.isLoading) {
-         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Errore: ${next.error}'), backgroundColor: Colors.red),
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${AppStrings.errorGeneric}: ${next.error}'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     });
 
     return Scaffold(
-      appBar: AppBar(title: Text(_isLoginMode ? 'Login' : 'Registrazione')),
+      appBar: AppBar(
+        title: Text(
+          _isLoginMode ? AppStrings.loginTitle : AppStrings.signupTitle,
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -87,20 +91,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             children: [
               TextField(
                 controller: _usernameController,
-                decoration: const InputDecoration(labelText: 'Username', border: OutlineInputBorder()),
+                decoration: const InputDecoration(
+                  labelText: AppStrings.usernameLabel,
+                  border: OutlineInputBorder(),
+                ),
               ),
               const SizedBox(height: 16),
               if (!_isLoginMode) ...[
                 TextField(
                   controller: _emailController,
-                  decoration: const InputDecoration(labelText: 'Email', border: OutlineInputBorder()),
+                  decoration: const InputDecoration(
+                    labelText: AppStrings.emailLabel,
+                    border: OutlineInputBorder(),
+                  ),
                   keyboardType: TextInputType.emailAddress,
                 ),
                 const SizedBox(height: 16),
               ],
               TextField(
                 controller: _passwordController,
-                decoration: const InputDecoration(labelText: 'Password', border: OutlineInputBorder()),
+                decoration: const InputDecoration(
+                  labelText: AppStrings.passwordLabel,
+                  border: OutlineInputBorder(),
+                ),
                 obscureText: true,
               ),
               const SizedBox(height: 24),
@@ -111,7 +124,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   onPressed: isLoading ? null : _onSubmit,
                   child: isLoading
                       ? const CircularProgressIndicator()
-                      : Text(_isLoginMode ? 'ENTRA' : 'REGISTRATI'),
+                      : Text(
+                          _isLoginMode
+                              ? AppStrings.loginButton
+                              : AppStrings.signupButton,
+                        ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -123,9 +140,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           _isLoginMode = !_isLoginMode;
                         });
                       },
-                child: Text(_isLoginMode
-                    ? 'Non hai un account? Registrati'
-                    : 'Hai già un account? Entra'),
+                child: Text(
+                  _isLoginMode
+                      ? AppStrings.noAccountText
+                      : AppStrings.hasAccountText,
+                ),
               ),
             ],
           ),
@@ -134,4 +153,3 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 }
-

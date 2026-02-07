@@ -839,80 +839,6 @@
         }
       }
     },
-    "/api/v1/onboarding/quiz": {
-      "get": {
-        "tags": [
-          "onboarding"
-        ],
-        "summary": "Get Onboarding Quiz",
-        "description": "Recupera la struttura del quiz di onboarding (domande, opzioni).\nDa chiamare quando l'utente inizia il flusso di onboarding.",
-        "operationId": "get_onboarding_quiz_api_v1_onboarding_quiz_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/QuizManifest"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ]
-      }
-    },
-    "/api/v1/onboarding/submit": {
-      "post": {
-        "tags": [
-          "onboarding"
-        ],
-        "summary": "Submit Onboarding Quiz",
-        "description": "Invia le risposte del quiz.\nIl server calcola le statistiche RPG risultanti, aggiorna l'utente \ne segna l'onboarding come completato.",
-        "operationId": "submit_onboarding_quiz_api_v1_onboarding_submit_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/QuizSubmission"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OnboardingResult"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ]
-      }
-    },
     "/": {
       "get": {
         "summary": "Read Root",
@@ -922,9 +848,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           }
@@ -1256,7 +1180,7 @@
           "sleep_hours": {
             "type": "number",
             "title": "Sleep Hours",
-            "default": 0
+            "default": 0.0
           },
           "sleep_quality": {
             "type": "integer",
@@ -1440,174 +1364,6 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
-      "OnboardingResult": {
-        "properties": {
-          "user": {
-            "$ref": "#/components/schemas/UserPublic"
-          },
-          "message": {
-            "type": "string",
-            "title": "Message"
-          },
-          "stats_gained": {
-            "additionalProperties": {
-              "type": "integer"
-            },
-            "type": "object",
-            "title": "Stats Gained"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "user",
-          "message",
-          "stats_gained"
-        ],
-        "title": "OnboardingResult"
-      },
-      "QuizAnswer": {
-        "properties": {
-          "question_id": {
-            "type": "string",
-            "title": "Question Id"
-          },
-          "selected_value": {
-            "type": "integer",
-            "title": "Selected Value"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "question_id",
-          "selected_value"
-        ],
-        "title": "QuizAnswer"
-      },
-      "QuizCategory": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "title": "Id"
-          },
-          "title": {
-            "type": "string",
-            "title": "Title"
-          },
-          "description": {
-            "type": "string",
-            "title": "Description"
-          },
-          "questions": {
-            "items": {
-              "$ref": "#/components/schemas/QuizQuestion"
-            },
-            "type": "array",
-            "title": "Questions"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "id",
-          "title",
-          "description",
-          "questions"
-        ],
-        "title": "QuizCategory"
-      },
-      "QuizManifest": {
-        "properties": {
-          "categories": {
-            "items": {
-              "$ref": "#/components/schemas/QuizCategory"
-            },
-            "type": "array",
-            "title": "Categories"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "categories"
-        ],
-        "title": "QuizManifest"
-      },
-      "QuizOption": {
-        "properties": {
-          "value": {
-            "type": "integer",
-            "title": "Value"
-          },
-          "label": {
-            "type": "string",
-            "title": "Label"
-          },
-          "description": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Description"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "value",
-          "label"
-        ],
-        "title": "QuizOption"
-      },
-      "QuizQuestion": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "title": "Id"
-          },
-          "text": {
-            "type": "string",
-            "title": "Text"
-          },
-          "options": {
-            "items": {
-              "$ref": "#/components/schemas/QuizOption"
-            },
-            "type": "array",
-            "title": "Options"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "id",
-          "text",
-          "options"
-        ],
-        "title": "QuizQuestion"
-      },
-      "QuizSubmission": {
-        "properties": {
-          "answers": {
-            "items": {
-              "$ref": "#/components/schemas/QuizAnswer"
-            },
-            "type": "array",
-            "title": "Answers"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "answers"
-        ],
-        "title": "QuizSubmission"
-      },
       "Token": {
         "properties": {
           "access_token": {
@@ -1670,30 +1426,6 @@
             "type": "string",
             "format": "date-time",
             "title": "Created At"
-          },
-          "is_onboarding_completed": {
-            "type": "boolean",
-            "title": "Is Onboarding Completed"
-          },
-          "daily_reached_goal": {
-            "type": "integer",
-            "title": "Daily Reached Goal"
-          },
-          "stat_strength": {
-            "type": "integer",
-            "title": "Stat Strength"
-          },
-          "stat_endurance": {
-            "type": "integer",
-            "title": "Stat Endurance"
-          },
-          "stat_intelligence": {
-            "type": "integer",
-            "title": "Stat Intelligence"
-          },
-          "stat_focus": {
-            "type": "integer",
-            "title": "Stat Focus"
           }
         },
         "type": "object",
@@ -1701,13 +1433,7 @@
           "id",
           "username",
           "email",
-          "created_at",
-          "is_onboarding_completed",
-          "daily_reached_goal",
-          "stat_strength",
-          "stat_endurance",
-          "stat_intelligence",
-          "stat_focus"
+          "created_at"
         ],
         "title": "UserPublic"
       },
@@ -1746,61 +1472,6 @@
               }
             ],
             "title": "Password"
-          },
-          "is_onboarding_completed": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Is Onboarding Completed"
-          },
-          "stat_strength": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Stat Strength"
-          },
-          "stat_endurance": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Stat Endurance"
-          },
-          "stat_intelligence": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Stat Intelligence"
-          },
-          "stat_focus": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Stat Focus"
           }
         },
         "additionalProperties": false,
@@ -1846,9 +1517,7 @@
         "type": "oauth2",
         "flows": {
           "password": {
-            "scopes": {
-
-            },
+            "scopes": {},
             "tokenUrl": "/api/v1/auth/login"
           }
         }

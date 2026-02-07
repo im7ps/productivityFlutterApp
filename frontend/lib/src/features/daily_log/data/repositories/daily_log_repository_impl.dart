@@ -23,22 +23,18 @@ class DailyLogRepositoryImpl implements DailyLogRepository {
 
   @override
   Future<Either<Failure, List<DailyLogRead>>> getDailyLogs() {
-    return makeRequest(
-      () => _dio.get('/api/v1/daily-logs'),
-      (data) {
-        final List<dynamic> list = data;
-        return list.map((e) => DailyLogRead.fromJson(e)).toList();
-      },
-    );
+    return makeRequest(() => _dio.get('/api/v1/daily-logs'), (data) {
+      final List<dynamic> list = data;
+      return list.map((e) => DailyLogRead.fromJson(e)).toList();
+    });
   }
 
   @override
-  Future<Either<Failure, DailyLogRead>> createDailyLog(DailyLogCreate dailyLog) {
+  Future<Either<Failure, DailyLogRead>> createDailyLog(
+    DailyLogCreate dailyLog,
+  ) {
     return makeRequest(
-      () => _dio.post(
-        '/api/v1/daily-logs',
-        data: dailyLog.toJson(),
-      ),
+      () => _dio.post('/api/v1/daily-logs', data: dailyLog.toJson()),
       (data) => DailyLogRead.fromJson(data),
     );
   }
@@ -57,19 +53,13 @@ class DailyLogRepositoryImpl implements DailyLogRepository {
     required DailyLogUpdate dailyLog,
   }) {
     return makeRequest(
-      () => _dio.put(
-        '/api/v1/daily-logs/$id',
-        data: dailyLog.toJson(),
-      ),
+      () => _dio.put('/api/v1/daily-logs/$id', data: dailyLog.toJson()),
       (data) => DailyLogRead.fromJson(data),
     );
   }
 
   @override
   Future<Either<Failure, void>> deleteDailyLog(String id) {
-    return makeRequest(
-      () => _dio.delete('/api/v1/daily-logs/$id'),
-      (_) => null,
-    );
+    return makeRequest(() => _dio.delete('/api/v1/daily-logs/$id'), (_) => ());
   }
 }

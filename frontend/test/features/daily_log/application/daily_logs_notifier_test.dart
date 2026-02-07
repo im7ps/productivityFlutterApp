@@ -17,46 +17,49 @@ void main() {
   setUp(() {
     mockRepository = MockDailyLogRepository();
     container = ProviderContainer(
-      overrides: [
-        dailyLogRepositoryProvider.overrideWithValue(mockRepository),
-      ],
+      overrides: [dailyLogRepositoryProvider.overrideWithValue(mockRepository)],
     );
     addTearDown(container.dispose);
   });
 
   group('DailyLogsNotifier', () {
-    test('initial state should be AsyncLoading then AsyncData on success', () async {
-      final logs = [
-        const DailyLogRead(
-          id: '1',
-          day: '2026-02-05',
-          sleepHours: 8,
-          sleepQuality: 4,
-          moodScore: 4,
-          dietQuality: 3,
-          exerciseMinutes: 30,
-        ),
-      ];
+    test(
+      'initial state should be AsyncLoading then AsyncData on success',
+      () async {
+        final logs = [
+          const DailyLogRead(
+            id: '1',
+            day: '2026-02-05',
+            sleepHours: 8,
+            sleepQuality: 4,
+            moodScore: 4,
+            dietQuality: 3,
+            exerciseMinutes: 30,
+          ),
+        ];
 
-      when(() => mockRepository.getDailyLogs())
-          .thenAnswer((_) async => Right(logs));
+        when(
+          () => mockRepository.getDailyLogs(),
+        ).thenAnswer((_) async => Right(logs));
 
-      // Build listener to track state changes
-      final notifier = container.read(dailyLogsNotifierProvider.notifier);
-      
-      // Wait for build to complete
-      final result = await container.read(dailyLogsNotifierProvider.future);
+        // Wait for build to complete
+        final result = await container.read(dailyLogsNotifierProvider.future);
 
-      expect(result, logs);
-      expect(container.read(dailyLogsNotifierProvider), isA<AsyncData<List<DailyLogRead>>>());
-      verify(() => mockRepository.getDailyLogs()).called(1);
-    });
+        expect(result, logs);
+        expect(
+          container.read(dailyLogsNotifierProvider),
+          isA<AsyncData<List<DailyLogRead>>>(),
+        );
+        verify(() => mockRepository.getDailyLogs()).called(1);
+      },
+    );
 
     test('should set AsyncError when repository fails', () async {
       const failure = Failure.server('Server Error');
 
-      when(() => mockRepository.getDailyLogs())
-          .thenAnswer((_) async => const Left(failure));
+      when(
+        () => mockRepository.getDailyLogs(),
+      ).thenAnswer((_) async => const Left(failure));
 
       // Build the notifier and wait for error
       try {
@@ -72,9 +75,10 @@ void main() {
 
     test('addLog should update state with new log on success', () async {
       // 1. Initial build
-      when(() => mockRepository.getDailyLogs())
-          .thenAnswer((_) async => const Right([]));
-      
+      when(
+        () => mockRepository.getDailyLogs(),
+      ).thenAnswer((_) async => const Right([]));
+
       await container.read(dailyLogsNotifierProvider.future);
 
       // 2. Add log
@@ -89,10 +93,13 @@ void main() {
         exerciseMinutes: 0,
       );
 
-      when(() => mockRepository.createDailyLog(newLogCreate))
-          .thenAnswer((_) async => const Right(newLogRead));
+      when(
+        () => mockRepository.createDailyLog(newLogCreate),
+      ).thenAnswer((_) async => const Right(newLogRead));
 
-      await container.read(dailyLogsNotifierProvider.notifier).addLog(newLogCreate);
+      await container
+          .read(dailyLogsNotifierProvider.notifier)
+          .addLog(newLogCreate);
 
       final state = container.read(dailyLogsNotifierProvider);
       expect(state.value, [newLogRead]);

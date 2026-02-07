@@ -32,18 +32,16 @@ async def test_user(setup_user, db_session):
 # --- Tests ---
 
 @pytest.mark.asyncio
-async def test_update_user_me_profile_and_stats(
+async def test_update_user_me_profile(
     test_client: AsyncClient, # Use the correct fixture name from conftest
     test_user: User,
     test_user_token_headers: dict[str, str]
 ):
     """
-    Test PATCH /users/me to update profile stats and onboarding status.
+    Test PATCH /users/me to update profile info.
     """
     payload = {
-        "is_onboarding_completed": True,
-        "stat_strength": 15,
-        "stat_intelligence": 12
+        "username": "updatedusername"
     }
     
     response = await test_client.patch(
@@ -54,11 +52,8 @@ async def test_update_user_me_profile_and_stats(
     
     assert response.status_code == 200, f"Response: {response.text}"
     data = response.json()
-    assert data["is_onboarding_completed"] is True
-    assert data["stat_strength"] == 15
-    assert data["stat_intelligence"] == 12
-    # Check that other fields remained unchanged (assuming defaults)
-    assert data["username"] == test_user.username
+    assert data["username"] == "updatedusername"
+
 
 @pytest.mark.asyncio
 async def test_update_user_me_password(
