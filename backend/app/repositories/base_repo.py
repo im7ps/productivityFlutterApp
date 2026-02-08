@@ -6,7 +6,7 @@ ModelType = TypeVar("ModelType", bound=SQLModel)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=SQLModel)
 UpdateSchemaType = TypeVar("UpdateSchemaType", bound=SQLModel)
 
-class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
+class BaseRepo(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     """
     Base generic repository implementing common CRUD operations.
     """

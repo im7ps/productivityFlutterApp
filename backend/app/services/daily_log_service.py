@@ -3,14 +3,14 @@ import uuid
 
 from app.core.exceptions import ResourceNotFound
 from app.models.daily_log import DailyLog
-from app.repositories.daily_log_repo import DailyLogRepository
+from app.repositories.daily_log_repo import DailyLogRepo
 from app.schemas.daily_log import DailyLogCreate, DailyLogUpdate
 
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 class DailyLogService:
-    def __init__(self, session: AsyncSession, daily_log_repo: DailyLogRepository):
+    def __init__(self, session: AsyncSession, daily_log_repo: DailyLogRepo):
         self.session = session
         self.daily_log_repo = daily_log_repo
 

@@ -188,13 +188,14 @@
         ]
       }
     },
-    "/api/v1/categories": {
+    "/api/v1/dimensions/": {
       "get": {
         "tags": [
-          "categories"
+          "dimensions"
         ],
-        "summary": "Read Categories",
-        "operationId": "read_categories_api_v1_categories_get",
+        "summary": "Read Dimensions",
+        "description": "Retrieve all dimensions (Energy, Clarity, Relationships, Soul).",
+        "operationId": "read_dimensions_api_v1_dimensions__get",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -202,134 +203,28 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/CategoryRead"
+                    "$ref": "#/components/schemas/DimensionRead"
                   },
                   "type": "array",
-                  "title": "Response Read Categories Api V1 Categories Get"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ]
-      },
-      "post": {
-        "tags": [
-          "categories"
-        ],
-        "summary": "Create Category",
-        "operationId": "create_category_api_v1_categories_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CategoryCreate"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CategoryRead"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ]
-      }
-    },
-    "/api/v1/categories/{category_id}": {
-      "get": {
-        "tags": [
-          "categories"
-        ],
-        "summary": "Read Category",
-        "operationId": "read_category_api_v1_categories__category_id__get",
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "category_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Category Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CategoryRead"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "title": "Response Read Dimensions Api V1 Dimensions  Get"
                 }
               }
             }
           }
         }
-      },
-      "put": {
+      }
+    },
+    "/api/v1/actions/": {
+      "post": {
         "tags": [
-          "categories"
+          "actions"
         ],
-        "summary": "Update Category",
-        "operationId": "update_category_api_v1_categories__category_id__put",
+        "summary": "Create Action",
+        "description": "Create a new action (activity log) for a specific dimension.",
+        "operationId": "create_action_api_v1_actions__post",
         "security": [
           {
             "OAuth2PasswordBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "category_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Category Id"
-            }
           }
         ],
         "requestBody": {
@@ -337,18 +232,18 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CategoryUpdate"
+                "$ref": "#/components/schemas/ActionCreate"
               }
             }
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CategoryRead"
+                  "$ref": "#/components/schemas/ActionRead"
                 }
               }
             }
@@ -365,12 +260,13 @@
           }
         }
       },
-      "delete": {
+      "get": {
         "tags": [
-          "categories"
+          "actions"
         ],
-        "summary": "Delete Category",
-        "operationId": "delete_category_api_v1_categories__category_id__delete",
+        "summary": "Read Actions",
+        "description": "Retrieve user actions.",
+        "operationId": "read_actions_api_v1_actions__get",
         "security": [
           {
             "OAuth2PasswordBearer": []
@@ -378,236 +274,40 @@
         ],
         "parameters": [
           {
-            "name": "category_id",
-            "in": "path",
-            "required": true,
+            "name": "skip",
+            "in": "query",
+            "required": false,
             "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Category Id"
+              "type": "integer",
+              "default": 0,
+              "title": "Skip"
             }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Successful Response"
           },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "title": "Limit"
             }
           }
-        }
-      }
-    },
-    "/api/v1/activity-logs": {
-      "get": {
-        "tags": [
-          "activity-logs"
         ],
-        "summary": "Read Activity Logs",
-        "operationId": "read_activity_logs_api_v1_activity_logs_get",
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
+                  "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/ActivityLogRead"
+                    "$ref": "#/components/schemas/ActionRead"
                   },
-                  "type": "array",
-                  "title": "Response Read Activity Logs Api V1 Activity Logs Get"
+                  "title": "Response Read Actions Api V1 Actions  Get"
                 }
               }
             }
-          }
-        },
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ]
-      },
-      "post": {
-        "tags": [
-          "activity-logs"
-        ],
-        "summary": "Create Activity Log",
-        "operationId": "create_activity_log_api_v1_activity_logs_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ActivityLogCreate"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ActivityLogRead"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ]
-      }
-    },
-    "/api/v1/activity-logs/{log_id}": {
-      "get": {
-        "tags": [
-          "activity-logs"
-        ],
-        "summary": "Read Activity Log",
-        "operationId": "read_activity_log_api_v1_activity_logs__log_id__get",
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "log_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Log Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ActivityLogRead"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "activity-logs"
-        ],
-        "summary": "Update Activity Log",
-        "operationId": "update_activity_log_api_v1_activity_logs__log_id__put",
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "log_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Log Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ActivityLogUpdate"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ActivityLogRead"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "activity-logs"
-        ],
-        "summary": "Delete Activity Log",
-        "operationId": "delete_activity_log_api_v1_activity_logs__log_id__delete",
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "log_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Log Id"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Successful Response"
           },
           "422": {
             "description": "Validation Error",
@@ -848,7 +548,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+
+                }
               }
             }
           }
@@ -858,11 +560,29 @@
   },
   "components": {
     "schemas": {
-      "ActivityLogCreate": {
+      "ActionCreate": {
         "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
           "start_time": {
-            "type": "string",
-            "format": "date-time",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Start Time"
           },
           "end_time": {
@@ -877,6 +597,25 @@
             ],
             "title": "End Time"
           },
+          "dimension_id": {
+            "type": "string",
+            "title": "Dimension Id"
+          },
+          "fulfillment_score": {
+            "type": "integer",
+            "title": "Fulfillment Score"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "dimension_id",
+          "fulfillment_score"
+        ],
+        "title": "ActionCreate"
+      },
+      "ActionRead": {
+        "properties": {
           "description": {
             "anyOf": [
               {
@@ -888,39 +627,57 @@
             ],
             "title": "Description"
           },
-          "category_id": {
+          "start_time": {
             "anyOf": [
               {
                 "type": "string",
-                "format": "uuid"
+                "format": "date-time"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Category Id"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "start_time"
-        ],
-        "title": "ActivityLogCreate"
-      },
-      "ActivityLogRead": {
-        "properties": {
+            "title": "Start Time"
+          },
+          "end_time": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Time"
+          },
+          "dimension_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dimension Id"
+          },
+          "fulfillment_score": {
+            "type": "integer",
+            "title": "Fulfillment Score",
+            "default": 3
+          },
           "id": {
             "type": "string",
             "format": "uuid",
             "title": "Id"
           },
-          "start_time": {
+          "user_id": {
             "type": "string",
-            "format": "date-time",
-            "title": "Start Time"
+            "format": "uuid",
+            "title": "User Id"
           },
-          "end_time": {
+          "created_at": {
             "anyOf": [
               {
                 "type": "string",
@@ -930,95 +687,26 @@
                 "type": "null"
               }
             ],
-            "title": "End Time"
+            "title": "Created At"
           },
-          "description": {
+          "dimension": {
             "anyOf": [
               {
-                "type": "string"
+                "$ref": "#/components/schemas/DimensionRead"
               },
               {
                 "type": "null"
               }
-            ],
-            "title": "Description"
-          },
-          "category_id": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Category Id"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "start_time",
-          "end_time",
-          "description",
-          "category_id"
-        ],
-        "title": "ActivityLogRead"
-      },
-      "ActivityLogUpdate": {
-        "properties": {
-          "start_time": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Start Time"
-          },
-          "end_time": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "End Time"
-          },
-          "description": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Description"
-          },
-          "category_id": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Category Id"
+            ]
           }
         },
         "additionalProperties": false,
         "type": "object",
-        "title": "ActivityLogUpdate"
+        "required": [
+          "id",
+          "user_id"
+        ],
+        "title": "ActionRead"
       },
       "Body_login_api_v1_auth_login_post": {
         "properties": {
@@ -1077,99 +765,6 @@
         ],
         "title": "Body_login_api_v1_auth_login_post"
       },
-      "CategoryCreate": {
-        "properties": {
-          "name": {
-            "type": "string",
-            "title": "Name"
-          },
-          "icon": {
-            "type": "string",
-            "title": "Icon",
-            "default": "circle"
-          },
-          "color": {
-            "type": "string",
-            "title": "Color",
-            "default": "blue"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "name"
-        ],
-        "title": "CategoryCreate"
-      },
-      "CategoryRead": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Id"
-          },
-          "name": {
-            "type": "string",
-            "title": "Name"
-          },
-          "icon": {
-            "type": "string",
-            "title": "Icon"
-          },
-          "color": {
-            "type": "string",
-            "title": "Color"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "name",
-          "icon",
-          "color"
-        ],
-        "title": "CategoryRead"
-      },
-      "CategoryUpdate": {
-        "properties": {
-          "name": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Name"
-          },
-          "icon": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Icon"
-          },
-          "color": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Color"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "title": "CategoryUpdate"
-      },
       "DailyLogCreate": {
         "properties": {
           "day": {
@@ -1180,7 +775,7 @@
           "sleep_hours": {
             "type": "number",
             "title": "Sleep Hours",
-            "default": 0.0
+            "default": 0
           },
           "sleep_quality": {
             "type": "integer",
@@ -1351,6 +946,35 @@
         "type": "object",
         "title": "DailyLogUpdate"
       },
+      "DimensionRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "DimensionRead"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -1517,7 +1141,9 @@
         "type": "oauth2",
         "flows": {
           "password": {
-            "scopes": {},
+            "scopes": {
+
+            },
             "tokenUrl": "/api/v1/auth/login"
           }
         }

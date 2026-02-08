@@ -1,19 +1,12 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
 import uuid
 from typing import List
 
-from app.database.session import get_session
 from app.schemas.daily_log import DailyLogCreate, DailyLogRead, DailyLogUpdate
-from app.api.v1.deps import CurrentUser
-from app.repositories.daily_log_repo import DailyLogRepository
+from app.api.v1.deps import CurrentUser, get_daily_log_service
 from app.services.daily_log_service import DailyLogService
 
 router = APIRouter()
-
-def get_daily_log_service(session: AsyncSession = Depends(get_session)) -> DailyLogService:
-    repo = DailyLogRepository(session)
-    return DailyLogService(session=session, daily_log_repo=repo)
 
 @router.post("", response_model=DailyLogRead)
 async def create_daily_log(

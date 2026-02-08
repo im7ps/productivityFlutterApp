@@ -10,17 +10,17 @@ from app.core.security import get_password_hash
 import uuid
 from datetime import datetime
 
-from tests.unit.fakes import FakeUserRepository
+from tests.unit.fakes import FakeUserRepo
 
 # --- Test Fixtures ---
 
 @pytest.fixture
-def fake_user_repo() -> FakeUserRepository:
-    """Provides a fresh FakeUserRepository for each test."""
-    return FakeUserRepository()
+def fake_user_repo() -> FakeUserRepo:
+    """Provides a fresh FakeUserRepo for each test."""
+    return FakeUserRepo()
 
 @pytest.fixture
-def user_service(fake_user_repo: FakeUserRepository) -> UserService:
+def user_service(fake_user_repo: FakeUserRepo) -> UserService:
     """Provides a UserService instance with a fake repository and mock session."""
     return UserService(session=AsyncMock(), user_repo=fake_user_repo)
 
@@ -32,7 +32,7 @@ def auth_service(user_service: UserService) -> AuthService:
 # --- AuthService Unit Tests ---
 
 @pytest.mark.asyncio
-async def test_authenticate_user_success(auth_service: AuthService, fake_user_repo: FakeUserRepository):
+async def test_authenticate_user_success(auth_service: AuthService, fake_user_repo: FakeUserRepo):
     """
     Tests the happy path for authenticating a user with correct credentials.
     """
@@ -72,7 +72,7 @@ async def test_authenticate_user_not_found(auth_service: AuthService):
     assert "Incorrect username or password" in exc_info.value.message
 
 @pytest.mark.asyncio
-async def test_authenticate_user_wrong_password(auth_service: AuthService, fake_user_repo: FakeUserRepository):
+async def test_authenticate_user_wrong_password(auth_service: AuthService, fake_user_repo: FakeUserRepo):
     """
     Tests that authentication fails with InvalidCredentials if the password is incorrect.
     """

@@ -2,7 +2,7 @@ import pytest
 from httpx import AsyncClient
 from app.core.security import verify_password
 from app.models.user import User
-from app.repositories.user_repo import UserRepository
+from app.repositories.user_repo import UserRepo
 
 # --- Local Fixtures for this test module ---
 
@@ -23,7 +23,7 @@ async def test_user(setup_user, db_session):
     """
     Retrieves the actual User DB object created by the setup_user fixture.
     """
-    repo = UserRepository(db_session)
+    repo = UserRepo(db_session)
     # The setup_user factory returns user_id as a UUID string, assume repo needs UUID or str? 
     # Let's check repo.get implementation. It takes 'id'.
     # setup_user['user_id'] is usually a string UUID from JSON response.

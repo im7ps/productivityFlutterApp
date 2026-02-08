@@ -19,13 +19,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   void initState() {
     super.initState();
-    // Trigger button fade-in after text reading time
     _startAnimation();
   }
 
   void _startAnimation() {
     setState(() => _showButton = false);
-    Future.delayed(const Duration(milliseconds: 1500), () {
+    Future.delayed(const Duration(milliseconds: 1200), () {
       if (mounted) setState(() => _showButton = true);
     });
   }
@@ -38,7 +37,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       );
       setState(() {
         _currentPage++;
-        _startAnimation(); // Reset animation for next slide
+        _startAnimation();
       });
     } else {
       _finishOnboarding();
@@ -47,20 +46,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   Future<void> _finishOnboarding() async {
     await ref.read(onboardingControllerProvider.notifier).completeOnboarding();
-    // Router redirect should handle the rest, but we can explicit go to home just in case
     if (mounted) context.go('/');
   }
 
   Color _getBackgroundColor(int page) {
     switch (page) {
       case 0:
-        return const Color(0xFF1E1E2C); // Dark, noisy
+        return const Color(0xFF121212); // Oscurità
       case 1:
-        return const Color(0xFF2D2D44); // Slightly warmer/lighter
+        return const Color(0xFF1A1A2E); // Notte profonda
       case 2:
-        return const Color(0xFF3E3E55); // More clarity
+        return const Color(0xFF16213E); // Verso l'alba
       case 3:
-        return const Color(0xFF4B4B65); // Balanced
+        return const Color(0xFF0F3460); // Chiarezza
       default:
         return Colors.black;
     }
@@ -68,6 +66,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       body: AnimatedContainer(
         duration: const Duration(milliseconds: 1000),
@@ -78,30 +78,32 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               Expanded(
                 child: PageView(
                   controller: _pageController,
-                  physics: const NeverScrollableScrollPhysics(), // Disable swipe
+                  physics: const NeverScrollableScrollPhysics(),
                   children: [
                     _buildPage(
-                      text: "C'è troppo rumore...",
-                      child: const Icon(Icons.volume_off_outlined,
-                          size: 48, color: Colors.white54),
+                      context,
+                      text: "C'è troppo rumore",
+                      icon: Icons.blur_on,
                     ),
                     _buildPage(
-                      text: "La felicità non è una checklist...",
-                      child: const Icon(Icons.checklist_rtl_rounded,
-                          size: 48, color: Colors.white54),
+                      context,
+                      text: "La felicità non è una checklist",
+                      icon: Icons.filter_vintage_outlined,
                     ),
                     _buildPage(
-                      text: "Ogni giorno è il Giorno 1...",
-                      child: _buildEnergyBarPreview(),
+                      context,
+                      text: "Ogni giorno è il Giorno 1",
+                      icon: Icons.wb_sunny_outlined,
                     ),
                     _buildPage(
-                      text: "What I've Done.\nBenvenuto nel tuo equilibrio.",
+                      context,
+                      text: "What I've Done.\nBenvenuto nel tuo equilibrio",
                       isFinal: true,
                     ),
                   ],
                 ),
               ),
-              _buildBottomButton(),
+              _buildBottomButton(theme),
             ],
           ),
         ),
@@ -110,19 +112,24 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Widget _buildPage(
-      {required String text, Widget? child, bool isFinal = false}) {
+    BuildContext context, {
+    required String text,
+    IconData? icon,
+    bool isFinal = false,
+  }) {
+    final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32.0),
+      padding: const EdgeInsets.symmetric(horizontal: 40.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (child != null) ...[
-            child,
+          if (icon != null) ...[
+            Icon(icon, size: 80, color: Colors.white12),
             const SizedBox(height: 40),
           ],
           TweenAnimationBuilder<double>(
             tween: Tween(begin: 0.0, end: 1.0),
-            duration: const Duration(milliseconds: 1200),
+            duration: const Duration(milliseconds: 1500),
             builder: (context, value, child) {
               return Opacity(
                 opacity: value,
@@ -135,13 +142,20 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             child: Text(
               text,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: isFinal ? 28 : 24,
-                fontWeight: isFinal ? FontWeight.bold : FontWeight.w300,
-                color: Colors.white,
-                height: 1.5,
-                fontFamily: 'Roboto', // Default, assumes available
-              ),
+              style:
+                  (isFinal
+                          ? theme.textTheme.displayLarge
+                          : theme.textTheme.displayMedium)
+                      ?.copyWith(
+                        color: Colors.white,
+                        shadows: [
+                          const Shadow(
+                            color: Colors.black45,
+                            blurRadius: 10,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
             ),
           ),
         ],
@@ -149,50 +163,29 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  Widget _buildEnergyBarPreview() {
-    return Container(
-      width: 200,
-      height: 20,
-      decoration: BoxDecoration(
-        color: Colors.white24,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: FractionallySizedBox(
-        alignment: Alignment.centerLeft,
-        widthFactor: 0.3, // Static preview
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.tealAccent,
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBottomButton() {
+  Widget _buildBottomButton(ThemeData theme) {
     String label;
-    VoidCallback? onPressed;
+    VoidCallback? action;
 
     switch (_currentPage) {
       case 0:
         label = "Respiro profondo";
-        onPressed = () {
+        action = () {
           HapticFeedback.heavyImpact();
           _nextPage();
         };
         break;
       case 1:
         label = "Capisco";
-        onPressed = _nextPage;
+        action = _nextPage;
         break;
       case 2:
         label = "Sono pronto";
-        onPressed = _nextPage;
+        action = _nextPage;
         break;
       case 3:
         label = "Inizia la Giornata";
-        onPressed = _finishOnboarding;
+        action = _finishOnboarding;
         break;
       default:
         label = "";
@@ -202,15 +195,24 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       duration: const Duration(milliseconds: 800),
       opacity: _showButton ? 1.0 : 0.0,
       child: Padding(
-        padding: const EdgeInsets.only(bottom: 50.0),
+        padding: const EdgeInsets.only(bottom: 60.0),
         child: TextButton(
-          onPressed: _showButton ? onPressed : null,
+          onPressed: _showButton ? action : null,
           style: TextButton.styleFrom(
             foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-            textStyle: const TextStyle(fontSize: 18, letterSpacing: 1.2),
+            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
+              side: const BorderSide(color: Colors.white30, width: 1),
+            ),
           ),
-          child: Text(label.toUpperCase()),
+          child: Text(
+            label.toUpperCase(),
+            style: theme.textTheme.labelLarge?.copyWith(
+              color: Colors.white,
+              letterSpacing: 2,
+            ),
+          ),
         ),
       ),
     );

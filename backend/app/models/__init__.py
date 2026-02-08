@@ -1,4 +1,4 @@
 from .user import User
-from .category import Category
-from .activity_log import ActivityLog
+from .dimension import Dimension
+from .action import Action
 from .daily_log import DailyLog

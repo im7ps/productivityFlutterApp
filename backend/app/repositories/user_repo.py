@@ -6,7 +6,7 @@ from app.models.user import User
 from app.schemas.user import UserUpdateDB
 
 
-class UserRepository:
+class UserRepo:
     def __init__(self, session: AsyncSession):
         self.session = session
         self.model = User

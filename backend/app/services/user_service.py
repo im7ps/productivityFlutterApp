@@ -4,14 +4,14 @@ import uuid
 from app.core.exceptions import EntityAlreadyExists
 from app.core.security import get_password_hash
 from app.models.user import User
-from app.repositories.user_repo import UserRepository
+from app.repositories.user_repo import UserRepo
 from app.schemas.user import UserCreate, UserUpdate, UserUpdateDB
 
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 class UserService:
-    def __init__(self, session: AsyncSession, user_repo: UserRepository):
+    def __init__(self, session: AsyncSession, user_repo: UserRepo):
         self.session = session
         self.user_repo = user_repo
 

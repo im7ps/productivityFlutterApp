@@ -42,11 +42,13 @@ Dio dio(Ref ref) {
   
   dio.interceptors.add(ErrorInterceptor());
   
-  // Loggare solo in debug mode
-  assert(() {
-    dio.interceptors.add(LogInterceptor(responseBody: true, requestBody: true));
-    return true;
-  }());
+  // Loggare SEMPRE per debug pivot
+  dio.interceptors.add(LogInterceptor(
+    responseBody: true, 
+    requestBody: true,
+    requestHeader: true,
+    responseHeader: false,
+  ));
 
   return dio;
 }

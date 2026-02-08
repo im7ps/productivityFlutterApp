@@ -2,7 +2,7 @@ import pytest
 from httpx import AsyncClient
 import uuid
 
-from app.repositories import UserRepository
+from app.repositories import UserRepo
 from app.models import User
 
 # Mark all tests in this file as async and needing a DB connection

@@ -3,9 +3,9 @@ from datetime import datetime
 from typing import Optional
 from app.models.user import User
 
-class FakeUserRepository:
+class FakeUserRepo:
     """
-    A fake, in-memory repository that mimics the interface of UserRepository
+    A fake, in-memory repository that mimics the interface of UserRepo
     for unit testing services in isolation.
     """
     def __init__(self):

@@ -8,7 +8,7 @@ from app.core.security import decode_access_token
 from app.core.exceptions import InvalidCredentials, AccessTokenExpired, InvalidToken
 from app.database.session import get_session
 from app.models.user import User
-from app.repositories.user_repo import UserRepository
+from app.repositories.user_repo import UserRepo
 from app.services.user_service import UserService
 from app.services.auth_service import AuthService
 
@@ -16,12 +16,12 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 # --- Dependency Injection Provider Functions ---
 
-def get_user_repo(session: Annotated[AsyncSession, Depends(get_session)]) -> UserRepository:
-    return UserRepository(session)
+def get_user_repo(session: Annotated[AsyncSession, Depends(get_session)]) -> UserRepo:
+    return UserRepo(session)
 
 def get_user_service(
     session: Annotated[AsyncSession, Depends(get_session)],
-    repo: Annotated[UserRepository, Depends(get_user_repo)]
+    repo: Annotated[UserRepo, Depends(get_user_repo)]
 ) -> UserService:
     return UserService(session=session, user_repo=repo)
 
@@ -83,3 +83,41 @@ async def get_current_user(
     return user
 
 CurrentUser = Annotated[User, Depends(get_current_user)]
+
+async def get_current_active_user(current_user: CurrentUser) -> User:
+    if not current_user.is_active:
+        raise HTTPException(status_code=400, detail="Inactive user")
+    return current_user
+
+# --- Dimensions & Actions Services ---
+from app.repositories.dimension_repo import DimensionRepo
+from app.repositories.action_repo import ActionRepo
+from app.repositories.daily_log_repo import DailyLogRepo
+from app.services.dimension_service import DimensionService
+from app.services.action_service import ActionService
+from app.services.daily_log_service import DailyLogService
+
+def get_dimension_repo(session: Annotated[AsyncSession, Depends(get_session)]) -> DimensionRepo:
+    return DimensionRepo(session)
+
+def get_action_repo(session: Annotated[AsyncSession, Depends(get_session)]) -> ActionRepo:
+    return ActionRepo(session)
+
+def get_daily_log_repo(session: Annotated[AsyncSession, Depends(get_session)]) -> DailyLogRepo:
+    return DailyLogRepo(session)
+
+def get_dimension_service(repo: Annotated[DimensionRepo, Depends(get_dimension_repo)]) -> DimensionService:
+    return DimensionService(repo)
+
+def get_action_service(
+    repo: Annotated[ActionRepo, Depends(get_action_repo)],
+    dim_service: Annotated[DimensionService, Depends(get_dimension_service)]
+) -> ActionService:
+    return ActionService(repo, dim_service)
+
+def get_daily_log_service(
+    session: Annotated[AsyncSession, Depends(get_session)],
+    repo: Annotated[DailyLogRepo, Depends(get_daily_log_repo)]
+) -> DailyLogService:
+    return DailyLogService(session, repo)
+

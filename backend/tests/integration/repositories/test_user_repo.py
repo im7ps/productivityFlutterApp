@@ -3,7 +3,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.repositories.user_repo import UserRepository
+from app.repositories.user_repo import UserRepo
 from app.models.user import User
 from app.core.security import get_password_hash
 
@@ -12,12 +12,12 @@ pytestmark = [pytest.mark.asyncio, pytest.mark.db]
 
 
 @pytest.fixture
-def user_repo(db_session: AsyncSession) -> UserRepository:
-    """Provides a UserRepository instance for the tests."""
-    return UserRepository(session=db_session)
+def user_repo(db_session: AsyncSession) -> UserRepo:
+    """Provides a UserRepo instance for the tests."""
+    return UserRepo(session=db_session)
 
 
-async def test_create_and_retrieve_user(user_repo: UserRepository):
+async def test_create_and_retrieve_user(user_repo: UserRepo):
     """
     Tests the basic functionality of creating a user and then retrieving them.
     """
@@ -46,7 +46,7 @@ async def test_create_and_retrieve_user(user_repo: UserRepository):
     assert retrieved_user.username == "testuser"
 
 
-async def test_get_by_email_is_case_insensitive(user_repo: UserRepository):
+async def test_get_by_email_is_case_insensitive(user_repo: UserRepo):
     """
     Tests that retrieving a user by email is case-insensitive.
     The repository MUST handle this (e.g., using ilike in PostgreSQL).
@@ -69,7 +69,7 @@ async def test_get_by_email_is_case_insensitive(user_repo: UserRepository):
     assert retrieved_user.email == email.lower()
 
 
-async def test_create_user_raises_integrity_error_for_duplicate_username(user_repo: UserRepository):
+async def test_create_user_raises_integrity_error_for_duplicate_username(user_repo: UserRepo):
     """
     Tests that the database's UNIQUE constraint for 'username' is enforced,
     raising an IntegrityError for duplicates.
@@ -94,7 +94,7 @@ async def test_create_user_raises_integrity_error_for_duplicate_username(user_re
         await user_repo.create(user2)
 
 
-async def test_create_user_raises_integrity_error_for_duplicate_email(user_repo: UserRepository):
+async def test_create_user_raises_integrity_error_for_duplicate_email(user_repo: UserRepo):
     """
     Tests that the database's UNIQUE constraint for 'email' is enforced,
     raising an IntegrityError for duplicates.

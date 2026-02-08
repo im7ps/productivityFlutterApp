@@ -14,15 +14,15 @@ class AppStrings {
   
   // Dashboard
   static const String dashboardTitle = 'Dashboard';
-  static const String noActivitiesToday = 'Nessuna attività registrata oggi. Inizia ora!';
-  static const String activityUntitled = 'Attività senza nome';
+  static const String noActivitiesToday = 'Nessuna azione registrata oggi. Inizia ora!';
+  static const String actionUntitled = 'Azione senza nome';
   static const String errorGeneric = 'Errore';
-  static const String errorLoadingCategories = 'Errore caricamento categorie';
+  static const String errorLoadingDimensions = 'Errore caricamento dimensioni';
   
   // Modal
-  static const String newActivityTitle = 'Nuova Attività';
-  static const String categoryLabel = 'Categoria';
-  static const String noCategoriesFound = 'Nessuna categoria trovata. Creane una prima di loggare attività.';
+  static const String newActionTitle = 'Nuova Azione';
+  static const String dimensionLabel = 'Dimensione';
+  static const String noDimensionsFound = 'Nessuna dimensione trovata. Errore di sincronizzazione.';
   static const String descriptionLabel = 'Descrizione (opzionale)';
   static const String saveButton = 'Salva';
 }

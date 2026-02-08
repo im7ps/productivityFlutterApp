@@ -1,0 +1,46 @@
+import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../../../core/networking/dio_provider.dart';
+import '../domain/action.dart';
+
+part 'action_repository.g.dart';
+
+@riverpod
+ActionRepository actionRepository(Ref ref) {
+  return ActionRepository(dio: ref.watch(dioProvider));
+}
+
+class ActionRepository {
+  final Dio _dio;
+
+  ActionRepository({required Dio dio}) : _dio = dio;
+
+  Future<List<Action>> getActions({int skip = 0, int limit = 50}) async {
+    try {
+      final response = await _dio.get(
+        '/api/v1/actions/',
+        queryParameters: {'skip': skip, 'limit': limit},
+      );
+      final List<dynamic> data = response.data;
+      return data.map((json) => Action.fromJson(json)).toList();
+    } catch (e, stack) {
+      print("ERROR in getActions: $e");
+      print(stack);
+      rethrow;
+    }
+  }
+
+  Future<Action> createAction(ActionCreate action) async {
+    try {
+      print("DEBUG: Creating action with data: ${action.toJson()}");
+      final response = await _dio.post('/api/v1/actions/', data: action.toJson());
+      print("DEBUG: Create action response: ${response.data}");
+      return Action.fromJson(response.data);
+    } catch (e, stack) {
+      print("ERROR in createAction: $e");
+      print(stack);
+      rethrow;
+    }
+  }
+}

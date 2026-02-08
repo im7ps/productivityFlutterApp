@@ -1,0 +1,602 @@
+// coverage:ignore-file
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
+part of 'action.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
+
+T _$identity<T>(T value) => value;
+
+final _privateConstructorUsedError = UnsupportedError(
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
+
+Action _$ActionFromJson(Map<String, dynamic> json) {
+  return _Action.fromJson(json);
+}
+
+/// @nodoc
+mixin _$Action {
+  String get id => throw _privateConstructorUsedError;
+  DateTime get startTime => throw _privateConstructorUsedError;
+  DateTime? get endTime => throw _privateConstructorUsedError;
+  String? get description => throw _privateConstructorUsedError;
+  int get fulfillmentScore => throw _privateConstructorUsedError;
+  String get userId => throw _privateConstructorUsedError;
+  String get dimensionId => throw _privateConstructorUsedError;
+  Dimension? get dimension => throw _privateConstructorUsedError;
+
+  /// Serializes this Action to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of Action
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $ActionCopyWith<Action> get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $ActionCopyWith<$Res> {
+  factory $ActionCopyWith(Action value, $Res Function(Action) then) =
+      _$ActionCopyWithImpl<$Res, Action>;
+  @useResult
+  $Res call({
+    String id,
+    DateTime startTime,
+    DateTime? endTime,
+    String? description,
+    int fulfillmentScore,
+    String userId,
+    String dimensionId,
+    Dimension? dimension,
+  });
+
+  $DimensionCopyWith<$Res>? get dimension;
+}
+
+/// @nodoc
+class _$ActionCopyWithImpl<$Res, $Val extends Action>
+    implements $ActionCopyWith<$Res> {
+  _$ActionCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of Action
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = null,
+    Object? startTime = null,
+    Object? endTime = freezed,
+    Object? description = freezed,
+    Object? fulfillmentScore = null,
+    Object? userId = null,
+    Object? dimensionId = null,
+    Object? dimension = freezed,
+  }) {
+    return _then(
+      _value.copyWith(
+            id: null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                      as String,
+            startTime: null == startTime
+                ? _value.startTime
+                : startTime // ignore: cast_nullable_to_non_nullable
+                      as DateTime,
+            endTime: freezed == endTime
+                ? _value.endTime
+                : endTime // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
+            description: freezed == description
+                ? _value.description
+                : description // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            fulfillmentScore: null == fulfillmentScore
+                ? _value.fulfillmentScore
+                : fulfillmentScore // ignore: cast_nullable_to_non_nullable
+                      as int,
+            userId: null == userId
+                ? _value.userId
+                : userId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            dimensionId: null == dimensionId
+                ? _value.dimensionId
+                : dimensionId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            dimension: freezed == dimension
+                ? _value.dimension
+                : dimension // ignore: cast_nullable_to_non_nullable
+                      as Dimension?,
+          )
+          as $Val,
+    );
+  }
+
+  /// Create a copy of Action
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $DimensionCopyWith<$Res>? get dimension {
+    if (_value.dimension == null) {
+      return null;
+    }
+
+    return $DimensionCopyWith<$Res>(_value.dimension!, (value) {
+      return _then(_value.copyWith(dimension: value) as $Val);
+    });
+  }
+}
+
+/// @nodoc
+abstract class _$$ActionImplCopyWith<$Res> implements $ActionCopyWith<$Res> {
+  factory _$$ActionImplCopyWith(
+    _$ActionImpl value,
+    $Res Function(_$ActionImpl) then,
+  ) = __$$ActionImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    String id,
+    DateTime startTime,
+    DateTime? endTime,
+    String? description,
+    int fulfillmentScore,
+    String userId,
+    String dimensionId,
+    Dimension? dimension,
+  });
+
+  @override
+  $DimensionCopyWith<$Res>? get dimension;
+}
+
+/// @nodoc
+class __$$ActionImplCopyWithImpl<$Res>
+    extends _$ActionCopyWithImpl<$Res, _$ActionImpl>
+    implements _$$ActionImplCopyWith<$Res> {
+  __$$ActionImplCopyWithImpl(
+    _$ActionImpl _value,
+    $Res Function(_$ActionImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of Action
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = null,
+    Object? startTime = null,
+    Object? endTime = freezed,
+    Object? description = freezed,
+    Object? fulfillmentScore = null,
+    Object? userId = null,
+    Object? dimensionId = null,
+    Object? dimension = freezed,
+  }) {
+    return _then(
+      _$ActionImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        startTime: null == startTime
+            ? _value.startTime
+            : startTime // ignore: cast_nullable_to_non_nullable
+                  as DateTime,
+        endTime: freezed == endTime
+            ? _value.endTime
+            : endTime // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
+        description: freezed == description
+            ? _value.description
+            : description // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        fulfillmentScore: null == fulfillmentScore
+            ? _value.fulfillmentScore
+            : fulfillmentScore // ignore: cast_nullable_to_non_nullable
+                  as int,
+        userId: null == userId
+            ? _value.userId
+            : userId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        dimensionId: null == dimensionId
+            ? _value.dimensionId
+            : dimensionId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        dimension: freezed == dimension
+            ? _value.dimension
+            : dimension // ignore: cast_nullable_to_non_nullable
+                  as Dimension?,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$ActionImpl implements _Action {
+  const _$ActionImpl({
+    required this.id,
+    required this.startTime,
+    this.endTime,
+    this.description,
+    required this.fulfillmentScore,
+    required this.userId,
+    required this.dimensionId,
+    this.dimension,
+  });
+
+  factory _$ActionImpl.fromJson(Map<String, dynamic> json) =>
+      _$$ActionImplFromJson(json);
+
+  @override
+  final String id;
+  @override
+  final DateTime startTime;
+  @override
+  final DateTime? endTime;
+  @override
+  final String? description;
+  @override
+  final int fulfillmentScore;
+  @override
+  final String userId;
+  @override
+  final String dimensionId;
+  @override
+  final Dimension? dimension;
+
+  @override
+  String toString() {
+    return 'Action(id: $id, startTime: $startTime, endTime: $endTime, description: $description, fulfillmentScore: $fulfillmentScore, userId: $userId, dimensionId: $dimensionId, dimension: $dimension)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ActionImpl &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.startTime, startTime) ||
+                other.startTime == startTime) &&
+            (identical(other.endTime, endTime) || other.endTime == endTime) &&
+            (identical(other.description, description) ||
+                other.description == description) &&
+            (identical(other.fulfillmentScore, fulfillmentScore) ||
+                other.fulfillmentScore == fulfillmentScore) &&
+            (identical(other.userId, userId) || other.userId == userId) &&
+            (identical(other.dimensionId, dimensionId) ||
+                other.dimensionId == dimensionId) &&
+            (identical(other.dimension, dimension) ||
+                other.dimension == dimension));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+    runtimeType,
+    id,
+    startTime,
+    endTime,
+    description,
+    fulfillmentScore,
+    userId,
+    dimensionId,
+    dimension,
+  );
+
+  /// Create a copy of Action
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$ActionImplCopyWith<_$ActionImpl> get copyWith =>
+      __$$ActionImplCopyWithImpl<_$ActionImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$ActionImplToJson(this);
+  }
+}
+
+abstract class _Action implements Action {
+  const factory _Action({
+    required final String id,
+    required final DateTime startTime,
+    final DateTime? endTime,
+    final String? description,
+    required final int fulfillmentScore,
+    required final String userId,
+    required final String dimensionId,
+    final Dimension? dimension,
+  }) = _$ActionImpl;
+
+  factory _Action.fromJson(Map<String, dynamic> json) = _$ActionImpl.fromJson;
+
+  @override
+  String get id;
+  @override
+  DateTime get startTime;
+  @override
+  DateTime? get endTime;
+  @override
+  String? get description;
+  @override
+  int get fulfillmentScore;
+  @override
+  String get userId;
+  @override
+  String get dimensionId;
+  @override
+  Dimension? get dimension;
+
+  /// Create a copy of Action
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$ActionImplCopyWith<_$ActionImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+ActionCreate _$ActionCreateFromJson(Map<String, dynamic> json) {
+  return _ActionCreate.fromJson(json);
+}
+
+/// @nodoc
+mixin _$ActionCreate {
+  String? get description => throw _privateConstructorUsedError;
+  DateTime? get startTime => throw _privateConstructorUsedError;
+  DateTime? get endTime => throw _privateConstructorUsedError;
+  String get dimensionId => throw _privateConstructorUsedError;
+  int get fulfillmentScore => throw _privateConstructorUsedError;
+
+  /// Serializes this ActionCreate to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of ActionCreate
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $ActionCreateCopyWith<ActionCreate> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $ActionCreateCopyWith<$Res> {
+  factory $ActionCreateCopyWith(
+    ActionCreate value,
+    $Res Function(ActionCreate) then,
+  ) = _$ActionCreateCopyWithImpl<$Res, ActionCreate>;
+  @useResult
+  $Res call({
+    String? description,
+    DateTime? startTime,
+    DateTime? endTime,
+    String dimensionId,
+    int fulfillmentScore,
+  });
+}
+
+/// @nodoc
+class _$ActionCreateCopyWithImpl<$Res, $Val extends ActionCreate>
+    implements $ActionCreateCopyWith<$Res> {
+  _$ActionCreateCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of ActionCreate
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? description = freezed,
+    Object? startTime = freezed,
+    Object? endTime = freezed,
+    Object? dimensionId = null,
+    Object? fulfillmentScore = null,
+  }) {
+    return _then(
+      _value.copyWith(
+            description: freezed == description
+                ? _value.description
+                : description // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            startTime: freezed == startTime
+                ? _value.startTime
+                : startTime // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
+            endTime: freezed == endTime
+                ? _value.endTime
+                : endTime // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
+            dimensionId: null == dimensionId
+                ? _value.dimensionId
+                : dimensionId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            fulfillmentScore: null == fulfillmentScore
+                ? _value.fulfillmentScore
+                : fulfillmentScore // ignore: cast_nullable_to_non_nullable
+                      as int,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$ActionCreateImplCopyWith<$Res>
+    implements $ActionCreateCopyWith<$Res> {
+  factory _$$ActionCreateImplCopyWith(
+    _$ActionCreateImpl value,
+    $Res Function(_$ActionCreateImpl) then,
+  ) = __$$ActionCreateImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    String? description,
+    DateTime? startTime,
+    DateTime? endTime,
+    String dimensionId,
+    int fulfillmentScore,
+  });
+}
+
+/// @nodoc
+class __$$ActionCreateImplCopyWithImpl<$Res>
+    extends _$ActionCreateCopyWithImpl<$Res, _$ActionCreateImpl>
+    implements _$$ActionCreateImplCopyWith<$Res> {
+  __$$ActionCreateImplCopyWithImpl(
+    _$ActionCreateImpl _value,
+    $Res Function(_$ActionCreateImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of ActionCreate
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? description = freezed,
+    Object? startTime = freezed,
+    Object? endTime = freezed,
+    Object? dimensionId = null,
+    Object? fulfillmentScore = null,
+  }) {
+    return _then(
+      _$ActionCreateImpl(
+        description: freezed == description
+            ? _value.description
+            : description // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        startTime: freezed == startTime
+            ? _value.startTime
+            : startTime // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
+        endTime: freezed == endTime
+            ? _value.endTime
+            : endTime // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
+        dimensionId: null == dimensionId
+            ? _value.dimensionId
+            : dimensionId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        fulfillmentScore: null == fulfillmentScore
+            ? _value.fulfillmentScore
+            : fulfillmentScore // ignore: cast_nullable_to_non_nullable
+                  as int,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$ActionCreateImpl implements _ActionCreate {
+  const _$ActionCreateImpl({
+    this.description,
+    this.startTime,
+    this.endTime,
+    required this.dimensionId,
+    required this.fulfillmentScore,
+  });
+
+  factory _$ActionCreateImpl.fromJson(Map<String, dynamic> json) =>
+      _$$ActionCreateImplFromJson(json);
+
+  @override
+  final String? description;
+  @override
+  final DateTime? startTime;
+  @override
+  final DateTime? endTime;
+  @override
+  final String dimensionId;
+  @override
+  final int fulfillmentScore;
+
+  @override
+  String toString() {
+    return 'ActionCreate(description: $description, startTime: $startTime, endTime: $endTime, dimensionId: $dimensionId, fulfillmentScore: $fulfillmentScore)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ActionCreateImpl &&
+            (identical(other.description, description) ||
+                other.description == description) &&
+            (identical(other.startTime, startTime) ||
+                other.startTime == startTime) &&
+            (identical(other.endTime, endTime) || other.endTime == endTime) &&
+            (identical(other.dimensionId, dimensionId) ||
+                other.dimensionId == dimensionId) &&
+            (identical(other.fulfillmentScore, fulfillmentScore) ||
+                other.fulfillmentScore == fulfillmentScore));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+    runtimeType,
+    description,
+    startTime,
+    endTime,
+    dimensionId,
+    fulfillmentScore,
+  );
+
+  /// Create a copy of ActionCreate
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$ActionCreateImplCopyWith<_$ActionCreateImpl> get copyWith =>
+      __$$ActionCreateImplCopyWithImpl<_$ActionCreateImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$ActionCreateImplToJson(this);
+  }
+}
+
+abstract class _ActionCreate implements ActionCreate {
+  const factory _ActionCreate({
+    final String? description,
+    final DateTime? startTime,
+    final DateTime? endTime,
+    required final String dimensionId,
+    required final int fulfillmentScore,
+  }) = _$ActionCreateImpl;
+
+  factory _ActionCreate.fromJson(Map<String, dynamic> json) =
+      _$ActionCreateImpl.fromJson;
+
+  @override
+  String? get description;
+  @override
+  DateTime? get startTime;
+  @override
+  DateTime? get endTime;
+  @override
+  String get dimensionId;
+  @override
+  int get fulfillmentScore;
+
+  /// Create a copy of ActionCreate
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$ActionCreateImplCopyWith<_$ActionCreateImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}

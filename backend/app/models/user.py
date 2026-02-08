@@ -6,9 +6,9 @@ from sqlalchemy import func
 from app.models.utils import get_utc_now
 
 if TYPE_CHECKING:
-    from app.models.activity_log import ActivityLog
+    from app.models.action import Action
     from app.models.daily_log import DailyLog
-    from app.models.category import Category
+    from app.models.dimension import Dimension
 
 # --- UTENTE ---
 class User(SQLModel, table=True):
@@ -25,6 +25,6 @@ class User(SQLModel, table=True):
         sa_column_kwargs={"onupdate": func.now()}
     )
 
-    activities: List["ActivityLog"] = Relationship(back_populates="user")
+    actions: List["Action"] = Relationship(back_populates="user")
     daily_logs: List["DailyLog"] = Relationship(back_populates="user")
-    categories: List["Category"] = Relationship(back_populates="user")
+    # Categories removed as Dimensions are global

@@ -20,28 +20,45 @@ GoRouter router(Ref ref) {
     initialLocation: '/',
     refreshListenable: notifier, // Il router ascolta questo oggetto
     redirect: (context, state) {
+      final loc = state.matchedLocation;
+      print("DEBUG: Router redirect check for location: $loc");
+
       // Usiamo lo stato interno del notifier che è sincronizzato con l'auth e onboarding
-      if (notifier.isLoading) return null; // Wait for state to be ready
+      if (notifier.isLoading) {
+        print("DEBUG: Router is waiting for loading...");
+        return null; 
+      }
 
       final isLoggedIn = notifier.isLoggedIn;
       final isOnboardingSeen = notifier.isOnboardingSeen;
+      
+      print("DEBUG: State -> LoggedIn: $isLoggedIn, OnboardingSeen: $isOnboardingSeen");
 
-      final isLoggingIn = state.matchedLocation == '/login';
-      final isOnboarding = state.matchedLocation == '/onboarding';
+      final isLoggingIn = loc == '/login';
+      final isOnboarding = loc == '/onboarding';
 
       // 1. Check Onboarding First
       if (!isOnboardingSeen) {
+        print("DEBUG: Onboarding not seen, redirecting to /onboarding");
         return isOnboarding ? null : '/onboarding';
       }
 
       // 2. Check Auth
       if (!isLoggedIn) {
+        print("DEBUG: Not logged in, redirecting to /login");
         return isLoggingIn ? null : '/login';
       }
 
-      // 3. If logged in and onboarding seen, prevent access to login/onboarding pages
-      if (isLoggingIn || isOnboarding) {
+      // 3. Prevent access to login if everything is done, 
+      // but ALLOW /onboarding if requested manually (for re-watching)
+      if (isLoggingIn) {
+        print("DEBUG: Already logged in, redirecting to / (Dashboard)");
         return '/';
+      }
+      
+      if (isOnboarding && isLoggedIn) {
+        print("DEBUG: Manual onboarding access allowed");
+        return null;
       }
 
       return null;
