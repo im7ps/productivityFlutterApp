@@ -15,6 +15,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
   bool _showButton = false;
+  // Per l'animazione della barra nella Slide 3
+  bool _showBarAnimation = false;
 
   @override
   void initState() {
@@ -23,10 +25,22 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   void _startAnimation() {
-    setState(() => _showButton = false);
-    Future.delayed(const Duration(milliseconds: 1200), () {
+    setState(() {
+      _showButton = false;
+      _showBarAnimation = false;
+    });
+    
+    // Tempo di lettura stimato prima di mostrare il bottone
+    Future.delayed(const Duration(milliseconds: 1500), () {
       if (mounted) setState(() => _showButton = true);
     });
+
+    // Attiva animazione specifica per la slide 3 (indice 2)
+    if (_currentPage == 2) {
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) setState(() => _showBarAnimation = true);
+      });
+    }
   }
 
   void _nextPage() {
@@ -51,23 +65,18 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   Color _getBackgroundColor(int page) {
     switch (page) {
-      case 0:
-        return const Color(0xFF121212); // Oscurità
-      case 1:
-        return const Color(0xFF1A1A2E); // Notte profonda
-      case 2:
-        return const Color(0xFF16213E); // Verso l'alba
-      case 3:
-        return const Color(0xFF0F3460); // Chiarezza
-      default:
-        return Colors.black;
+      case 0: return const Color(0xFF121212); // The Problem: Oscurità/Rumore
+      case 1: return const Color(0xFF3E2723); // The Truth: Toni Caldi (come richiesto)
+      case 2: return const Color(0xFF1A237E); // The Method: Blu Elettrico/Energia
+      case 3: return const Color(0xFF004D40); // The Promise: Verde/Equilibrio
+      default: return Colors.black;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
+    
     return Scaffold(
       body: AnimatedContainer(
         duration: const Duration(milliseconds: 1000),
@@ -80,24 +89,30 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   controller: _pageController,
                   physics: const NeverScrollableScrollPhysics(),
                   children: [
+                    // Slide 1
                     _buildPage(
                       context,
-                      text: "C'è troppo rumore",
-                      icon: Icons.blur_on,
+                      title: "C'è troppo rumore.",
+                      body: "Tra notifiche, scadenze e vite apparentemente perfette degli altri, è facile sentirsi smarriti.\n\nCi hanno insegnato a riempire le giornate, ma non a viverle. Ci hanno detto di accumulare traguardi, ma ci sentiamo spesso vuoti.",
                     ),
+                    // Slide 2
                     _buildPage(
                       context,
-                      text: "La felicità non è una checklist",
-                      icon: Icons.filter_vintage_outlined,
+                      title: "La felicità non è una checklist.",
+                      body: "Non è finire tutte le task. Non è avere più follower.\n\nLa felicità è Connessione (con chi ami davvero). È Presenza (essere qui, ora, non nello schermo). È Autonomia (scegliere cosa ti fa stare bene).",
                     ),
+                    // Slide 3
                     _buildPage(
                       context,
-                      text: "Ogni giorno è il Giorno 1",
-                      icon: Icons.wb_sunny_outlined,
+                      title: "Ogni giorno è il Giorno 1.",
+                      body: "Qui non ci sono catene da mantenere o punteggi che scendono se ti fermi. Il passato è archiviato. Il futuro non esiste ancora.\n\nHai solo oggi per riempire le tue barre di Energia, Chiarezza, Tribù e Anima. Quello che fai oggi, conta solo per oggi. E va bene così.",
+                      child: _buildAnimatedBar(),
                     ),
+                    // Slide 4
                     _buildPage(
                       context,
-                      text: "What I've Done.\nBenvenuto nel tuo equilibrio",
+                      title: "What I've Done.",
+                      body: "Questa app non serve a renderti più produttivo. Serve a renderti più te stesso.\n\nScegli le tue battaglie. Ignora il resto.\n\nBenvenuto nel tuo equilibrio.",
                       isFinal: true,
                     ),
                   ],
@@ -111,25 +126,40 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  Widget _buildPage(
-    BuildContext context, {
-    required String text,
-    IconData? icon,
-    bool isFinal = false,
+  Widget _buildPage(BuildContext context, {
+    required String title, 
+    required String body, 
+    Widget? child,
+    bool isFinal = false
   }) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 40.0),
+      padding: const EdgeInsets.symmetric(horizontal: 32.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (icon != null) ...[
-            Icon(icon, size: 80, color: Colors.white12),
-            const SizedBox(height: 40),
+          // Titolo
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: (isFinal ? theme.textTheme.displayLarge : theme.textTheme.displayMedium)?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              height: 1.2,
+            ),
+          ),
+          const SizedBox(height: 32),
+          
+          // Custom Widget (es. Bar Animation)
+          if (child != null) ...[
+            child,
+            const SizedBox(height: 32),
           ],
+
+          // Corpo del testo
           TweenAnimationBuilder<double>(
             tween: Tween(begin: 0.0, end: 1.0),
-            duration: const Duration(milliseconds: 1500),
+            duration: const Duration(milliseconds: 1000),
             builder: (context, value, child) {
               return Opacity(
                 opacity: value,
@@ -140,22 +170,48 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               );
             },
             child: Text(
-              text,
+              body,
               textAlign: TextAlign.center,
-              style:
-                  (isFinal
-                          ? theme.textTheme.displayLarge
-                          : theme.textTheme.displayMedium)
-                      ?.copyWith(
-                        color: Colors.white,
-                        shadows: [
-                          const Shadow(
-                            color: Colors.black45,
-                            blurRadius: 10,
-                            offset: Offset(0, 4),
-                          ),
-                        ],
-                      ),
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: Colors.white70,
+                height: 1.6,
+                fontSize: 18,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAnimatedBar() {
+    return Container(
+      width: 200,
+      height: 12,
+      decoration: BoxDecoration(
+        color: Colors.white12,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Stack(
+        children: [
+          AnimatedFractionallySizedBox(
+            duration: const Duration(milliseconds: 1500),
+            curve: Curves.easeOutCubic,
+            widthFactor: _showBarAnimation ? 0.75 : 0.0,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF64FFDA), Color(0xFF1E88E5)],
+                ),
+                borderRadius: BorderRadius.circular(6),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF64FFDA).withOpacity(0.5),
+                    blurRadius: 8,
+                    offset: const Offset(0, 0),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -195,7 +251,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       duration: const Duration(milliseconds: 800),
       opacity: _showButton ? 1.0 : 0.0,
       child: Padding(
-        padding: const EdgeInsets.only(bottom: 60.0),
+        padding: const EdgeInsets.only(bottom: 50.0),
         child: TextButton(
           onPressed: _showButton ? action : null,
           style: TextButton.styleFrom(
@@ -209,8 +265,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           child: Text(
             label.toUpperCase(),
             style: theme.textTheme.labelLarge?.copyWith(
-              color: Colors.white,
+              color: Colors.white, 
               letterSpacing: 2,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
