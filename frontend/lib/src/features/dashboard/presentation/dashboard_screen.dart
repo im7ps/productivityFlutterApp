@@ -28,7 +28,7 @@ class DashboardScreen extends ConsumerWidget {
             Container(
               width: 40,
               height: 4,
-              margin: const EdgeInsets.bottom(20),
+              margin: const EdgeInsets.only(bottom: 20),
               decoration: BoxDecoration(
                 color: Colors.white24,
                 borderRadius: BorderRadius.circular(2),
@@ -39,22 +39,34 @@ class DashboardScreen extends ConsumerWidget {
             Text(
               task.title.toUpperCase(),
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: task.color,
-                  ),
+                fontWeight: FontWeight.bold,
+                color: task.color,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               "CATEGORIA: ${task.category.toUpperCase()}",
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.white54),
+              style: Theme.of(
+                context,
+              ).textTheme.labelSmall?.copyWith(color: Colors.white54),
             ),
             const SizedBox(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildStatChip(context, "Fatica", task.difficulty.toString(), Icons.fitness_center),
+                _buildStatChip(
+                  context,
+                  "Fatica",
+                  task.difficulty.toString(),
+                  Icons.fitness_center,
+                ),
                 const SizedBox(width: 12),
-                _buildStatChip(context, "Soddisfazione", task.satisfaction.toString(), Icons.star),
+                _buildStatChip(
+                  context,
+                  "Soddisfazione",
+                  task.satisfaction.toString(),
+                  Icons.star,
+                ),
               ],
             ),
             const SizedBox(height: 32), // Spazio finale senza bottoni
@@ -64,11 +76,18 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatChip(BuildContext context, String label, String value, IconData icon) {
+  Widget _buildStatChip(
+    BuildContext context,
+    String label,
+    String value,
+    IconData icon,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        color: Theme.of(
+          context,
+        ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white10),
       ),
@@ -139,15 +158,34 @@ class DashboardScreen extends ConsumerWidget {
                     ),
                   ),
                   PopupMenuButton<TaskSortOrder>(
-                    icon: const Icon(Icons.filter_list, size: 20, color: Colors.white70),
+                    icon: const Icon(
+                      Icons.filter_list,
+                      size: 20,
+                      color: Colors.white70,
+                    ),
                     offset: const Offset(0, 40),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                     color: theme.colorScheme.surface,
-                    onSelected: (order) => ref.read(taskSortProvider.notifier).state = order,
+                    onSelected: (order) =>
+                        ref.read(taskSortProvider.notifier).state = order,
                     itemBuilder: (context) => [
-                      _buildMenuItem(TaskSortOrder.recommended, "Consigliato", Icons.auto_awesome),
-                      _buildMenuItem(TaskSortOrder.effort, "Per Fatica", Icons.fitness_center),
-                      _buildMenuItem(TaskSortOrder.satisfaction, "Per Soddisfazione", Icons.star),
+                      _buildMenuItem(
+                        TaskSortOrder.recommended,
+                        "Consigliato",
+                        Icons.auto_awesome,
+                      ),
+                      _buildMenuItem(
+                        TaskSortOrder.effort,
+                        "Per Fatica",
+                        Icons.fitness_center,
+                      ),
+                      _buildMenuItem(
+                        TaskSortOrder.satisfaction,
+                        "Per Soddisfazione",
+                        Icons.star,
+                      ),
                     ],
                   ),
                 ],
@@ -173,7 +211,11 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  PopupMenuItem<TaskSortOrder> _buildMenuItem(TaskSortOrder value, String text, IconData icon) {
+  PopupMenuItem<TaskSortOrder> _buildMenuItem(
+    TaskSortOrder value,
+    String text,
+    IconData icon,
+  ) {
     return PopupMenuItem(
       value: value,
       child: Row(
