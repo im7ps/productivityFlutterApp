@@ -1,17 +1,14 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/action_repository.dart';
 import '../domain/action.dart';
 
 part 'action_providers.g.dart';
 
 @riverpod
-Future<List<Action>> actionList(ActionListRef ref) async {
+Future<List<Action>> actionList(Ref ref) async {
   final repo = ref.watch(actionRepositoryProvider);
   final actions = await repo.getActions();
-  print("DEBUG: Fetched ${actions.length} actions from backend");
-  for (var a in actions) {
-    print("DEBUG: Action ID: ${a.id}, Dim: ${a.dimensionId}, Score: ${a.fulfillmentScore}");
-  }
   return actions;
 }
 
@@ -22,7 +19,7 @@ class ActionCreateController extends _$ActionCreateController {
     return const AsyncValue.data(null);
   }
 
-  Future<bool> createAction({
+  Future<Action?> createAction({
     required String dimensionId,
     required int fulfillmentScore,
     String? description,
@@ -30,7 +27,7 @@ class ActionCreateController extends _$ActionCreateController {
   }) async {
     final repo = ref.read(actionRepositoryProvider);
     state = const AsyncValue.loading();
-    
+
     final actionIn = ActionCreate(
       dimensionId: dimensionId,
       fulfillmentScore: fulfillmentScore,
@@ -38,13 +35,22 @@ class ActionCreateController extends _$ActionCreateController {
       startTime: startTime,
     );
 
-    state = await AsyncValue.guard(() => repo.createAction(actionIn));
-    
-    if (!state.hasError) {
-      // Forziamo il refresh del SSOT (Single Source of Truth)
+    final result = await AsyncValue.guard(() => repo.createAction(actionIn));
+    state = result;
+
+    if (!state.hasError && result.value != null) {
       ref.invalidate(actionListProvider);
-      return true;
+      return result.value;
     }
-    return false;
+    return null;
+  }
+
+  Future<void> deleteAction(String actionId) async {
+    final repo = ref.read(actionRepositoryProvider);
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() => repo.deleteAction(actionId));
+    if (!state.hasError) {
+      ref.invalidate(actionListProvider);
+    }
   }
 }

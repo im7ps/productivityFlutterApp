@@ -6,7 +6,9 @@ import '../../features/auth/presentation/login_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
 import '../../features/daily_log/presentation/screens/daily_log_list_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
+import '../../features/consultant/presentation/consultant_screen.dart';
 import 'router_notifier.dart';
+import '../../features/action/presentation/portfolio_screen.dart';
 
 part 'router_provider.g.dart';
 
@@ -26,13 +28,15 @@ GoRouter router(Ref ref) {
       // Usiamo lo stato interno del notifier che è sincronizzato con l'auth e onboarding
       if (notifier.isLoading) {
         print("DEBUG: Router is waiting for loading...");
-        return null; 
+        return null;
       }
 
       final isLoggedIn = notifier.isLoggedIn;
       final isOnboardingSeen = notifier.isOnboardingSeen;
-      
-      print("DEBUG: State -> LoggedIn: $isLoggedIn, OnboardingSeen: $isOnboardingSeen");
+
+      print(
+        "DEBUG: State -> LoggedIn: $isLoggedIn, OnboardingSeen: $isOnboardingSeen",
+      );
 
       final isLoggingIn = loc == '/login';
       final isOnboarding = loc == '/onboarding';
@@ -49,13 +53,13 @@ GoRouter router(Ref ref) {
         return isLoggingIn ? null : '/login';
       }
 
-      // 3. Prevent access to login if everything is done, 
+      // 3. Prevent access to login if everything is done,
       // but ALLOW /onboarding if requested manually (for re-watching)
       if (isLoggingIn) {
         print("DEBUG: Already logged in, redirecting to / (Dashboard)");
         return '/';
       }
-      
+
       if (isOnboarding && isLoggedIn) {
         print("DEBUG: Manual onboarding access allowed");
         return null;
@@ -66,11 +70,20 @@ GoRouter router(Ref ref) {
     routes: [
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(
-          path: '/onboarding',
-          builder: (context, state) => const OnboardingScreen()),
+        path: '/onboarding',
+        builder: (context, state) => const OnboardingScreen(),
+      ),
       GoRoute(
         path: '/daily-logs',
         builder: (context, state) => const DailyLogListScreen(),
+      ),
+      GoRoute(
+        path: '/consultant',
+        builder: (context, state) => const ConsultantScreen(),
+      ),
+      GoRoute(
+        path: '/portfolio',
+        builder: (context, state) => const PortfolioScreen(),
       ),
       GoRoute(path: '/', builder: (context, state) => const DashboardScreen()),
     ],

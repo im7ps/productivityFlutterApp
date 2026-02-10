@@ -1,53 +1,67 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Colori "Bussola Emotiva"
-  static const Color primaryDark = Color(0xFF1E1E2C);
-  static const Color accentTeal = Color(0xFF64FFDA);
-  static const Color surfaceDark = Color(0xFF2D2D44);
-  static const Color textWhite = Colors.white;
-  static const Color textDim = Colors.white70;
+  // Palette "Giorno 0"
+  static const Color background = Color(0xFF0F0F12);
+  static const Color surface = Color(0xFF1C1C21);
+  static const Color primary = Color(0xFF6366F1); // Indigo energico
+
+  // Colori delle Dimensioni
+  static const Color duty = Color(0xFFEF4444); // Rosso (Dovere)
+  static const Color passion = Color(0xFF10B981); // Smeraldo (Passione)
+  static const Color energy = Color(0xFFF59E0B); // Ambra (Energia)
+
+  static const Color textPrimary = Color(0xFFF8FAFC);
+  static const Color textSecondary = Color(0xFF94A3B8);
 
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
-      scaffoldBackgroundColor: primaryDark,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: accentTeal,
-        brightness: Brightness.dark,
-        surface: surfaceDark,
+      scaffoldBackgroundColor: background,
+      colorScheme: const ColorScheme.dark(
+        primary: primary,
+        surface: surface,
+        onSurface: textPrimary,
+        secondary: passion,
       ),
-      textTheme: const TextTheme(
-        // Per i titoli dell'onboarding e sezioni principali
-        displayLarge: TextStyle(
-          fontSize: 32,
-          fontWeight: FontWeight.bold,
-          color: textWhite,
-          letterSpacing: -0.5,
-          height: 1.2,
-        ),
-        displayMedium: TextStyle(
-          fontSize: 26,
-          fontWeight: FontWeight.w300,
-          color: textWhite,
-          height: 1.4,
-          letterSpacing: 0.2,
-        ),
-        // Per il corpo del testo cinematografico
-        bodyLarge: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w300,
-          color: textDim,
-          height: 1.6,
-        ),
-        // Per i bottoni e label
-        labelLarge: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 1.5,
-          color: textWhite,
-        ),
+      textTheme:
+          GoogleFonts.interTextTheme(
+            const TextTheme(
+              displayLarge: TextStyle(
+                fontSize: 48,
+                fontWeight: FontWeight.bold,
+                letterSpacing: -1.0,
+              ),
+              headlineMedium: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w600,
+                color: textPrimary,
+              ),
+              bodyLarge: TextStyle(
+                fontSize: 16,
+                color: textSecondary,
+                height: 1.5,
+              ),
+            ),
+          ).copyWith(
+            // Font speciale per il Rank e i numeri
+            displayMedium: GoogleFonts.bebasNeue(
+              fontSize: 84,
+              color: primary,
+              letterSpacing: 4,
+            ),
+          ),
+      cardTheme: CardThemeData(
+        color: surface,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: false,
       ),
     );
   }

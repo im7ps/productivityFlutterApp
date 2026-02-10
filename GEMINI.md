@@ -1,81 +1,99 @@
 # GEMINI.md
 
-## Project Overview
+## Project Vision: Day 0 - Action Engine
 
-This is a Flutter application with a Python backend. The project is designed to be a productivity tracker.
+**Philosophy:** The app is based on the "Day 0" philosophy: every morning resets everything. You have the opportunity to improve yourself *today*.
+**Goal:** Map passions and provide immediate stimulus for practice, eliminating excuses and delays. Less planning, more execution.
+
+---
+
+## Architecture & Conventions
+
+### Backend (Python/FastAPI)
+- **Stack:** Python 3.10+, FastAPI, SQLModel (Async), Alembic, PostgreSQL, Docker.
+- **Architecture:** Clean Architecture (Router -> Service -> Repository -> DB).
+- **Security:** JWT Auth, Pydantic v2 Strict Validation.
+- **Key Logic:**
+  - **Rank Engine:** Calculates daily score based on completed actions vs time blocks.
+  - **Consultant Engine:** Logic to select 3 specific tasks (Duty, Passion, Energy) based on user history/context.
+  - **Checkpoint System:** Handles logic for "Rolling over" or "Dropping" tasks at specific times (Breakfast, Lunch, Dinner).
 
 ### Frontend (Flutter)
+- **Stack:** Flutter (Latest), Dart.
+- **State Management:** **Riverpod Generator** (Strict enforcement).
+- **Architecture:** Feature-First Clean Architecture (Domain, Data, Presentation).
+- **Network:** Dio with Interceptors (for JWT refresh/Auth).
+- **UI/UX:** Material Design 3, customized for a "Gamified/Action" mood.
+- **Strategy:**
+  - **Core Layer:** Retain/Refactor Auth & Networking.
+  - **Feature Layer:** **COMPLETE REWRITE** of UI/Logic to match the "Day 0" screens below.
 
-The frontend is a Flutter application. The code is located in the `lib` directory. At the moment, the frontend is the default Flutter counter app.
+---
 
-### Backend (Python)
+## User Experience & Screens
 
-The backend is a Python FastAPI application. The code is located in the `backend` directory.
+### 1. Homepage: "Lo Specchio Dinamico" (The Dynamic Mirror)
+*Objective: Immediate awareness of the "Here and Now".*
 
-The backend provides the following features:
+- **Header - Rank Giorno 0:**
+  - Visual indicator (Circle/Badge) of the current daily Rank.
+  - *Interaction:* Tap to expand -> shows numeric score and comparison (e.g., "Top 10% of your history").
+- **Checkpoint Attivo:**
+  - Horizontal status bar dividing the day (Breakfast -> Lunch -> Dinner).
+  - Visualizes time remaining in the current block.
+- **Area "Identità in Azione":**
+  - Grid of resolved tasks (Icons only).
+  - Represents what the user has "become" today (e.g., Guitar icon, Gym icon).
+- **Action Button:**
+  - Single, large, central button.
+  - *Action:* Opens the "Consulente" (Selection Screen).
 
-*   User authentication (signup and login)
-*   Category management (create and list)
+### 2. Selection Screen: "Il Consulente" (The Consultant)
+*Objective: Removes decision paralysis via a curated shortlist.*
 
-The backend uses the following technologies:
+- **The 3 Proposals:**
+  - 3 Distinct Cards: **Dovere** (Duty), **Passione** (Passion), **Energia** (Energy).
+- **Task Detail:**
+  - Explains the "Why" (e.g., "+10 Satisfaction", "Best performed at this hour").
+- **Quick Add:**
+  - "+" Button to access the full Portfolio if the 3 proposals are rejected.
 
-*   **FastAPI:** A modern, fast (high-performance) web framework for building APIs with Python 3.7+ based on standard Python type hints.
-*   **SQLModel:** A library for interacting with SQL databases from Python code, with Python objects.
-*   **Alembic:** A lightweight database migration tool for usage with the SQLAlchemy Database Toolkit for Python.
-*   **PostgreSQL:** A powerful, open source object-relational database system.
-*   **Docker:** The backend is designed to be run in a Docker container.
+### 3. Portfolio Screen: "La Biblioteca del Sé" (Library of Self)
+*Objective: The database of potential actions.*
 
-## Building and Running
+- **Organization:** Filter by User Tags (Passion, Duty, Hygiene, etc.).
+- **Stats Cards:** Each task shows:
+  - Completion count.
+  - Average effort.
+  - Average satisfaction.
+- **Interaction:** Drag & Drop a task into the "Checkpoint Attivo" to "book" it for the current block.
+
+### 4. Checkpoint Mechanism
+*Objective: Review and Reset.*
+
+- **Trigger:** Opens at specific times (Breakfast/Lunch/Dinner).
+- **Question:** "What happened since the last checkpoint?"
+- **Accumulation Management:**
+  - Options for uncompleted tasks: **Rilancia** (Move to next block) or **Abbandona** (Reset for today - strictly Day 0).
+- **Feedback:** Visual Rank update animation after confirmation.
+
+---
+
+## Development Setup
 
 ### Backend
-
-To run the backend, you need to have Docker and Docker Compose installed.
-
-1.  Navigate to the `backend` directory.
-2.  Run the following command:
-
-```bash
-docker-compose up -d
-```
-
-The backend will be available at `http://localhost:8000`.
+1. `cd backend`
+2. `docker-compose up -d`
+3. Swagger UI: `http://localhost:8000/docs`
 
 ### Frontend
-
-To run the frontend, you need to have Flutter installed.
-
-1.  Navigate to the root directory of the project.
-2.  Run the following command:
-
-```bash
-flutter run
-```
-
-## Development Conventions
-
-### Backend
-
-The backend code follows the standard FastAPI project structure. It uses a `.env` file for environment variables. A `.env.example` file is provided to show the required variables.
-
-### Frontend
-
-The frontend code follows the standard Flutter project structure.
+1. `flutter pub get`
+2. `flutter run`
+3. Use `flutter pub run build_runner watch` for Riverpod/Freezed generation.
 
 ## Database Migrations
+- Create: `alembic revision --autogenerate -m "message"`
+- Apply: `alembic upgrade head`
 
-The project uses Alembic for database migrations. To create a new migration, run the following command in the `backend` directory:
-
-```bash
-alembic revision --autogenerate -m "Your migration message"
-```
-
-To apply the migrations, run the following command:
-
-```bash
-alembic upgrade head
-```
-## Authentication
-
-The backend uses JWT for authentication. The secret key for JWT (SECRET_KEY), along with the algorithm (ALGORITHM) and token expiration minutes (ACCESS_TOKEN_EXPIRE_MINUTES), are now managed via environment variables passed to the backend service in `docker-compose.yml`.
-
-**IMPORTANT:** Ensure you change the placeholder `SECRET_KEY` in your `docker-compose.yml` file to a strong, unique secret before deploying or sharing. You can generate a strong key using tools like `openssl rand -hex 32`.
+## Environment
+- **Secrets:** Managed via `docker-compose.yml` (Change `SECRET_KEY` for production).

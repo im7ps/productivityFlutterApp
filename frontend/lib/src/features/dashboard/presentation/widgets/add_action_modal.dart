@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/constants/app_strings.dart';
 import '../../../dimension/presentation/dimension_providers.dart';
 import '../../../action/presentation/action_providers.dart';
+import '../../domain/action_category_data.dart';
+import 'icon_action_selector.dart';
+import 'visual_fulfillment_selector.dart';
 
 class AddActionModal extends ConsumerStatefulWidget {
   const AddActionModal({super.key});
@@ -12,134 +14,202 @@ class AddActionModal extends ConsumerStatefulWidget {
 }
 
 class _AddActionModalState extends ConsumerState<AddActionModal> {
-  final _formKey = GlobalKey<FormState>();
-  final _descriptionController = TextEditingController();
   String? _selectedDimensionId;
+  String? _selectedActionKey;
   int _fulfillmentScore = 3;
+  bool _isSubmitting = false;
   
   final DateTime _startTime = DateTime.now();
 
-  @override
-  void dispose() {
-    _descriptionController.dispose();
-    super.dispose();
-  }
+  Future<void> _submit() async {
+    if (_isSubmitting) return;
+    
+    if (_selectedDimensionId != null && _selectedActionKey != null) {
+      setState(() => _isSubmitting = true);
+      
+      await Future.delayed(const Duration(milliseconds: 600));
+      
+      if (!mounted) return;
 
-  void _submit() async {
-    if (_formKey.currentState!.validate() && _selectedDimensionId != null) {
-      final success = await ref
+      final action = await ref
           .read(actionCreateControllerProvider.notifier)
           .createAction(
             startTime: _startTime,
-            description: _descriptionController.text.isEmpty ? null : _descriptionController.text,
+            description: _selectedActionKey,
             dimensionId: _selectedDimensionId!,
             fulfillmentScore: _fulfillmentScore,
           );
 
-      if (success && mounted) {
-        Navigator.of(context).pop();
+      if (action != null && mounted) {
+        Navigator.of(context).pop(action);
+      } else {
+        if (mounted) setState(() => _isSubmitting = false);
       }
-    } else if (_selectedDimensionId == null) {
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Seleziona una dimensione")),
+        const SnackBar(content: Text("Seleziona una Dimensione e un'Attività")),
       );
+    }
+  }
+
+  void _onFulfillmentChanged(int val) {
+    if (_isSubmitting) return;
+    setState(() => _fulfillmentScore = val);
+    
+    if (_selectedDimensionId != null && _selectedActionKey != null) {
+      _submit();
+    }
+  }
+
+  Color _getDimensionColor(String? dimensionId) {
+    if (dimensionId == null) return const Color(0xFF64FFDA); 
+    switch (dimensionId.toLowerCase()) {
+      case 'energy': return const Color(0xFFE64A19);
+      case 'clarity': return const Color(0xFF006064);
+      case 'relationships': return const Color(0xFFFBC02D);
+      case 'soul': return const Color(0xFF6A1B9A);
+      default: return const Color(0xFF64FFDA);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final dimensionsAsync = ref.watch(dimensionsListProvider);
-    final createControllerState = ref.watch(actionCreateControllerProvider);
+    final activeColor = _getDimensionColor(_selectedDimensionId);
 
-    final isLoading = createControllerState.isLoading;
-
-    return Padding(
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 20,
+            offset: const Offset(0, -5),
+          )
+        ],
+      ),
       padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
         left: 24,
         right: 24,
-        top: 24,
+        top: 12, // Reduced top padding for drag handle
       ),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              AppStrings.newActionTitle,
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 24),
-            
-            // Dimension Selection
-            dimensionsAsync.when(
-              data: (dimensions) {
-                return DropdownButtonFormField<String>(
-                  decoration: const InputDecoration(
-                    labelText: AppStrings.dimensionLabel,
-                    border: OutlineInputBorder(),
-                  ),
-                  items: dimensions.map((dim) {
-                    return DropdownMenuItem(
-                      value: dim.id,
-                      child: Text(dim.name),
-                    );
-                  }).toList(),
-                  onChanged: (val) => setState(() => _selectedDimensionId = val),
-                );
-              },
-              loading: () => const LinearProgressIndicator(),
-              error: (err, stack) => Text('${AppStrings.errorLoadingDimensions}: $err'),
-            ),
-            
-            const SizedBox(height: 24),
-
-            // Fulfillment Score
-            const Text("Quanto ti ha nutrito? (1-5)"),
-            Slider(
-              value: _fulfillmentScore.toDouble(),
-              min: 1,
-              max: 5,
-              divisions: 4,
-              label: _fulfillmentScore.toString(),
-              onChanged: (val) => setState(() => _fulfillmentScore = val.round()),
-            ),
-            
-            const SizedBox(height: 16),
-
-            // Descrizione Input
-            TextFormField(
-              controller: _descriptionController,
-              decoration: const InputDecoration(
-                labelText: AppStrings.descriptionLabel,
-                border: OutlineInputBorder(),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.85,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min, // Vital for BottomSheet
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Drag Handle
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 24, top: 8),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
-            
-            const SizedBox(height: 32),
-            
-            if (createControllerState.hasError)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: Text(
-                  createControllerState.error.toString(),
-                  style: const TextStyle(color: Colors.red),
-                ),
-              ),
+          ),
+          
+          Text(
+            "Nuova Attività",
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
 
+          // 1. Dimension Selector
+          dimensionsAsync.when(
+            data: (dimensions) => SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: dimensions.map((dim) {
+                  final isSelected = _selectedDimensionId == dim.id;
+                  final dimColor = _getDimensionColor(dim.id);
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: ChoiceChip(
+                      label: Text(dim.name),
+                      selected: isSelected,
+                      selectedColor: dimColor.withValues(alpha: 0.2),
+                      side: isSelected ? BorderSide(color: dimColor) : null,
+                      labelStyle: TextStyle(
+                        color: isSelected ? dimColor : null,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      ),
+                      onSelected: (selected) {
+                        setState(() {
+                          _selectedDimensionId = selected ? dim.id : null;
+                          // Optional: Clear activity if dimension changes and current activity is not valid for new dim
+                          if (_selectedActionKey != null && !ActionCategory.isKnown(_selectedActionKey)) {
+                             _selectedActionKey = null;
+                          }
+                        });
+                      },
+                      showCheckmark: false,
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+            loading: () => const LinearProgressIndicator(),
+            error: (_, __) => const SizedBox(),
+          ),
+          
+          const SizedBox(height: 24),
+
+          // 2. Action Selector (Using Flexible to prevent overflow while remaining scrollable)
+          Flexible(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: IconActionSelector(
+                dimensionId: _selectedDimensionId,
+                selectedAction: _selectedActionKey,
+                onSelected: (val) => setState(() => _selectedActionKey = val),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          // 3. Fulfillment (Visual Scale)
+          Text(
+            "Intensità",
+            style: Theme.of(context).textTheme.labelLarge,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+          
+          VisualFulfillmentSelector(
+            value: _fulfillmentScore,
+            activeColor: activeColor,
+            isSubmitting: _isSubmitting,
+            icon: Icons.bolt,
+            onChanged: _onFulfillmentChanged,
+          ),
+
+          const SizedBox(height: 48),
+
+          if (_selectedDimensionId == null || _selectedActionKey == null)
             ElevatedButton(
-              onPressed: isLoading ? null : _submit,
+              onPressed: null,
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
               ),
-              child: isLoading 
-                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                : const Text("SALVA"),
+              child: const Text("SELEZIONA ATTIVITÀ"),
             ),
-            const SizedBox(height: 32),
-          ],
-        ),
+          const SizedBox(height: 16),
+        ],
       ),
     );
   }

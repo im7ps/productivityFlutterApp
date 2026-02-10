@@ -6,7 +6,7 @@ part of 'action_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$actionListHash() => r'819be075e01c5fa8c406822af7c3ad2b60ae3749';
+String _$actionListHash() => r'8e2f7de0a9114cacf344dd070dce30e3fb52f222';
 
 /// See also [actionList].
 @ProviderFor(actionList)

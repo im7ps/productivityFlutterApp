@@ -31,6 +31,9 @@ dependencies:
   fpdart: ^1.1.0
   shared_preferences: ^2.5.3
   flutter_dotenv: ^6.0.0
+  google_fonts: ^6.3.2
+  font_awesome_flutter: ^10.9.1
+  percent_indicator: ^4.2.5
 
 dev_dependencies:
   flutter_test:

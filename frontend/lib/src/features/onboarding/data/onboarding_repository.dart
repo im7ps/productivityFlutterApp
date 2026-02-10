@@ -1,11 +1,11 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/storage/storage_provider.dart';
 
 part 'onboarding_repository.g.dart';
 
 @riverpod
-OnboardingRepository onboardingRepository(OnboardingRepositoryRef ref) {
+OnboardingRepository onboardingRepository(Ref ref) {
   // We use requireValue because we assume SharedPreferences is initialized at app startup
   // or we handle the loading state in the controller.
   // Actually, sharedPreferencesProvider is a Future, so let's handle it gracefully.
@@ -16,7 +16,7 @@ OnboardingRepository onboardingRepository(OnboardingRepositoryRef ref) {
 }
 
 class OnboardingRepository {
-  final OnboardingRepositoryRef _ref;
+  final Ref _ref;
   static const _onboardingSeenKey = 'onboarding_seen';
 
   OnboardingRepository(this._ref);

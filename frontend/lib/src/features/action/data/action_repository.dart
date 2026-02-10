@@ -33,12 +33,20 @@ class ActionRepository {
 
   Future<Action> createAction(ActionCreate action) async {
     try {
-      print("DEBUG: Creating action with data: ${action.toJson()}");
       final response = await _dio.post('/api/v1/actions/', data: action.toJson());
-      print("DEBUG: Create action response: ${response.data}");
       return Action.fromJson(response.data);
     } catch (e, stack) {
       print("ERROR in createAction: $e");
+      print(stack);
+      rethrow;
+    }
+  }
+
+  Future<void> deleteAction(String actionId) async {
+    try {
+      await _dio.delete('/api/v1/actions/$actionId');
+    } catch (e, stack) {
+      print("ERROR in deleteAction: $e");
       print(stack);
       rethrow;
     }

@@ -18,7 +18,11 @@ class Action(SQLModel, table=True):
     end_time: Optional[datetime] = Field(default=None)
     description: Optional[str] = None
     
-    # Fulfillment Score (1-5)
+    # Day 0 specific fields
+    category: str = Field(default="Dovere", index=True) # Dovere, Passione, Energia, etc.
+    difficulty: int = Field(default=3, ge=1, le=5)
+    
+    # Fulfillment Score (1-5) - acts as satisfaction
     fulfillment_score: int = Field(default=3, ge=1, le=5)
 
     user_id: uuid.UUID = Field(foreign_key="user.id", index=True)
