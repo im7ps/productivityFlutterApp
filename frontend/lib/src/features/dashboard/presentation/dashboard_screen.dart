@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import '../../auth/presentation/auth_controller.dart';
-import 'dashboard_providers_mock.dart';
+import 'dashboard_providers.dart';
 import 'widgets/day0/rank_widget.dart';
 import 'widgets/day0/checkpoint_bar.dart';
 import 'widgets/day0/identity_grid.dart';
@@ -169,7 +169,7 @@ class DashboardScreen extends ConsumerWidget {
                     ),
                     color: theme.colorScheme.surface,
                     onSelected: (order) =>
-                        ref.read(taskSortProvider.notifier).state = order,
+                        ref.read(taskSortProvider.notifier).setSortOrder(order),
                     itemBuilder: (context) => [
                       _buildMenuItem(
                         TaskSortOrder.recommended,

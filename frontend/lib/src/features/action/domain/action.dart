@@ -11,6 +11,8 @@ class Action with _$Action {
     required DateTime startTime,
     DateTime? endTime,
     String? description,
+    @Default("Dovere") String category,
+    @Default(3) int difficulty,
     required int fulfillmentScore,
     required String userId,
     required String dimensionId,
@@ -28,6 +30,9 @@ class ActionCreate with _$ActionCreate {
     DateTime? endTime,
     required String dimensionId,
     required int fulfillmentScore,
+    @Default("Dovere") String category,
+    @Default(3) int difficulty,
+    @Default("COMPLETED") String status,
   }) = _ActionCreate;
 
   factory ActionCreate.fromJson(Map<String, dynamic> json) => _$ActionCreateFromJson(json);

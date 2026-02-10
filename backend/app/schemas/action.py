@@ -14,6 +14,7 @@ class ActionBase(TunableBaseModel):
     description: Optional[str] = None
     category: str = "Dovere"
     difficulty: int = 3
+    status: str = "COMPLETED"
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
     dimension_id: Optional[str] = None # Now String

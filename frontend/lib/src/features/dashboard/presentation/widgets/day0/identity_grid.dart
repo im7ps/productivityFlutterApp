@@ -1,14 +1,17 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../dashboard_providers_mock.dart';
+import '../../dashboard_providers.dart';
 
 class IdentityGrid extends ConsumerWidget {
   final List<TaskUIModel> tasks;
   final Function(TaskUIModel) onTaskLongPress;
 
-  const IdentityGrid({super.key, required this.tasks, required this.onTaskLongPress});
+  const IdentityGrid({
+    super.key,
+    required this.tasks,
+    required this.onTaskLongPress,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -41,7 +44,7 @@ class IdentityGrid extends ConsumerWidget {
             // Calcoliamo i valori in modo sicuro
             final shadowBlur = (value * 12).clamp(0.0, double.infinity);
             final opacity = (value * 0.15 + 0.05).clamp(0.0, 1.0);
-            
+
             return GestureDetector(
               onTap: () {
                 HapticFeedback.mediumImpact();
@@ -53,23 +56,27 @@ class IdentityGrid extends ConsumerWidget {
               },
               child: Container(
                 decoration: BoxDecoration(
-                  color: task.isCompleted 
-                      ? task.color.withValues(alpha: opacity) 
+                  color: task.isCompleted
+                      ? task.color.withValues(alpha: opacity)
                       : Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: task.isCompleted 
-                        ? task.color.withValues(alpha: value.clamp(0.2, 1.0)) 
-                        : Theme.of(context).colorScheme.outline.withValues(alpha: 0.1),
+                    color: task.isCompleted
+                        ? task.color.withValues(alpha: value.clamp(0.2, 1.0))
+                        : Theme.of(
+                            context,
+                          ).colorScheme.outline.withValues(alpha: 0.1),
                     width: task.isCompleted ? 2 : 1,
                   ),
-                  boxShadow: shadowBlur > 0 
+                  boxShadow: shadowBlur > 0
                       ? [
                           BoxShadow(
-                            color: task.color.withValues(alpha: (value * 0.4).clamp(0.0, 1.0)),
+                            color: task.color.withValues(
+                              alpha: (value * 0.4).clamp(0.0, 1.0),
+                            ),
                             blurRadius: shadowBlur,
                             spreadRadius: value,
-                          )
+                          ),
                         ]
                       : [],
                 ),
@@ -80,9 +87,11 @@ class IdentityGrid extends ConsumerWidget {
                       scale: 0.8 + (value * 0.2),
                       child: Icon(
                         task.icon,
-                        color: task.isCompleted 
-                            ? task.color 
-                            : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
+                        color: task.isCompleted
+                            ? task.color
+                            : Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withValues(alpha: 0.3),
                         size: 24,
                       ),
                     ),

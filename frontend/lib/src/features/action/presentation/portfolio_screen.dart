@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
-import '../../dashboard/presentation/dashboard_providers_mock.dart';
+import '../../dashboard/presentation/dashboard_providers.dart';
 import 'widgets/portfolio_card.dart';
 
 class PortfolioScreen extends ConsumerStatefulWidget {
@@ -112,8 +112,123 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen> {
   }
 
   void _showCreateTaskModal() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Il Costruttore di Missioni arriverà presto.")),
+    String newTitle = "";
+    String newCategory = "Dovere";
+    double newDifficulty = 3.0;
+    double newSatisfaction = 3.0;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setStateModal) => Container(
+          padding: EdgeInsets.fromLTRB(24, 24, 24, MediaQuery.of(context).viewInsets.bottom + 24),
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            border: Border.all(color: Colors.white10),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("NUOVA MISSIONE", style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 24),
+              TextField(
+                autofocus: true,
+                decoration: const InputDecoration(
+                  labelText: "TITOLO",
+                  hintText: "Es. Leggere 10 pagine",
+                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.white10,
+                ),
+                onChanged: (val) => newTitle = val,
+              ),
+              const SizedBox(height: 24),
+              Text("CATEGORIA", style: Theme.of(context).textTheme.labelSmall),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                children: ["Dovere", "Passione", "Energia", "Anima", "Relazioni"].map((cat) {
+                  final isSelected = newCategory == cat;
+                  return ChoiceChip(
+                    label: Text(cat),
+                    selected: isSelected,
+                    onSelected: (sel) {
+                      if (sel) setStateModal(() => newCategory = cat);
+                    },
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 24),
+              _buildSliderRow("FATICA", newDifficulty, (val) => setStateModal(() => newDifficulty = val)),
+              const SizedBox(height: 16),
+              _buildSliderRow("SODDISFAZIONE", newSatisfaction, (val) => setStateModal(() => newSatisfaction = val)),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    if (newTitle.isEmpty) return;
+                    
+                    final newTask = TaskUIModel(
+                      id: DateTime.now().millisecondsSinceEpoch.toString(),
+                      title: newTitle,
+                      icon: FontAwesomeIcons.circle, // Default
+                      color: Colors.grey, // Sarà calcolato dal provider o qui
+                      difficulty: newDifficulty.round(),
+                      satisfaction: newSatisfaction.round(),
+                      category: newCategory,
+                      isCompleted: false,
+                    );
+                    
+                    // Invia al provider
+                    ref.read(taskListProvider.notifier).addTasks([newTask]);
+                    
+                    Navigator.pop(context);
+                    context.go('/');
+                    
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Missione '$newTitle' forgiata!")),
+                    );
+                  },
+                  icon: const Icon(Icons.add),
+                  label: const Text("CREA E AGGIUNGI"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSliderRow(String label, double value, Function(double) onChanged) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(label, style: Theme.of(context).textTheme.labelSmall),
+            Text(value.round().toString(), style: const TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
+        Slider(
+          value: value,
+          min: 1,
+          max: 5,
+          divisions: 4,
+          onChanged: onChanged,
+        ),
+      ],
     );
   }
 

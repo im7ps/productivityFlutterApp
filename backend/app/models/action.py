@@ -19,8 +19,9 @@ class Action(SQLModel, table=True):
     description: Optional[str] = None
     
     # Day 0 specific fields
-    category: str = Field(default="Dovere", index=True) # Dovere, Passione, Energia, etc.
+    category: str = Field(default="Dovere", index=True) 
     difficulty: int = Field(default=3, ge=1, le=5)
+    status: str = Field(default="COMPLETED", index=True) # COMPLETED, FAILED, POSTPONED
     
     # Fulfillment Score (1-5) - acts as satisfaction
     fulfillment_score: int = Field(default=3, ge=1, le=5)

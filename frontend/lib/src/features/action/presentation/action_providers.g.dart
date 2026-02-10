@@ -6,7 +6,7 @@ part of 'action_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$actionListHash() => r'8e2f7de0a9114cacf344dd070dce30e3fb52f222';
+String _$actionListHash() => r'e3ee209e707bc3090c4b21a339e1f696afafec79';
 
 /// See also [actionList].
 @ProviderFor(actionList)
@@ -24,7 +24,7 @@ final actionListProvider = AutoDisposeFutureProvider<List<Action>>.internal(
 // ignore: unused_element
 typedef ActionListRef = AutoDisposeFutureProviderRef<List<Action>>;
 String _$actionCreateControllerHash() =>
-    r'11558a77781979a6cdff32a8e645b36ec056fbfa';
+    r'71a6682566737d86aa56410f1ab5232e1aea17e0';
 
 /// See also [ActionCreateController].
 @ProviderFor(ActionCreateController)
