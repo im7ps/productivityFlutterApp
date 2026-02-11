@@ -6,25 +6,27 @@ part of 'action_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$actionListHash() => r'e3ee209e707bc3090c4b21a339e1f696afafec79';
+String _$actionListHash() => r'73c8fa8e5f6a074c09a2b13aec6ada41de0eb462';
 
 /// See also [actionList].
 @ProviderFor(actionList)
-final actionListProvider = AutoDisposeFutureProvider<List<Action>>.internal(
-  actionList,
-  name: r'actionListProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$actionListHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+final actionListProvider =
+    AutoDisposeFutureProvider<List<domain_action.Action>>.internal(
+      actionList,
+      name: r'actionListProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$actionListHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef ActionListRef = AutoDisposeFutureProviderRef<List<Action>>;
+typedef ActionListRef =
+    AutoDisposeFutureProviderRef<List<domain_action.Action>>;
 String _$actionCreateControllerHash() =>
-    r'71a6682566737d86aa56410f1ab5232e1aea17e0';
+    r'4874430498ec31a48849e6b3a9b85ee21175f093';
 
 /// See also [ActionCreateController].
 @ProviderFor(ActionCreateController)

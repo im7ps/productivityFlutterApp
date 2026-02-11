@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../l10n/app_localizations.dart';
 import 'onboarding_controller.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
@@ -76,6 +77,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     
     return Scaffold(
       body: AnimatedContainer(
@@ -92,33 +94,33 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     // Slide 1
                     _buildPage(
                       context,
-                      title: "C'è troppo rumore.",
-                      body: "Tra notifiche, scadenze e vite apparentemente perfette degli altri, è facile sentirsi smarriti.\n\nCi hanno insegnato a riempire le giornate, ma non a viverle. Ci hanno detto di accumulare traguardi, ma ci sentiamo spesso vuoti.",
+                      title: l10n.onboardingTitle1,
+                      body: l10n.onboardingBody1,
                     ),
                     // Slide 2
                     _buildPage(
                       context,
-                      title: "La felicità non è una checklist.",
-                      body: "Non è finire tutte le task. Non è avere più follower.\n\nLa felicità è Connessione (con chi ami davvero). È Presenza (essere qui, ora, non nello schermo). È Autonomia (scegliere cosa ti fa stare bene).",
+                      title: l10n.onboardingTitle2,
+                      body: l10n.onboardingBody2,
                     ),
                     // Slide 3
                     _buildPage(
                       context,
-                      title: "Ogni giorno è il Giorno 1.",
-                      body: "Qui non ci sono catene da mantenere o punteggi che scendono se ti fermi. Il passato è archiviato. Il futuro non esiste ancora.\n\nHai solo oggi per riempire le tue barre di Energia, Chiarezza, Tribù e Anima. Quello che fai oggi, conta solo per oggi. E va bene così.",
+                      title: l10n.onboardingTitle3,
+                      body: l10n.onboardingBody3,
                       child: _buildAnimatedBar(),
                     ),
                     // Slide 4
                     _buildPage(
                       context,
-                      title: "What I've Done.",
-                      body: "Questa app non serve a renderti più produttivo. Serve a renderti più te stesso.\n\nScegli le tue battaglie. Ignora il resto.\n\nBenvenuto nel tuo equilibrio.",
+                      title: l10n.onboardingTitle4,
+                      body: l10n.onboardingBody4,
                       isFinal: true,
                     ),
                   ],
                 ),
               ),
-              _buildBottomButton(theme),
+              _buildBottomButton(theme, l10n),
             ],
           ),
         ),
@@ -219,28 +221,28 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  Widget _buildBottomButton(ThemeData theme) {
+  Widget _buildBottomButton(ThemeData theme, AppLocalizations l10n) {
     String label;
     VoidCallback? action;
 
     switch (_currentPage) {
       case 0:
-        label = "Respiro profondo";
+        label = l10n.onboardingStep0;
         action = () {
           HapticFeedback.heavyImpact();
           _nextPage();
         };
         break;
       case 1:
-        label = "Capisco";
+        label = l10n.onboardingStep1;
         action = _nextPage;
         break;
       case 2:
-        label = "Sono pronto";
+        label = l10n.onboardingStep2;
         action = _nextPage;
         break;
       case 3:
-        label = "Inizia la Giornata";
+        label = l10n.onboardingStep3;
         action = _finishOnboarding;
         break;
       default:

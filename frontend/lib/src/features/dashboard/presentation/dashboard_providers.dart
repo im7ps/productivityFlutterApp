@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../action/data/action_repository.dart';
 import '../../action/domain/action.dart';
@@ -115,7 +116,7 @@ class TaskList extends _$TaskList {
 }
 
 @riverpod
-List<TaskUIModel> filteredTasks(FilteredTasksRef ref) {
+List<TaskUIModel> filteredTasks(Ref ref) {
   final tasksAsync = ref.watch(taskListProvider);
   final sort = ref.watch(taskSortProvider);
 
@@ -140,7 +141,7 @@ List<TaskUIModel> filteredTasks(FilteredTasksRef ref) {
 }
 
 @riverpod
-double rank(RankRef ref) {
+double rank(Ref ref) {
   final tasksAsync = ref.watch(taskListProvider);
   return tasksAsync.maybeWhen(
     data: (tasks) {
@@ -153,7 +154,7 @@ double rank(RankRef ref) {
 }
 
 @riverpod
-String rankLabel(RankLabelRef ref) {
+String rankLabel(Ref ref) {
   final score = ref.watch(rankProvider);
   if (score >= 1.0) return "GOD";
   if (score >= 0.75) return "S";

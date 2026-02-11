@@ -51,8 +51,8 @@
 ### 2. Selection Screen: "Il Consulente" (The Consultant)
 *Objective: Removes decision paralysis via a curated shortlist.*
 
-- **The 3 Proposals:**
-  - 3 Distinct Cards: **Dovere** (Duty), **Passione** (Passion), **Energia** (Energy).
+- **The 5 Proposals:**
+  - 5 Distinct Cards: **Dovere** (Duty), **Passione** (Passion), **Energia** (Energy), etc.
 - **Task Detail:**
   - Explains the "Why" (e.g., "+10 Satisfaction", "Best performed at this hour").
 - **Quick Add:**

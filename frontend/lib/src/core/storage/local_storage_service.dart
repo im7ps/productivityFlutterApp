@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../features/dashboard/presentation/dashboard_models.dart';
@@ -6,18 +7,17 @@ import '../../features/dashboard/presentation/dashboard_models.dart';
 part 'local_storage_service.g.dart';
 
 @riverpod
-LocalStorageService localStorageService(LocalStorageServiceRef ref) {
+LocalStorageService localStorageService(Ref ref) {
   return LocalStorageService();
 }
 
 class LocalStorageService {
   static const String _tasksKey = 'day0_tasks_v1';
-  static const String _lastCheckpointKey = 'day0_last_checkpoint';
 
   Future<List<TaskUIModel>> loadTasks() async {
     final prefs = await SharedPreferences.getInstance();
     final String? jsonString = prefs.getString(_tasksKey);
-    
+
     if (jsonString == null) return [];
 
     try {
@@ -38,5 +38,15 @@ class LocalStorageService {
   Future<void> clearTasks() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tasksKey);
+  }
+
+  Future<String?> getString(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(key);
+  }
+
+  Future<void> setString(String key, String value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(key, value);
   }
 }

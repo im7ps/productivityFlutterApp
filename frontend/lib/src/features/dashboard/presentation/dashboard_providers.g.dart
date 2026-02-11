@@ -6,7 +6,7 @@ part of 'dashboard_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$filteredTasksHash() => r'c06e6a8753c716f54a76b88aba8fc996afaaade0';
+String _$filteredTasksHash() => r'3734715830b5225283520bb47e50c1866993db58';
 
 /// See also [filteredTasks].
 @ProviderFor(filteredTasks)
@@ -23,7 +23,7 @@ final filteredTasksProvider = AutoDisposeProvider<List<TaskUIModel>>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef FilteredTasksRef = AutoDisposeProviderRef<List<TaskUIModel>>;
-String _$rankHash() => r'349a23a91bd4f90d9dfc64efed5ddf487932e9e9';
+String _$rankHash() => r'973fd441ce48b070ed16b734f49196d15fe6d0b5';
 
 /// See also [rank].
 @ProviderFor(rank)
@@ -40,7 +40,7 @@ final rankProvider = AutoDisposeProvider<double>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef RankRef = AutoDisposeProviderRef<double>;
-String _$rankLabelHash() => r'4fa4bbcaa9b383150084b4f8d8cea6fd2e302392';
+String _$rankLabelHash() => r'50fcd6d29f4805e7c1d30669068be247030dd86e';
 
 /// See also [rankLabel].
 @ProviderFor(rankLabel)

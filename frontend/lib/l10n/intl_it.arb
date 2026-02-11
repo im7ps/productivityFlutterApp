@@ -1,0 +1,40 @@
+{
+  "@@locale": "it",
+  "dashboardTitle": "RANK ATTUALE",
+  "arsenalTitle": "IL TUO ARSENALE DI OGGI",
+  "settingsTitle": "IMPOSTAZIONI",
+  "appearanceSection": "ASPETTO",
+  "themeOption": "Tema",
+  "languageOption": "Lingua",
+  "chooseTheme": "Scegli il tema",
+  "chooseLanguage": "Scegli la lingua",
+  "themeSystem": "Predefinito di sistema",
+  "themeLight": "Chiaro",
+  "themeDark": "Scuro",
+  "portfolioTitle": "PORTFOLIO",
+  "missionBriefingTitle": "MISSION BRIEFING",
+  "tacticalPriorities": "Le 5 priorità tattiche rilevate per te.",
+  "addedToArsenal": "Missione '{title}' aggiunta all'arsenale!",
+  "infoSection": "INFO",
+  "rewatchOnboarding": "Rivedi Onboarding",
+  "onboardingSubtitle": "Scopri come funziona l'app",
+  "onboardingTitle1": "C'è troppo rumore.",
+  "onboardingBody1": "Tra notifiche, scadenze e vite apparentemente perfette degli altri, è facile sentirsi smarriti.\n\nCi hanno insegnato a riempire le giornate, ma non a viverle. Ci hanno detto di accumulare traguardi, ma ci sentiamo spesso vuoti.",
+  "onboardingTitle2": "La felicità non è una checklist.",
+  "onboardingBody2": "Non è finire tutte le task. Non è avere più follower.\n\nLa felicità è Connessione (con chi ami davvero). È Presenza (essere qui, ora, non nello schermo). È Autonomia (scegliere cosa ti fa stare bene).",
+  "onboardingTitle3": "Ogni giorno è il Giorno 1.",
+  "onboardingBody3": "Qui non ci sono catene da mantenere o punteggi che scendono se ti fermi. Il passato è archiviato. Il futuro non esiste ancora.\n\nHai solo oggi per riempire le tue barre di Energia, Chiarezza, Tribù e Anima. Quello che fai oggi, conta solo per oggi. E va bene così.",
+  "onboardingTitle4": "What I've Done.",
+  "onboardingBody4": "Questa app non serve a renderti più produttivo. Serve a renderti più te stesso.\n\nScegli le tue battaglie. Ignora il resto.\n\nBenvenuto nel tuo equilibrio.",
+  "onboardingStep0": "Respiro profondo",
+  "onboardingStep1": "Capisco",
+  "onboardingStep2": "Sono pronto",
+  "onboardingStep3": "Inizia la Giornata",
+  "@addedToArsenal": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  }
+}

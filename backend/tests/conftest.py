@@ -10,7 +10,8 @@ from sqlalchemy.orm import sessionmaker
 from testcontainers.postgres import PostgresContainer
 from testcontainers.core.wait_strategies import LogMessageWaitStrategy
 from httpx import AsyncClient, ASGITransport
-from sqlmodel import SQLModel
+from sqlmodel import SQLModel, select # Added select
+from app.models.user import User # Added for test_user fixture
 
 # Import application components
 from app.main import app
@@ -222,3 +223,62 @@ def auth_user_context(test_client: AsyncClient):
         }
 
     return _create_user_and_login
+
+
+@pytest_asyncio.fixture(scope="function")
+async def auth_token_data(auth_user_context: callable) -> dict:
+    """
+    Registers and logs in a user once per test, providing shared data for other fixtures.
+    """
+    return await auth_user_context("shared")
+
+
+@pytest_asyncio.fixture(scope="function")
+async def authenticated_client(
+    test_client: AsyncClient,
+    auth_token_data: dict,
+) -> AsyncGenerator[AsyncClient, None]:
+    """
+    Provides an AsyncClient that is pre-authenticated with the shared user.
+    """
+    test_client.headers.update(auth_token_data["headers"])
+    yield test_client
+    test_client.headers.clear() # Clear headers after test to avoid side effects
+
+
+@pytest_asyncio.fixture(scope="function")
+async def test_user(
+    auth_token_data: dict,
+    db_session: AsyncSession,
+) -> User:
+    """
+    Provides the User object for the authenticated user shared across fixtures.
+    """
+    # Corrected: use session.execute and .scalars().first() for async session
+    result = await db_session.execute(select(User).where(User.id == auth_token_data["user_id"]))
+    user = result.scalars().first()
+    assert user is not None
+    return user
+
+
+@pytest_asyncio.fixture(scope="function", autouse=True)
+async def initial_dimensions(db_session: AsyncSession):
+    """
+    Populates the database with initial Dimension data required for consultant proposals.
+    """
+    from app.models.dimension import Dimension # Import Dimension here to avoid circular dependencies if used globally
+
+    dimensions_to_add = [
+        Dimension(id="dovere", name="Dovere", description="Tasks related to duties."),
+        Dimension(id="passione", name="Passione", description="Tasks related to passions."),
+        Dimension(id="energia", name="Energia", description="Tasks related to energy."),
+        Dimension(id="relazioni", name="Relazioni", description="Tasks related to relationships."),
+        Dimension(id="anima", name="Anima", description="Tasks related to soul/spiritual growth."),
+    ]
+    
+    db_session.add_all(dimensions_to_add)
+    await db_session.flush() # Ensure IDs are assigned
+    
+    yield # Allow tests to run
+    
+    # Dimensions will be rolled back by db_session's rollback

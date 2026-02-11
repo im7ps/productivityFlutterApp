@@ -10,6 +10,11 @@ import '../../features/consultant/presentation/consultant_screen.dart';
 import 'router_notifier.dart';
 import '../../features/action/presentation/portfolio_screen.dart';
 
+import '../../features/settings/presentation/settings_screen.dart'; // New import
+import '../../features/account/presentation/account_screen.dart'; // New import
+import '../../features/info/presentation/info_screen.dart'; // New import
+import '../../features/faq/presentation/faq_screen.dart'; // New import
+
 part 'router_provider.g.dart';
 
 @riverpod
@@ -41,16 +46,16 @@ GoRouter router(Ref ref) {
       final isLoggingIn = loc == '/login';
       final isOnboarding = loc == '/onboarding';
 
-      // 1. Check Onboarding First
-      if (!isOnboardingSeen) {
-        print("DEBUG: Onboarding not seen, redirecting to /onboarding");
-        return isOnboarding ? null : '/onboarding';
-      }
-
-      // 2. Check Auth
+      // 1. Check Auth First
       if (!isLoggedIn) {
         print("DEBUG: Not logged in, redirecting to /login");
         return isLoggingIn ? null : '/login';
+      }
+
+      // 2. Check Onboarding (Only if logged in)
+      if (!isOnboardingSeen) {
+        print("DEBUG: Onboarding not seen, redirecting to /onboarding");
+        return isOnboarding ? null : '/onboarding';
       }
 
       // 3. Prevent access to login if everything is done,
@@ -86,6 +91,22 @@ GoRouter router(Ref ref) {
         builder: (context, state) => const PortfolioScreen(),
       ),
       GoRoute(path: '/', builder: (context, state) => const DashboardScreen()),
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: '/account',
+        builder: (context, state) => const AccountScreen(),
+      ),
+      GoRoute(
+        path: '/info',
+        builder: (context, state) => const InfoScreen(),
+      ),
+      GoRoute(
+        path: '/faq',
+        builder: (context, state) => const FaqScreen(),
+      ),
     ],
   );
 }

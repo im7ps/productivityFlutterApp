@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../auth/presentation/auth_controller.dart';
 import 'dashboard_providers.dart';
 import 'widgets/day0/rank_widget.dart';
@@ -106,16 +107,17 @@ class DashboardScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+    Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final tasks = ref.watch(filteredTasksProvider);
     final rankScore = ref.watch(rankProvider);
     final rankLabel = ref.watch(rankLabelProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "RANK ATTUALE: $rankLabel",
+          "${l10n.dashboardTitle}: $rankLabel",
           style: TextStyle(
             fontWeight: FontWeight.w900,
             letterSpacing: 2,
@@ -124,6 +126,10 @@ class DashboardScreen extends ConsumerWidget {
           ),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_rounded),
+            onPressed: () => context.push('/settings'),
+          ),
           IconButton(
             icon: const Icon(Icons.logout_rounded),
             onPressed: () => ref.read(authControllerProvider.notifier).logout(),
@@ -150,7 +156,7 @@ class DashboardScreen extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "IL TUO ARSENALE DI OGGI",
+                    l10n.arsenalTitle,
                     style: theme.textTheme.labelLarge?.copyWith(
                       color: theme.colorScheme.primary,
                       fontWeight: FontWeight.bold,
