@@ -1,22 +1,25 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_theme.dart';
 
 class ConsultantCard extends StatelessWidget {
   final String title;
-  final String subtitle;
   final String reason;
   final IconData icon;
   final Color color;
   final bool isSelected;
+  final int fatigue;
+  final int satisfaction;
   final VoidCallback onTap;
 
   const ConsultantCard({
     super.key,
     required this.title,
-    required this.subtitle,
     required this.reason,
     required this.icon,
     required this.color,
     this.isSelected = false,
+    required this.fatigue,
+    required this.satisfaction,
     required this.onTap,
   });
 
@@ -28,66 +31,87 @@ class ConsultantCard extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        padding: const EdgeInsets.all(20),
+        height: 100, // Fixed height for uniform dimensions
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? color.withValues(alpha: 0.2) : color.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(24),
+          color: theme.cardTheme.color,
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? color : color.withValues(alpha: 0.2), 
-            width: isSelected ? 3 : 1
+            color: isSelected ? AppColors.energia : Colors.transparent,
+            width: 2,
           ),
-          boxShadow: isSelected 
-            ? [BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 12, spreadRadius: 1)] 
-            : [],
+          boxShadow: [
+            if (isSelected)
+               BoxShadow(
+                color: AppColors.energia.withValues(alpha: 0.2),
+                blurRadius: 10,
+                spreadRadius: 2,
+              ),
+            const BoxShadow(
+              color: Colors.black12,
+              blurRadius: 8,
+              offset: Offset(0, 4),
+            ),
+          ],
         ),
         child: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.2),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: color, size: 32),
-            ),
+            Icon(icon, color: color, size: 40),
             const SizedBox(width: 20),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    title.toUpperCase(),
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      color: color,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1.2,
-                      fontSize: 18,
-                    ),
-                  ),
-                  Text(
-                    subtitle,
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
                   Text(
                     reason,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: Colors.white70,
-                      fontStyle: FontStyle.italic,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: AppColors.grey,
                     ),
                   ),
                 ],
               ),
             ),
-            if (isSelected)
-              const Icon(Icons.check_circle, color: Colors.white, size: 24)
-            else
-              const Icon(Icons.arrow_forward_ios, color: Colors.white24, size: 16),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildBadge("Fatica: $fatigue", color),
+                const SizedBox(height: 6),
+                _buildBadge("Soddisfazione: $satisfaction", color),
+              ],
+            ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBadge(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
         ),
       ),
     );

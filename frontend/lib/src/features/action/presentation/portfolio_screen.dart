@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../dashboard/presentation/dashboard_providers.dart';
-import 'action_providers.dart'; // Import allTasksProvider
-
+import 'action_providers.dart';
 import 'widgets/portfolio_card.dart';
 
 class PortfolioScreen extends ConsumerStatefulWidget {
@@ -18,17 +18,15 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen> {
   String _selectedFilter = 'Tutti';
   final List<String> _filters = [
     'Tutti',
-    'Passione',
     'Dovere',
+    'Passione',
     'Energia',
-    'Relazioni',
     'Anima',
+    'Relazioni',
   ];
 
   final List<IconData> _availableIcons = const [
-    // Add this list
     FontAwesomeIcons.guitar,
-    FontAwesomeIcons.bed,
     FontAwesomeIcons.dumbbell,
     FontAwesomeIcons.book,
     FontAwesomeIcons.phone,
@@ -39,582 +37,53 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen> {
     FontAwesomeIcons.seedling,
   ];
 
-  void _showTaskDetail(
-    String title,
-    String category,
-    int difficulty,
-    int satisfaction,
-    IconData icon,
-    Color color,
-    String taskId, // Add taskId for deletion
-    WidgetRef ref, // Add ref to access Riverpod providers
-  ) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          border: Border.all(color: color.withValues(alpha: 0.3)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Align(
-              alignment: Alignment.topRight,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.edit, color: Colors.blueAccent),
-                    onPressed: () {
-                      Navigator.pop(context); // Dismiss detail modal
-                      // Call _showCreateTaskModal for editing
-                      _showCreateTaskModal(
-                        task: TaskUIModel(
-                          id: taskId,
-                          title: title,
-                          category: category,
-                          difficulty: difficulty,
-                          satisfaction: satisfaction,
-                          icon: icon,
-                          color: color,
-                          isCompleted:
-                              false, // Assuming edit doesn't change completion status for now
-                        ),
-                      );
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(
-                      Icons.delete_forever,
-                      color: Colors.redAccent,
-                    ),
-                    onPressed: () {
-                      // Show confirmation dialog
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext dialogContext) {
-                          return AlertDialog(
-                            title: const Text("Conferma Eliminazione"),
-                            content: Text(
-                              "Sei sicuro di voler eliminare la missione '$title'?",
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.of(
-                                  dialogContext,
-                                ).pop(), // Dismiss dialog
-                                child: const Text("Annulla"),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  ref
-                                      .read(allTasksProvider.notifier)
-                                      .removeTask(taskId);
-                                  Navigator.of(
-                                    dialogContext,
-                                  ).pop(); // Dismiss confirmation dialog
-                                  Navigator.pop(
-                                    context,
-                                  ); // Dismiss detail modal
-                                  ScaffoldMessenger.of(
-                                    context,
-                                  ).hideCurrentSnackBar();
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        "Missione '$title' eliminata!",
-                                      ),
-                                    ),
-                                  );
-                                },
-                                child: const Text(
-                                  "Elimina",
-                                  style: TextStyle(color: Colors.red),
-                                ),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-            Icon(icon, size: 48, color: color),
-            const SizedBox(height: 16),
-            Text(
-              title.toUpperCase(),
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "Categoria: $category",
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildStatChip(
-                  "Fatica",
-                  difficulty.toString(),
-                  Icons.fitness_center,
-                ),
-                const SizedBox(width: 12),
-                _buildStatChip(
-                  "Soddisfazione",
-                  satisfaction.toString(),
-                  Icons.star,
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  final newTask = TaskUIModel(
-                    id: DateTime.now().millisecondsSinceEpoch.toString(),
-                    title: title,
-                    icon: icon,
-                    color: color,
-                    difficulty: difficulty,
-                    satisfaction: satisfaction,
-                    category: category,
-                    isCompleted: false,
-                  );
-
-                  ref.read(taskListProvider.notifier).addTasks([newTask]);
-
-                  Navigator.pop(context);
-                  context.go('/');
-
-                  ScaffoldMessenger.of(
-                    context,
-                  ).hideCurrentSnackBar(); // Hide any existing snackbars
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text("Missione '$title' aggiunta all'arsenale!"),
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.add),
-                label: const Text("AGGIUNGI ALLA GIORNATA"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: color,
-                  foregroundColor: Colors.white,
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatChip(String label, String value, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 14, color: Colors.white70),
-          const SizedBox(width: 6),
-          Text(
-            "$label: $value",
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showCreateTaskModal({TaskUIModel? task}) {
-    // Modified signature
-    String newTitle = task?.title ?? ""; // Pre-fill
-    String newCategory = task?.category ?? "Dovere"; // Pre-fill
-    double newDifficulty = (task?.difficulty ?? 3).toDouble(); // Pre-fill
-    double newSatisfaction = (task?.satisfaction ?? 3).toDouble(); // Pre-fill
-    bool showTitleError = false;
-    IconData selectedIcon =
-        task?.icon ?? FontAwesomeIcons.circle; // Pre-fill or default
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setStateModal) => GestureDetector(
-          onTap: () {
-            FocusScope.of(context).unfocus();
-          },
-          child: Container(
-            padding: EdgeInsets.fromLTRB(
-              24,
-              24,
-              24,
-              MediaQuery.of(context).viewInsets.bottom + 24,
-            ),
-            decoration: BoxDecoration(
-              color: Theme.of(context).scaffoldBackgroundColor,
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(24),
-              ),
-              border: Border.all(color: Colors.white10),
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    task != null
-                        ? "MODIFICA MISSIONE"
-                        : "NUOVA MISSIONE", // Dynamic title
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  TextField(
-                    autofocus: true,
-                    controller: TextEditingController(text: newTitle)
-                      ..selection = TextSelection.fromPosition(
-                        TextPosition(offset: newTitle.length),
-                      ), // Pre-fill and set cursor
-                    decoration: InputDecoration(
-                      labelText: "TITOLO",
-                      hintText: "Es. Leggere 10 pagine",
-                      border: const OutlineInputBorder(),
-                      filled: true,
-                      fillColor: Colors.white10,
-                      errorText: showTitleError
-                          ? "Il titolo non può essere vuoto."
-                          : null,
-                    ),
-                    onChanged: (val) {
-                      setStateModal(() {
-                        newTitle = val;
-                        if (showTitleError && val.isNotEmpty) {
-                          showTitleError = false;
-                        }
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 24),
-                  // Icon Selection GridView
-                  Text("ICONA", style: Theme.of(context).textTheme.labelSmall),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    // Constrain height for the GridView
-                    height: 80, // Adjust as needed
-                    child: GridView.builder(
-                      scrollDirection: Axis.horizontal,
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 1, // Single row
-                            childAspectRatio: 1,
-                            mainAxisSpacing: 10,
-                          ),
-                      itemCount: _availableIcons.length,
-                      itemBuilder: (context, index) {
-                        final icon = _availableIcons[index];
-                        return GestureDetector(
-                          onTap: () {
-                            setStateModal(() {
-                              selectedIcon = icon;
-                            });
-                          },
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: selectedIcon == icon
-                                  ? Theme.of(
-                                      context,
-                                    ).colorScheme.primary.withValues(alpha: 0.3)
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: selectedIcon == icon
-                                    ? Theme.of(context).colorScheme.primary
-                                    : Colors.white10,
-                              ),
-                            ),
-                            child: Icon(
-                              icon,
-                              color: selectedIcon == icon
-                                  ? Theme.of(context).colorScheme.primary
-                                  : Colors.white70,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    "CATEGORIA",
-                    style: Theme.of(context).textTheme.labelSmall,
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    children:
-                        [
-                          "Dovere",
-                          "Passione",
-                          "Energia",
-                          "Anima",
-                          "Relazioni",
-                        ].map((cat) {
-                          final isSelected = newCategory == cat;
-                          return ChoiceChip(
-                            label: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(cat),
-                                if (isSelected)
-                                  const Padding(
-                                    padding: EdgeInsets.only(left: 4.0),
-                                    child: Icon(Icons.check, size: 16.0),
-                                  )
-                                else
-                                  const SizedBox(
-                                    width: 20.0,
-                                  ), // Reserve space even when not selected
-                              ],
-                            ),
-                            selected: isSelected,
-                            showCheckmark:
-                                false, // Explicitly disable default checkmark
-                            onSelected: (sel) {
-                              if (sel) setStateModal(() => newCategory = cat);
-                            },
-                          );
-                        }).toList(),
-                  ),
-                  const SizedBox(height: 24),
-                  _buildSliderRow(
-                    "FATICA",
-                    newDifficulty,
-                    (val) => setStateModal(() => newDifficulty = val),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildSliderRow(
-                    "SODDISFAZIONE",
-                    newSatisfaction,
-                    (val) => setStateModal(() => newSatisfaction = val),
-                  ),
-                  const SizedBox(height: 32),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        if (newTitle.isEmpty) {
-                          setStateModal(() {
-                            showTitleError = true;
-                          });
-                          return;
-                        }
-
-                        final newTask = TaskUIModel(
-                          id:
-                              task?.id ??
-                              DateTime.now().millisecondsSinceEpoch
-                                  .toString(), // Preserve ID if editing
-                          title: newTitle,
-                          icon: selectedIcon, // Use selected icon
-                          color:
-                              Colors.grey, // Sarà calcolato dal provider o qui
-                          difficulty: newDifficulty.round(),
-                          satisfaction: newSatisfaction.round(),
-                          category: newCategory,
-                          isCompleted:
-                              task?.isCompleted ??
-                              false, // Preserve isCompleted if editing
-                        );
-
-                        if (task != null) {
-                          // Editing existing task
-                          ref
-                              .read(allTasksProvider.notifier)
-                              .updateTask(newTask);
-                        } else {
-                          // Creating new task
-                          ref.read(allTasksProvider.notifier).addTask(newTask);
-                        }
-
-                        Navigator.pop(context);
-                        context.go('/');
-
-                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              "Missione '$newTitle' ${task != null ? 'modificata!' : 'forgiata!'}",
-                            ), // Dynamic message
-                          ),
-                        );
-                      },
-                      icon: Icon(
-                        task != null ? Icons.save : Icons.add,
-                      ), // Dynamic icon
-                      label: Text(
-                        task != null ? "SALVA MODIFICHE" : "CREA E AGGIUNGI",
-                      ), // Dynamic label
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        foregroundColor: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSliderRow(
-    String label,
-    double value,
-    Function(double) onChanged,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(label, style: Theme.of(context).textTheme.labelSmall),
-            Text(
-              value.round().toString(),
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        Slider(
-          value: value,
-          min: 1,
-          max: 5,
-          divisions: 4,
-          onChanged: onChanged,
-        ),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final allTasks = ref.watch(allTasksProvider); // Watch allTasksProvider
+    final allTasks = ref.watch(allTasksProvider);
 
     final filteredTasks = _selectedFilter == 'Tutti'
         ? allTasks
-        : allTasks.where((t) => t.category == _selectedFilter).toList();
+        : allTasks.where((t) => t.category.toLowerCase() == _selectedFilter.toLowerCase()).toList();
 
     return Scaffold(
-      appBar: AppBar(
-        leading: Builder(
-          // Allows Scaffold.of(context) to find the Scaffold
-          builder: (context) => IconButton(
-            icon: const Icon(Icons.menu),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
-        ),
-        title: const Text(
-          "PORTFOLIO",
-          style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () =>
-                _showCreateTaskModal(), // Call without a task to create new
-          ),
-        ],
-      ),
+      backgroundColor: theme.scaffoldBackgroundColor,
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
+        backgroundColor: theme.cardTheme.color,
+        child: Column(
+          children: [
             DrawerHeader(
-              decoration: BoxDecoration(color: theme.colorScheme.primary),
-              child: const Text(
-                'Menu',
-                style: TextStyle(color: Colors.white, fontSize: 24),
-              ),
+              decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
+              child: Center(child: Text("MENU", style: theme.textTheme.titleLarge?.copyWith(color: Colors.white))),
             ),
             ListTile(
-              leading: const Icon(Icons.list_alt),
-              title: const Text('Portfolio'),
-              onTap: () {
-                Navigator.pop(context); // Close the drawer
-                context.go(
-                  '/portfolio',
-                ); // Navigate to Portfolio (current screen)
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Impostazioni'),
-              onTap: () {
-                Navigator.pop(context); // Close the drawer
-                context.push('/settings');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.account_circle),
-              title: const Text('Account'),
-              onTap: () {
-                Navigator.pop(context); // Close the drawer
-                // TODO: Navigate to Account
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.info),
-              title: const Text('Info (Onboarding)'),
-              onTap: () {
-                Navigator.pop(context); // Close the drawer
-                // TODO: Navigate to Onboarding info
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.live_help),
-              title: const Text('FAQ'),
-              onTap: () {
-                Navigator.pop(context); // Close the drawer
-                // TODO: Navigate to FAQ
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.logout),
-              title: const Text('Esci dall\'app'),
-              onTap: () {
-                Navigator.pop(context); // Close the drawer
-                // TODO: Implement logout logic
-              },
+              leading: const Icon(Icons.settings_outlined),
+              title: const Text("Impostazioni"),
+              onTap: () => context.push('/settings'),
             ),
           ],
         ),
       ),
+      appBar: AppBar(
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+          onPressed: () => context.pop(),
+        ),
+        title: Text("PORTFOLIO", style: theme.textTheme.titleLarge),
+        backgroundColor: Colors.transparent,
+        actions: [
+          Builder(
+            builder: (context) => IconButton(
+              icon: const Icon(Icons.menu_rounded),
+              onPressed: () => Scaffold.of(context).openDrawer(),
+            ),
+          ),
+        ],
+      ),
       body: Column(
         children: [
+          // Category Filters
           SizedBox(
             height: 60,
             child: ListView.separated(
@@ -625,29 +94,36 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen> {
               itemBuilder: (context, index) {
                 final filter = _filters[index];
                 final isSelected = filter == _selectedFilter;
-                return ChoiceChip(
-                  label: Text(filter),
-                  selected: isSelected,
-                  onSelected: (selected) {
-                    if (selected) setState(() => _selectedFilter = filter);
-                  },
-                  labelStyle: TextStyle(
-                    fontWeight: isSelected
-                        ? FontWeight.bold
-                        : FontWeight.normal,
-                    color: isSelected ? Colors.white : null,
+                final filterColor = _getCategoryColor(filter);
+
+                return GestureDetector(
+                  onTap: () => setState(() => _selectedFilter = filter),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: isSelected ? filterColor.withValues(alpha: 0.2) : theme.cardTheme.color,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isSelected ? filterColor : Colors.transparent,
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        filter.toUpperCase(),
+                        style: TextStyle(
+                          color: isSelected ? filterColor : AppColors.grey,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
                   ),
-                  selectedColor: theme.colorScheme.primary,
-                  backgroundColor: theme.colorScheme.surface,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  showCheckmark: false,
                 );
               },
             ),
           ),
+          // Task List
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.all(24),
@@ -657,26 +133,286 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen> {
                 return PortfolioCard(
                   title: t.title,
                   category: t.category,
-                  completionCount:
-                      0, // Placeholder, as TaskUIModel doesn't have 'count' yet
-                  avgSatisfaction: t.satisfaction
-                      .toDouble(), // Use TaskUIModel's satisfaction
-                  onTap: () => _showTaskDetail(
-                    t.title,
-                    t.category,
-                    t.difficulty, // Use actual difficulty
-                    t.satisfaction, // Use actual satisfaction
-                    t.icon,
-                    t.color,
-                    t.id, // Pass taskId
-                    ref, // Pass ref
-                  ),
+                  completionCount: 0,
+                  avgSatisfaction: t.satisfaction.toDouble(),
+                  icon: t.icon,
+                  onTap: () => _showTaskDetail(t, ref),
+                  onScegli: () {
+                    ref.read(taskListProvider.notifier).addTasks([t]);
+                    context.go('/');
+                  },
                 );
               },
+            ),
+          ),
+          
+          // Add Task Button at the Bottom
+          Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Container(
+              width: double.infinity,
+              height: 56,
+              decoration: BoxDecoration(
+                gradient: AppColors.primaryGradient,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: ElevatedButton.icon(
+                onPressed: () => _showCreateTaskModal(),
+                icon: const Icon(Icons.add_rounded),
+                label: const Text("CREA NUOVA MISSIONE", style: TextStyle(fontWeight: FontWeight.bold)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  foregroundColor: Colors.white,
+                  shadowColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+              ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  void _showTaskDetail(TaskUIModel task, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardTheme.color,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(task.icon, size: 64, color: _getCategoryColor(task.category)),
+            const SizedBox(height: 16),
+            Text(task.title.toUpperCase(), style: Theme.of(context).textTheme.headlineMedium),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildStatChip("Fatica", task.difficulty.toString(), Icons.fitness_center),
+                const SizedBox(width: 12),
+                _buildStatChip("Soddisfazione", task.satisfaction.toString(), Icons.star),
+              ],
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: () {
+                  ref.read(taskListProvider.notifier).addTasks([task]);
+                  context.go('/');
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.dovere,
+                  foregroundColor: AppColors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+                child: const Text("AGGIUNGI ALLA GIORNATA", style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextButton(
+              onPressed: () {
+                ref.read(allTasksProvider.notifier).removeTask(task.id);
+                Navigator.pop(context);
+              },
+              child: const Text("Elimina dal Portfolio", style: TextStyle(color: AppColors.passione)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatChip(String label, String value, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: AppColors.grey),
+          const SizedBox(width: 8),
+          Text("$label: $value", style: const TextStyle(fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+
+  void _showCreateTaskModal() {
+    String title = "";
+    String category = "Dovere";
+    double fatigue = 3;
+    double satisfaction = 3;
+    IconData selectedIcon = FontAwesomeIcons.circle;
+    final theme = Theme.of(context);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setStateModal) => Container(
+          padding: EdgeInsets.fromLTRB(24, 24, 24, MediaQuery.of(context).viewInsets.bottom + 24),
+          decoration: BoxDecoration(
+            color: theme.cardTheme.color,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text("NUOVA MISSIONE", style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 24),
+                TextField(
+                  style: theme.textTheme.bodyLarge,
+                  decoration: InputDecoration(
+                    labelText: "TITOLO",
+                    labelStyle: const TextStyle(color: AppColors.grey),
+                    filled: true,
+                    fillColor: theme.scaffoldBackgroundColor,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                  ),
+                  onChanged: (val) => title = val,
+                ),
+                const SizedBox(height: 24),
+                Align(alignment: Alignment.centerLeft, child: Text("ICONA", style: theme.textTheme.labelLarge)),
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 64,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _availableIcons.length,
+                    itemBuilder: (context, index) {
+                      final icon = _availableIcons[index];
+                      final isSelected = selectedIcon == icon;
+                      return GestureDetector(
+                        onTap: () => setStateModal(() => selectedIcon = icon),
+                        child: Container(
+                          width: 60,
+                          margin: const EdgeInsets.only(right: 12),
+                          decoration: BoxDecoration(
+                            color: isSelected ? AppColors.dovere : theme.scaffoldBackgroundColor,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Center(child: Icon(icon, color: isSelected ? AppColors.white : AppColors.grey)),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Align(alignment: Alignment.centerLeft, child: Text("CATEGORIA", style: theme.textTheme.labelLarge)),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: ["Dovere", "Passione", "Energia", "Anima", "Relazioni"].map((cat) {
+                    final isSelected = category == cat;
+                    final catColor = _getCategoryColor(cat);
+                    return GestureDetector(
+                      onTap: () => setStateModal(() => category = cat),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: isSelected ? catColor : theme.scaffoldBackgroundColor,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(cat.toUpperCase(), style: TextStyle(color: isSelected ? AppColors.white : AppColors.grey, fontWeight: FontWeight.bold, fontSize: 11)),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 32),
+                _buildSlider("FATICA", fatigue, (val) => setStateModal(() => fatigue = val)),
+                _buildSlider("SODDISFAZIONE", satisfaction, (val) => setStateModal(() => satisfaction = val)),
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: AppColors.primaryGradient,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        foregroundColor: AppColors.white,
+                        shadowColor: Colors.transparent,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      onPressed: () {
+                        if (title.isNotEmpty) {
+                          final newTask = TaskUIModel(
+                            id: DateTime.now().millisecondsSinceEpoch.toString(),
+                            title: title,
+                            icon: selectedIcon,
+                            color: _getCategoryColor(category),
+                            difficulty: fatigue.round(),
+                            satisfaction: satisfaction.round(),
+                            category: category,
+                            isCompleted: false,
+                          );
+                          ref.read(allTasksProvider.notifier).addTask(newTask);
+                          Navigator.pop(context);
+                        }
+                      },
+                      child: const Text("CREA E AGGIUNGI", style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSlider(String label, double value, Function(double) onChanged) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(label, style: const TextStyle(color: AppColors.grey, fontWeight: FontWeight.bold)),
+            Text(value.round().toString(), style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        Slider(
+          value: value,
+          min: 1,
+          max: 5,
+          divisions: 4,
+          activeColor: AppColors.dovere,
+          inactiveColor: theme.scaffoldBackgroundColor,
+          onChanged: onChanged,
+        ),
+      ],
+    );
+  }
+
+  Color _getCategoryColor(String category) {
+    switch (category.toLowerCase()) {
+      case 'dovere': return AppColors.dovere;
+      case 'passione': return AppColors.passione;
+      case 'energia': return AppColors.energia;
+      case 'anima': return AppColors.anima;
+      case 'relazioni': return AppColors.relazioni;
+      default: return AppColors.neutral;
+    }
   }
 }

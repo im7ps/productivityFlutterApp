@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../../core/theme/app_theme.dart';
 import '../../dashboard_providers.dart';
 
 class IdentityGrid extends ConsumerWidget {
   final List<TaskUIModel> tasks;
   final Function(TaskUIModel) onTaskLongPress;
+  final Function(TaskUIModel) onTaskTap;
 
   const IdentityGrid({
     super.key,
     required this.tasks,
     required this.onTaskLongPress,
+    required this.onTaskTap,
   });
 
   @override
@@ -18,9 +20,9 @@ class IdentityGrid extends ConsumerWidget {
     if (tasks.isEmpty) {
       return Center(
         child: Text(
-          "Nessuna missione assegnata.\nUsa il fulmine per attivarne una.",
+          "Nessuna missione assegnata.",
           textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyLarge,
+          style: Theme.of(context).textTheme.bodyMedium,
         ),
       );
     }
@@ -30,95 +32,77 @@ class IdentityGrid extends ConsumerWidget {
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 4,
-        mainAxisSpacing: 16,
-        crossAxisSpacing: 16,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
       ),
       itemCount: tasks.length,
       itemBuilder: (context, index) {
         final task = tasks[index];
-        return TweenAnimationBuilder<double>(
-          duration: const Duration(milliseconds: 400),
-          curve: Curves.easeOutBack, // Recuperiamo l'effetto rimbalzo
-          tween: Tween<double>(begin: 0, end: task.isCompleted ? 1.0 : 0.0),
-          builder: (context, value, child) {
-            // Calcoliamo i valori in modo sicuro
-            final shadowBlur = (value * 12).clamp(0.0, double.infinity);
-            final opacity = (value * 0.15 + 0.05).clamp(0.0, 1.0);
+        final categoryColor = _getCategoryColor(task.category);
+        final theme = Theme.of(context);
 
-            return GestureDetector(
-              onTap: () {
-                HapticFeedback.mediumImpact();
-                ref.read(taskListProvider.notifier).toggleCompletion(task.id);
-              },
-              onLongPress: () {
-                HapticFeedback.heavyImpact();
-                onTaskLongPress(task);
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                  color: task.isCompleted
-                      ? task.color.withValues(alpha: opacity)
-                      : Colors.white.withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: task.isCompleted
-                        ? task.color.withValues(alpha: value.clamp(0.2, 1.0))
-                        : Theme.of(
-                            context,
-                          ).colorScheme.outline.withValues(alpha: 0.1),
-                    width: task.isCompleted ? 2 : 1,
-                  ),
-                  boxShadow: shadowBlur > 0
-                      ? [
-                          BoxShadow(
-                            color: task.color.withValues(
-                              alpha: (value * 0.4).clamp(0.0, 1.0),
-                            ),
-                            blurRadius: shadowBlur,
-                            spreadRadius: value,
-                          ),
-                        ]
-                      : [],
-                ),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Transform.scale(
-                      scale: 0.8 + (value * 0.2),
-                      child: Icon(
-                        task.icon,
-                        color: task.isCompleted
-                            ? Colors.white
-                            : Theme.of(
-                                context,
-                              ).colorScheme.onSurface.withValues(alpha: 0.3),
-                        size: 24,
-                        shadows: task.isCompleted ? [
-                          const Shadow(
-                            color: Colors.black26,
-                            blurRadius: 4,
-                            offset: Offset(0, 2),
-                          )
-                        ] : null,
-                      ),
-                    ),
-                    if (task.isCompleted)
-                      Positioned(
-                        bottom: 4,
-                        right: 4,
-                        child: Icon(
-                          Icons.check_circle,
-                          size: 14,
-                          color: Colors.white,
-                        ),
-                      ),
-                  ],
-                ),
+        return GestureDetector(
+          onTap: () => onTaskTap(task),
+          onLongPress: () => onTaskLongPress(task),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            decoration: BoxDecoration(
+              color: task.isCompleted 
+                  ? categoryColor.withValues(alpha: 0.2) 
+                  : theme.cardTheme.color,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: task.isCompleted 
+                    ? categoryColor.withValues(alpha: 0.5) 
+                    : Colors.transparent,
+                width: 2,
               ),
-            );
-          },
+              boxShadow: [
+                if (task.isCompleted)
+                  BoxShadow(
+                    color: categoryColor.withValues(alpha: 0.3),
+                    blurRadius: 12,
+                    spreadRadius: 2,
+                  ),
+                const BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 4,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Icon(
+                  task.icon,
+                  color: task.isCompleted 
+                      ? categoryColor 
+                      : categoryColor.withValues(alpha: 0.4),
+                  size: 24,
+                ),
+              ],
+            ),
+          ),
         );
       },
     );
+  }
+
+  Color _getCategoryColor(String category) {
+    switch (category.toLowerCase()) {
+      case 'dovere':
+        return AppColors.dovere;
+      case 'passione':
+        return AppColors.passione;
+      case 'energia':
+        return AppColors.energia;
+      case 'anima':
+        return AppColors.anima;
+      case 'relazioni':
+        return AppColors.relazioni;
+      default:
+        return AppColors.neutral;
+    }
   }
 }

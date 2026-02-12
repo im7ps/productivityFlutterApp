@@ -1,127 +1,167 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+class AppColors {
+  // Global Aesthetic Directives
+  static const Color background = Color(0xFF0A0A0A);
+  static const Color surface = Color(0xFF1C1C1E);
+  static const Color white = Color(0xFFFFFFFF);
+  static const Color grey = Color(0xFF8E8E93);
+
+  // Category-Specific Accents
+  static const Color dovere = Color(0xFF5E5CE6);
+  static const Color passione = Color(0xFFFF453A);
+  static const Color energia = Color(0xFF32D74B);
+  static const Color anima = Color(0xFFBF5AF2);
+  static const Color relazioni = Color(0xFFFF9F0A);
+  static const Color neutral = Color(0xFF64D2FF);
+
+  // Gradients
+  static const LinearGradient primaryGradient = LinearGradient(
+    colors: [dovere, anima],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const RadialGradient rankGradient = RadialGradient(
+    colors: [dovere, anima],
+  );
+}
+
 class AppTheme {
-  // Palette "Giorno 0"
-  static const Color background = Color(0xFF0F0F12);
-  static const Color surface = Color(0xFF1C1C21);
-  static const Color primary = Color(0xFF6366F1); // Indigo energico
-
-  // Colori delle Dimensioni
-  static const Color duty = Color(0xFFEF4444); // Rosso (Dovere)
-  static const Color passion = Color(0xFF10B981); // Smeraldo (Passione)
-  static const Color energy = Color(0xFFF59E0B); // Ambra (Energia)
-
-  static const Color textPrimary = Color(0xFFF8FAFC);
-  static const Color textSecondary = Color(0xFF94A3B8);
-
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
-      scaffoldBackgroundColor: background,
+      scaffoldBackgroundColor: AppColors.background,
       colorScheme: const ColorScheme.dark(
-        primary: primary,
-        surface: surface,
-        onSurface: textPrimary,
-        secondary: passion,
+        primary: AppColors.dovere,
+        surface: AppColors.surface,
+        onSurface: AppColors.white,
+        secondary: AppColors.anima,
+        surfaceContainer: AppColors.background,
       ),
-      textTheme:
-          GoogleFonts.interTextTheme(
-            const TextTheme(
-              displayLarge: TextStyle(
-                fontSize: 48,
-                fontWeight: FontWeight.bold,
-                letterSpacing: -1.0,
-              ),
-              headlineMedium: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w600,
-                color: textPrimary,
-              ),
-              bodyLarge: TextStyle(
-                fontSize: 16,
-                color: textSecondary,
-                height: 1.5,
-              ),
-            ),
-          ).copyWith(
-            // Font speciale per il Rank e i numeri
-            displayMedium: GoogleFonts.bebasNeue(
-              fontSize: 84,
-              color: primary,
-              letterSpacing: 4,
-            ),
+      textTheme: GoogleFonts.montserratTextTheme(
+        const TextTheme(
+          displayLarge: TextStyle(
+            fontSize: 34,
+            fontWeight: FontWeight.bold,
+            color: AppColors.white,
           ),
+          displayMedium: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: AppColors.white,
+          ),
+          headlineMedium: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: AppColors.white,
+          ),
+          titleLarge: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: AppColors.white,
+          ),
+          bodyLarge: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.normal,
+            color: AppColors.white,
+          ),
+          bodyMedium: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.normal,
+            color: AppColors.grey,
+          ),
+          labelLarge: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: AppColors.grey,
+          ),
+        ),
+      ).apply(bodyColor: AppColors.white, displayColor: AppColors.white),
       cardTheme: CardThemeData(
-        color: surface,
+        color: AppColors.surface,
         elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
-      appBarTheme: const AppBarTheme(
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        centerTitle: false,
+      ),
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: AppColors.surface,
+        selectedItemColor: AppColors.anima,
+        unselectedItemColor: AppColors.grey,
+        type: BottomNavigationBarType.fixed,
+        elevation: 8,
       ),
     );
   }
 
   static ThemeData get lightTheme {
-    const Color lightBackground = Color(0xFFF0F2F5); // Light background
-    const Color lightSurface = Color(0xFFFFFFFF);    // Lighter surface
-    const Color lightTextPrimary = Color(0xFF1F2937); // Dark text
-    const Color lightTextSecondary = Color(0xFF4B5563); // Slightly lighter dark text
-
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
-      scaffoldBackgroundColor: lightBackground,
+      scaffoldBackgroundColor: const Color(0xFFF2F2F7),
       colorScheme: const ColorScheme.light(
-        primary: primary,
-        surface: lightSurface,
-        onSurface: lightTextPrimary,
-        secondary: passion, // Keep consistent
+        primary: AppColors.dovere,
+        surface: Colors.white,
+        onSurface: Colors.black,
+        secondary: AppColors.anima,
+        surfaceContainer: Color(0xFFF2F2F7),
       ),
-      textTheme:
-          GoogleFonts.interTextTheme(
-            TextTheme( // Use TextTheme without const because colors are dynamic
-              displayLarge: const TextStyle(
-                fontSize: 48,
-                fontWeight: FontWeight.bold,
-                letterSpacing: -1.0,
-                color: lightTextPrimary, // Adjust for light mode
-              ),
-              headlineMedium: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w600,
-                color: lightTextPrimary, // Adjust for light mode
-              ),
-              bodyLarge: const TextStyle(
-                fontSize: 16,
-                color: lightTextSecondary, // Adjust for light mode
-                height: 1.5,
-              ),
-            ),
-          ).copyWith(
-            displayMedium: GoogleFonts.bebasNeue(
-              fontSize: 84,
-              color: primary, // Primary color can be consistent
-              letterSpacing: 4,
-            ),
+      textTheme: GoogleFonts.montserratTextTheme(
+        const TextTheme(
+          displayLarge: TextStyle(
+            fontSize: 34,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
           ),
+          displayMedium: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+          headlineMedium: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: Colors.black,
+          ),
+          titleLarge: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+          bodyLarge: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.normal,
+            color: Colors.black,
+          ),
+          bodyMedium: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.normal,
+            color: Colors.black87,
+          ),
+          labelLarge: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: Colors.black54,
+          ),
+        ),
+      ).apply(bodyColor: Colors.black, displayColor: Colors.black),
       cardTheme: CardThemeData(
-        color: lightSurface, // Adjust for light mode
-        elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        color: Colors.white,
+        elevation: 2,
+        shadowColor: Colors.black12,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.transparent, // Or lightSurface
-        elevation: 0,
-        centerTitle: false,
-        // For light mode, AppBar title and icon colors might need to be dark
-        iconTheme: IconThemeData(color: lightTextPrimary),
-        actionsIconTheme: IconThemeData(color: lightTextPrimary),
-        titleTextStyle: TextStyle(color: lightTextPrimary, fontSize: 20, fontWeight: FontWeight.w600),
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: Colors.white,
+        selectedItemColor: AppColors.anima,
+        unselectedItemColor: Colors.black26,
+        type: BottomNavigationBarType.fixed,
+        elevation: 8,
       ),
     );
   }

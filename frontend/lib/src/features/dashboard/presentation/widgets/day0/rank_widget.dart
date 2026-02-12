@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:percent_indicator/circular_percent_indicator.dart';
+import '../../../../../core/theme/app_theme.dart';
 
 class RankWidget extends StatelessWidget {
   final double score; // 0.0 to 1.0
@@ -19,33 +19,68 @@ class RankWidget extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap,
-      child: CircularPercentIndicator(
-        radius: 120.0,
-        lineWidth: 12.0,
-        percent: score,
-        animation: true,
-        animationDuration: 1000,
-        curve: Curves.easeOutCubic,
-        center: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              rankLabel,
-              style: theme.textTheme.displayMedium,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Outer Gauge Ring
+          SizedBox(
+            width: 220,
+            height: 220,
+            child: TweenAnimationBuilder<double>(
+              tween: Tween<double>(begin: 0, end: score),
+              duration: const Duration(milliseconds: 1500),
+              curve: Curves.easeOutCubic,
+              builder: (context, value, child) {
+                return CircularProgressIndicator(
+                  value: value,
+                  strokeWidth: 8,
+                  backgroundColor: theme.cardTheme.color?.withValues(alpha: 0.5) ?? AppColors.surface,
+                  color: AppColors.dovere,
+                  strokeCap: StrokeCap.round,
+                );
+              },
             ),
-            Text(
-              "IL TUO RANK ATTUALE",
-              style: theme.textTheme.labelLarge?.copyWith(
-                color: theme.colorScheme.primary.withValues(alpha: 0.7),
-                letterSpacing: 4,
-                fontSize: 10,
+          ),
+          // Inner Gradient Circle
+          Container(
+            width: 180,
+            height: 180,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [AppColors.dovere, AppColors.anima],
+                center: Alignment.center,
+                radius: 0.8,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 20,
+                  offset: Offset(0, 10),
+                ),
+              ],
             ),
-          ],
-        ),
-        circularStrokeCap: CircularStrokeCap.round,
-        progressColor: theme.colorScheme.primary,
-        backgroundColor: theme.colorScheme.surface,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  rankLabel,
+                  style: theme.textTheme.displayLarge?.copyWith(
+                    fontSize: 48,
+                    letterSpacing: -1,
+                  ),
+                ),
+                Text(
+                  "Top 10% di sempre",
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: AppColors.white.withValues(alpha: 0.7),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

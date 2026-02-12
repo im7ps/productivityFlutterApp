@@ -1,204 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../l10n/app_localizations.dart';
-import '../../auth/presentation/auth_controller.dart';
+import '../../../core/theme/app_theme.dart';
 import 'dashboard_providers.dart';
 import 'widgets/day0/rank_widget.dart';
 import 'widgets/day0/checkpoint_bar.dart';
 import 'widgets/day0/identity_grid.dart';
-
-class DashboardPageContent extends ConsumerWidget {
-  final CategoryInfo category;
-  final Function(TaskUIModel) onTaskLongPress;
-  final PageController pageController;
-  final int initialPage;
-
-  const DashboardPageContent({
-    super.key,
-    required this.category,
-    required this.onTaskLongPress,
-    required this.pageController,
-    required this.initialPage,
-  });
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final tasks = ref.watch(tasksByCategoryProvider(category.id));
-    final rankScore = ref.watch(rankByCategoryProvider(category.id));
-    final rankLabel = ref.watch(rankLabelByCategoryProvider(category.id));
-    final categories = ref.watch(availableCategoriesProvider);
-    final currentCatIndex = ref.watch(currentCategoryProvider);
-    final theme = Theme.of(context);
-    final l10n = AppLocalizations.of(context)!;
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          const SizedBox(height: 20),
-          RankWidget(score: rankScore, rankLabel: rankLabel),
-          const SizedBox(height: 30),
-          // Category Indicators (Inside PageContent - As requested in the "beautiful" version)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(categories.length, (i) {
-              final mid = categories.length ~/ 2;
-              final catIndex =
-                  (i - mid + categories.length) % categories.length;
-              final cat = categories[catIndex];
-              final isSelected = catIndex == currentCatIndex;
-              final isGeneral = cat.id == 'general';
-
-              return GestureDetector(
-                onTap: () {
-                  final currentPage =
-                      pageController.page?.round() ?? initialPage;
-                  final currentPos =
-                      (currentPage - initialPage) % categories.length;
-                  final positiveCurrentPos =
-                      (currentPos + categories.length) % categories.length;
-                  final diff = catIndex - positiveCurrentPos;
-
-                  int targetDiff = diff;
-                  if (diff.abs() > categories.length / 2) {
-                    targetDiff = diff > 0
-                        ? diff - categories.length
-                        : diff + categories.length;
-                  }
-
-                  pageController.animateToPage(
-                    currentPage + targetDiff,
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                  );
-                },
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 6),
-                  padding: EdgeInsets.all(isGeneral ? 10 : 8),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? cat.color.withValues(alpha: 0.2)
-                        : isGeneral
-                        ? Colors.white.withValues(alpha: 0.05)
-                        : Colors.transparent,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: isSelected
-                          ? cat.color
-                          : isGeneral
-                          ? Colors.white24
-                          : Colors.white.withValues(alpha: 0.1),
-                      width: isSelected ? 2 : 1,
-                    ),
-                  ),
-                  child: Icon(
-                    cat.icon,
-                    size: isGeneral ? 20 : 16,
-                    color: isSelected
-                        ? cat.color
-                        : isGeneral
-                        ? Colors.white70
-                        : Colors.white.withValues(alpha: 0.3),
-                  ),
-                ),
-              );
-            }),
-          ),
-          const SizedBox(height: 30),
-          const CheckpointBar(
-            progress: 0.6,
-            currentBlock: "Pranzo",
-            nextBlock: "Cena",
-          ),
-          const SizedBox(height: 20),
-          // Small Consultant Button
-          ElevatedButton(
-            onPressed: () => context.push('/consultant'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: theme.colorScheme.primary,
-              foregroundColor: Colors.white,
-              shape: const CircleBorder(),
-              padding: const EdgeInsets.all(16),
-              elevation: 4,
-            ),
-            child: const Icon(FontAwesomeIcons.boltLightning, size: 20),
-          ),
-          const SizedBox(height: 20),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  l10n.arsenalTitle,
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.5,
-                  ),
-                ),
-                PopupMenuButton<TaskSortOrder>(
-                  icon: const Icon(
-                    Icons.filter_list,
-                    size: 20,
-                    color: Colors.white70,
-                  ),
-                  offset: const Offset(0, 40),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  color: theme.colorScheme.surface,
-                  onSelected: (order) =>
-                      ref.read(taskSortProvider.notifier).setSortOrder(order),
-                  itemBuilder: (context) => [
-                    _buildMenuItem(
-                      TaskSortOrder.recommended,
-                      "Consigliato",
-                      Icons.auto_awesome,
-                    ),
-                    _buildMenuItem(
-                      TaskSortOrder.effort,
-                      "Per Fatica",
-                      Icons.fitness_center,
-                    ),
-                    _buildMenuItem(
-                      TaskSortOrder.satisfaction,
-                      "Per Soddisfazione",
-                      Icons.star,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          IdentityGrid(tasks: tasks, onTaskLongPress: onTaskLongPress),
-          const SizedBox(height: 100),
-        ],
-      ),
-    );
-  }
-
-  PopupMenuItem<TaskSortOrder> _buildMenuItem(
-    TaskSortOrder value,
-    String text,
-    IconData icon,
-  ) {
-    return PopupMenuItem(
-      value: value,
-      child: Row(
-        children: [
-          Icon(icon, size: 18, color: Colors.white70),
-          const SizedBox(width: 12),
-          Text(text, style: const TextStyle(fontSize: 14)),
-        ],
-      ),
-    );
-  }
-}
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -209,12 +16,14 @@ class DashboardScreen extends ConsumerStatefulWidget {
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   late PageController _pageController;
-  static const int _initialPage = 5000;
+  static const int _infinitePages = 10000;
 
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(initialPage: _initialPage);
+    // Start at a high number to allow circular swiping, offset to land on current index
+    final initialPage = (_infinitePages ~/ 2); 
+    _pageController = PageController(initialPage: initialPage);
   }
 
   @override
@@ -223,16 +32,282 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     super.dispose();
   }
 
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final categories = ref.watch(availableCategoriesProvider);
+    final currentCatIndex = ref.watch(currentCategoryProvider);
+
+    if (categories.isEmpty) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    final currentCat = categories[currentCatIndex];
+
+    return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
+      drawer: Drawer(
+        backgroundColor: theme.cardTheme.color,
+        child: Column(
+          children: [
+            DrawerHeader(
+              decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
+              child: Center(
+                child: Text(
+                  "DAY 0",
+                  style: theme.textTheme.displaySmall?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings_outlined),
+              title: const Text("Impostazioni"),
+              onTap: () => context.push('/settings'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.swap_vert_rounded),
+              title: const Text("Ordina Categorie"),
+              onTap: () => context.push('/categories'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.help_outline_rounded),
+              title: const Text("Rivedi Onboarding"),
+              onTap: () => context.push('/onboarding'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.person_outline),
+              title: const Text("Account"),
+              onTap: () => context.push('/account'),
+            ),
+          ],
+        ),
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Header
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Builder(
+                    builder: (context) => Align(
+                      alignment: Alignment.centerLeft,
+                      child: IconButton(
+                        icon: const Icon(Icons.menu_rounded, color: AppColors.grey),
+                        onPressed: () => Scaffold.of(context).openDrawer(),
+                      ),
+                    ),
+                  ),
+                  Text(
+                    currentCat.label,
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Dashboard Indicators (Icons)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(categories.length, (index) {
+                  final cat = categories[index];
+                  final isSelected = index == currentCatIndex;
+                  return GestureDetector(
+                    onTap: () {
+                      final currentPage = _pageController.page?.round() ?? 0;
+                      final targetPage = currentPage + (index - currentCatIndex);
+                      _pageController.animateToPage(
+                        targetPage,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                      );
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 8),
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: isSelected ? cat.color.withValues(alpha: 0.2) : Colors.transparent,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        cat.icon,
+                        size: 20,
+                        color: isSelected ? cat.color : AppColors.grey.withValues(alpha: 0.5),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ),
+
+            Expanded(
+              child: PageView.builder(
+                controller: _pageController,
+                onPageChanged: (index) {
+                  final actualIndex = index % categories.length;
+                  ref.read(currentCategoryProvider.notifier).setIndex(actualIndex);
+                },
+                itemBuilder: (context, index) {
+                  final actualIndex = index % categories.length;
+                  final cat = categories[actualIndex];
+                  final tasks = ref.watch(tasksByCategoryProvider(cat.id));
+                  final rankScore = ref.watch(rankByCategoryProvider(cat.id));
+                  final rankLabel = ref.watch(rankLabelByCategoryProvider(cat.id));
+
+                  return SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 20),
+                        RankWidget(
+                          score: rankScore,
+                          rankLabel: rankLabel,
+                          onTap: () {
+                            // TODO: Show history
+                          },
+                        ),
+                        const SizedBox(height: 48),
+                        const CheckpointBar(
+                          progress: 0.6,
+                          currentBlock: "Pranzo",
+                          nextBlock: "Cena",
+                        ),
+                        const SizedBox(height: 32),
+                        
+                        // Action Button (Lightning Bolt)
+                        GestureDetector(
+                          onTap: () => context.push('/consultant'),
+                          child: Container(
+                            height: 64,
+                            width: 64,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: AppColors.primaryGradient,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black45,
+                                  blurRadius: 12,
+                                  offset: Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(Icons.bolt_rounded, size: 36, color: Colors.white),
+                          ),
+                        ),
+                        
+                        const SizedBox(height: 32),
+                        
+                        // Section Header with Sort
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "IDENTITÀ IN AZIONE",
+                              style: theme.textTheme.labelLarge?.copyWith(
+                                letterSpacing: 1.5,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.sort_rounded, size: 20, color: AppColors.grey),
+                              onPressed: () => _showSortOptions(context, ref),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        IdentityGrid(
+                          tasks: tasks,
+                          onTaskTap: (task) => ref.read(taskListProvider.notifier).toggleCompletion(task.id),
+                          onTaskLongPress: (task) => _showTaskDetail(context, ref, task),
+                        ),
+                        const SizedBox(height: 40),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: AppColors.surface,
+        selectedItemColor: AppColors.anima,
+        unselectedItemColor: AppColors.grey,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.auto_awesome_mosaic_rounded),
+            label: 'Specchio',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.library_books_rounded),
+            label: 'Portfolio',
+          ),
+        ],
+        onTap: (index) {
+          if (index == 1) context.push('/portfolio');
+        },
+      ),
+    );
+  }
+
+  void _showSortOptions(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "ORDINA PER",
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            _sortTile(context, ref, "Consigliato", TaskSortOrder.recommended),
+            _sortTile(context, ref, "Fatica", TaskSortOrder.effort),
+            _sortTile(context, ref, "Soddisfazione", TaskSortOrder.satisfaction),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _sortTile(BuildContext context, WidgetRef ref, String label, TaskSortOrder order) {
+    final currentOrder = ref.watch(taskSortProvider);
+    final isSelected = currentOrder == order;
+
+    return ListTile(
+      title: Text(label, style: TextStyle(color: isSelected ? AppColors.white : AppColors.grey)),
+      trailing: isSelected ? const Icon(Icons.check, color: AppColors.energia) : null,
+      onTap: () {
+        ref.read(taskSortProvider.notifier).setSortOrder(order);
+        Navigator.pop(context);
+      },
+    );
+  }
+
   void _showTaskDetail(BuildContext context, WidgetRef ref, TaskUIModel task) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          border: Border.all(color: task.color.withValues(alpha: 0.3)),
+        decoration: const BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -246,13 +321,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            Icon(task.icon, size: 48, color: task.color),
+            Icon(task.icon, size: 48, color: _getCategoryColor(task.category)),
             const SizedBox(height: 16),
             Text(
               task.title.toUpperCase(),
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: task.color,
               ),
             ),
             const SizedBox(height: 8),
@@ -260,7 +334,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               "CATEGORIA: ${task.category.toUpperCase()}",
               style: Theme.of(
                 context,
-              ).textTheme.labelSmall?.copyWith(color: Colors.white54),
+              ).textTheme.labelLarge?.copyWith(color: AppColors.grey),
             ),
             const SizedBox(height: 24),
             Row(
@@ -281,7 +355,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 32), // Spazio finale senza bottoni
+            const SizedBox(height: 32),
           ],
         ),
       ),
@@ -297,16 +371,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: Theme.of(
-          context,
-        ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white10),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: Colors.white70),
+          Icon(icon, size: 16, color: AppColors.grey),
           const SizedBox(width: 8),
           Text(
             "$label: $value",
@@ -317,111 +389,20 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final categories = ref.watch(availableCategoriesProvider);
-    final currentCatIndex = ref.watch(currentCategoryProvider);
-
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text(
-          categories.isEmpty ? "" : categories[currentCatIndex].label,
-          style: const TextStyle(
-            fontWeight: FontWeight.w900,
-            letterSpacing: 2,
-            fontSize: 18,
-          ),
-        ),
-      ),
-      endDrawer: Drawer(
-        child: Column(
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withValues(alpha: 0.1),
-              ),
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      FontAwesomeIcons.boltLightning,
-                      size: 48,
-                      color: theme.colorScheme.primary,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      "DAY 0",
-                      style: theme.textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 2,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings_rounded),
-              title: const Text("Impostazioni"),
-              onTap: () {
-                context.pop(); // Chiude il drawer
-                context.push('/settings');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.sort_rounded),
-              title: const Text("Ordina Categorie"),
-              onTap: () {
-                context.pop(); // Chiude il drawer
-                context.push('/categories');
-              },
-            ),
-            const Spacer(),
-            ListTile(
-              leading: const Icon(
-                Icons.logout_rounded,
-                color: Colors.redAccent,
-              ),
-              title: const Text(
-                "Esci",
-                style: TextStyle(color: Colors.redAccent),
-              ),
-              onTap: () {
-                context.pop(); // Chiude il drawer
-                ref.read(authControllerProvider.notifier).logout();
-              },
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
-      body: PageView.builder(
-        controller: _pageController,
-        onPageChanged: (index) {
-          if (categories.isEmpty) return;
-          final normalizedIndex = (index - _initialPage) % categories.length;
-          final positiveIndex =
-              (normalizedIndex + categories.length) % categories.length;
-          ref.read(currentCategoryProvider.notifier).setIndex(positiveIndex);
-        },
-        itemBuilder: (context, index) {
-          if (categories.isEmpty) return const SizedBox.shrink();
-          final normalizedIndex = (index - _initialPage) % categories.length;
-          final positiveIndex =
-              (normalizedIndex + categories.length) % categories.length;
-          final category = categories[positiveIndex];
-
-          return DashboardPageContent(
-            category: category,
-            onTaskLongPress: (task) => _showTaskDetail(context, ref, task),
-            pageController: _pageController,
-            initialPage: _initialPage,
-          );
-        },
-      ),
-    );
+  Color _getCategoryColor(String category) {
+    switch (category.toLowerCase()) {
+      case 'dovere':
+        return AppColors.dovere;
+      case 'passione':
+        return AppColors.passione;
+      case 'energia':
+        return AppColors.energia;
+      case 'anima':
+        return AppColors.anima;
+      case 'relazioni':
+        return AppColors.relazioni;
+      default:
+        return AppColors.neutral;
+    }
   }
 }

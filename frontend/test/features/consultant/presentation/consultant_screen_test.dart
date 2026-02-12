@@ -185,8 +185,8 @@ void main() {
       ];
       await pumpConsultantScreen(tester, proposals: mockProposals);
 
-      expect(find.text('TEST TASK 1'), findsOneWidget); // Uppercase in widget
-      expect(find.text('TEST TASK 2'), findsOneWidget);
+      expect(find.text('Test Task 1'), findsOneWidget); 
+      expect(find.text('Test Task 2'), findsOneWidget);
       expect(find.byType(ConsultantCard), findsNWidgets(2));
     });
 
@@ -225,7 +225,7 @@ void main() {
     testWidgets('confirm button consumes selected proposals and updates state', (
       tester,
     ) async {
-      // Increase surface size to ensure FAB is clickable
+      // Increase surface size to ensure button is clickable
       tester.view.physicalSize = const Size(1080, 1920);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.resetPhysicalSize());
@@ -263,15 +263,13 @@ void main() {
 
       // Select the card
       await tester.tap(find.byType(ConsultantCard));
-      await tester.pumpAndSettle(); // Wait for selection animation
+      await tester.pump();
 
       // Tap the confirm button
-      final fabFinder = find.byIcon(Icons.check_rounded);
-      expect(fabFinder, findsOneWidget);
+      final confirmBtnFinder = find.text('ACCETTA SELEZIONE');
+      expect(confirmBtnFinder, findsOneWidget);
 
-      // AnimatedScale might prevent hit testing at the very start of the animation
-      // so we pump a bit more and then tap.
-      await tester.tap(fabFinder, warnIfMissed: false);
+      await tester.tap(confirmBtnFinder);
 
       // Handle async and animations
       await tester.pump();
