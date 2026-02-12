@@ -7,6 +7,20 @@ part 'dashboard_models.g.dart';
 
 enum TaskSortOrder { recommended, effort, satisfaction }
 
+class CategoryInfo {
+  final String id; // The category name in lowercase or 'general'
+  final String label;
+  final IconData icon;
+  final Color color;
+
+  const CategoryInfo({
+    required this.id,
+    required this.label,
+    required this.icon,
+    required this.color,
+  });
+}
+
 @freezed
 class TaskUIModel with _$TaskUIModel {
   const factory TaskUIModel({
@@ -57,7 +71,7 @@ class TaskUIModel with _$TaskUIModel {
       id: json['id'] as String,
       title: json['description'] as String? ?? 'Senza Titolo',
       icon: icon,
-      color: color,
+      color: color.withValues(alpha: 1.0), // Force opaque to fix corrupted data
       difficulty: json['difficulty'] as int? ?? 3,
       satisfaction: json['fulfillment_score'] as int? ?? 3,
       category: category,
@@ -96,6 +110,5 @@ class ColorConverter implements JsonConverter<Color, int> {
   Color fromJson(int json) => Color(json);
 
   @override
-  //TODO: verificare cambio da colo.value a color.hashCode
-  int toJson(Color color) => color.hashCode;
+  int toJson(Color color) => color.toARGB32();
 }

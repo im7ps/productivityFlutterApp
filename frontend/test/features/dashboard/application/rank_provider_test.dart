@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:whativedone/src/features/dashboard/presentation/dashboard_providers.dart';
@@ -7,11 +8,20 @@ class FakeTaskList extends TaskList {
   Future<List<TaskUIModel>> build() async => [];
 }
 
+class FakeCurrentCategory extends CurrentCategory {
+  @override
+  int build() => 0;
+}
+
 void main() {
   group('Rank Providers', () {
     test('rankProvider starts at 0.0', () async {
       final container = ProviderContainer(
         overrides: [
+          availableCategoriesProvider.overrideWithValue([
+            const CategoryInfo(id: 'general', label: 'G', icon: Icons.abc, color: Colors.red),
+          ]),
+          currentCategoryProvider.overrideWith(FakeCurrentCategory.new),
           taskListProvider.overrideWith(FakeTaskList.new),
         ],
       );
@@ -25,7 +35,11 @@ void main() {
     test('rankLabelProvider returns C for 0.0', () {
       final container = ProviderContainer(
         overrides: [
-          rankProvider.overrideWithValue(0.0),
+          availableCategoriesProvider.overrideWithValue([
+            const CategoryInfo(id: 'general', label: 'G', icon: Icons.abc, color: Colors.red),
+          ]),
+          currentCategoryProvider.overrideWith(FakeCurrentCategory.new),
+          rankByCategoryProvider('general').overrideWithValue(0.0),
         ],
       );
       addTearDown(container.dispose);
@@ -36,7 +50,11 @@ void main() {
     test('rankLabelProvider returns GOD for 1.0', () {
       final container = ProviderContainer(
         overrides: [
-          rankProvider.overrideWithValue(1.0),
+          availableCategoriesProvider.overrideWithValue([
+            const CategoryInfo(id: 'general', label: 'G', icon: Icons.abc, color: Colors.red),
+          ]),
+          currentCategoryProvider.overrideWith(FakeCurrentCategory.new),
+          rankByCategoryProvider('general').overrideWithValue(1.0),
         ],
       );
       addTearDown(container.dispose);

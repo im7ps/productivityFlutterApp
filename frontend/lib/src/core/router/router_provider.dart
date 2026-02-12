@@ -9,6 +9,7 @@ import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/consultant/presentation/consultant_screen.dart';
 import 'router_notifier.dart';
 import '../../features/action/presentation/portfolio_screen.dart';
+import '../../features/dashboard/presentation/category_management_screen.dart';
 
 import '../../features/settings/presentation/settings_screen.dart'; // New import
 import '../../features/account/presentation/account_screen.dart'; // New import
@@ -106,6 +107,10 @@ GoRouter router(Ref ref) {
       GoRoute(
         path: '/faq',
         builder: (context, state) => const FaqScreen(),
+      ),
+      GoRoute(
+        path: '/categories',
+        builder: (context, state) => const CategoryManagementScreen(),
       ),
     ],
   );

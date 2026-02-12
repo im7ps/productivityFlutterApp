@@ -34,10 +34,11 @@ class RankWidget extends StatelessWidget {
               style: theme.textTheme.displayMedium,
             ),
             Text(
-              "RANK ATTUALE",
+              "IL TUO RANK ATTUALE",
               style: theme.textTheme.labelLarge?.copyWith(
                 color: theme.colorScheme.primary.withValues(alpha: 0.7),
                 letterSpacing: 4,
+                fontSize: 10,
               ),
             ),
           ],

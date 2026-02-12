@@ -88,11 +88,18 @@ class IdentityGrid extends ConsumerWidget {
                       child: Icon(
                         task.icon,
                         color: task.isCompleted
-                            ? task.color
+                            ? Colors.white
                             : Theme.of(
                                 context,
                               ).colorScheme.onSurface.withValues(alpha: 0.3),
                         size: 24,
+                        shadows: task.isCompleted ? [
+                          const Shadow(
+                            color: Colors.black26,
+                            blurRadius: 4,
+                            offset: Offset(0, 2),
+                          )
+                        ] : null,
                       ),
                     ),
                     if (task.isCompleted)
@@ -102,7 +109,7 @@ class IdentityGrid extends ConsumerWidget {
                         child: Icon(
                           Icons.check_circle,
                           size: 14,
-                          color: task.color,
+                          color: Colors.white,
                         ),
                       ),
                   ],

@@ -19,6 +19,98 @@ class TaskSort extends _$TaskSort {
 }
 
 @riverpod
+class CurrentCategory extends _$CurrentCategory {
+  @override
+  int build() => 0; // Index 0 is 'Generali'
+
+  void setIndex(int index) => state = index;
+}
+
+@riverpod
+class CategoryOrder extends _$CategoryOrder {
+  @override
+  Future<List<String>> build() async {
+    final storage = ref.watch(localStorageServiceProvider);
+    return await storage.loadCategoryOrder();
+  }
+
+  Future<void> reorder(int oldIndex, int newIndex) async {
+    final currentOrder = state.valueOrNull ?? [];
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
+    final List<String> newList = List.from(currentOrder);
+    final String item = newList.removeAt(oldIndex);
+    newList.insert(newIndex, item);
+    
+    state = AsyncValue.data(newList);
+    final storage = ref.read(localStorageServiceProvider);
+    await storage.saveCategoryOrder(newList);
+  }
+
+  Future<void> updateOrder(List<String> newOrder) async {
+    state = AsyncValue.data(newOrder);
+    final storage = ref.read(localStorageServiceProvider);
+    await storage.saveCategoryOrder(newOrder);
+  }
+}
+
+@riverpod
+List<CategoryInfo> availableCategories(Ref ref) {
+  final tasksAsync = ref.watch(taskListProvider);
+  final tasks = tasksAsync.valueOrNull ?? [];
+  final customOrderAsync = ref.watch(categoryOrderProvider);
+  final customOrder = customOrderAsync.valueOrNull ?? [];
+
+  // Map to store unique categories found in tasks
+  final Map<String, CategoryInfo> foundCategories = {
+    'general': const CategoryInfo(
+      id: 'general',
+      label: 'GENERALI',
+      icon: Icons.dashboard_rounded,
+      color: Colors.white,
+    ),
+  };
+
+  for (final task in tasks) {
+    final catId = task.category.toLowerCase();
+    if (!foundCategories.containsKey(catId)) {
+      foundCategories[catId] = CategoryInfo(
+        id: catId,
+        label: task.category.toUpperCase(),
+        icon: task.icon,
+        color: task.color,
+      );
+    }
+  }
+
+  final List<CategoryInfo> orderedCategories = [];
+  
+  // 1. Always start with General
+  if (foundCategories.containsKey('general')) {
+    orderedCategories.add(foundCategories['general']!);
+  }
+
+  // 2. Add categories from custom order if they exist in current tasks
+  for (final catId in customOrder) {
+    if (catId != 'general' && foundCategories.containsKey(catId)) {
+      orderedCategories.add(foundCategories[catId]!);
+    }
+  }
+
+  // 3. Add any remaining categories not in custom order
+  final remainingCats = foundCategories.keys.where(
+    (id) => id != 'general' && !customOrder.contains(id),
+  ).toList()..sort();
+
+  for (final catId in remainingCats) {
+    orderedCategories.add(foundCategories[catId]!);
+  }
+
+  return orderedCategories;
+}
+
+@riverpod
 class TaskList extends _$TaskList {
   @override
   Future<List<TaskUIModel>> build() async {
@@ -116,13 +208,20 @@ class TaskList extends _$TaskList {
 }
 
 @riverpod
-List<TaskUIModel> filteredTasks(Ref ref) {
+List<TaskUIModel> tasksByCategory(Ref ref, String categoryId) {
   final tasksAsync = ref.watch(taskListProvider);
   final sort = ref.watch(taskSortProvider);
 
   return tasksAsync.when(
     data: (tasks) {
-      List<TaskUIModel> sortedList = List.from(tasks);
+      Iterable<TaskUIModel> filtered = tasks;
+      if (categoryId != 'general') {
+        filtered = tasks.where(
+          (t) => t.category.toLowerCase() == categoryId,
+        );
+      }
+
+      List<TaskUIModel> sortedList = List.from(filtered);
       switch (sort) {
         case TaskSortOrder.effort:
           sortedList.sort((a, b) => b.difficulty.compareTo(a.difficulty));
@@ -141,12 +240,21 @@ List<TaskUIModel> filteredTasks(Ref ref) {
 }
 
 @riverpod
-double rank(Ref ref) {
+double rankByCategory(Ref ref, String categoryId) {
   final tasksAsync = ref.watch(taskListProvider);
+
   return tasksAsync.maybeWhen(
     data: (tasks) {
-      if (tasks.isEmpty) return 0.0;
-      final completed = tasks.where((t) => t.isCompleted).length;
+      Iterable<TaskUIModel> relevantTasks = tasks;
+      if (categoryId != 'general') {
+        relevantTasks = tasks.where(
+          (t) => t.category.toLowerCase() == categoryId,
+        );
+      }
+
+      if (relevantTasks.isEmpty) return 0.0;
+      final completed = relevantTasks.where((t) => t.isCompleted).length;
+
       return (completed * 0.25).clamp(0.0, 1.0);
     },
     orElse: () => 0.0,
@@ -154,11 +262,45 @@ double rank(Ref ref) {
 }
 
 @riverpod
-String rankLabel(Ref ref) {
-  final score = ref.watch(rankProvider);
+String rankLabelByCategory(Ref ref, String categoryId) {
+  final score = ref.watch(rankByCategoryProvider(categoryId));
   if (score >= 1.0) return "GOD";
   if (score >= 0.75) return "S";
   if (score >= 0.50) return "A";
   if (score >= 0.25) return "B";
   return "C";
 }
+
+@riverpod
+List<TaskUIModel> filteredTasks(Ref ref) {
+  final categories = ref.watch(availableCategoriesProvider);
+  final currentCatIndex = ref.watch(currentCategoryProvider);
+
+  if (currentCatIndex >= categories.length) return [];
+  final currentCat = categories[currentCatIndex];
+
+  return ref.watch(tasksByCategoryProvider(currentCat.id));
+}
+
+@riverpod
+double rank(Ref ref) {
+  final categories = ref.watch(availableCategoriesProvider);
+  final currentCatIndex = ref.watch(currentCategoryProvider);
+
+  if (currentCatIndex >= categories.length) return 0.0;
+  final currentCat = categories[currentCatIndex];
+
+  return ref.watch(rankByCategoryProvider(currentCat.id));
+}
+
+@riverpod
+String rankLabel(Ref ref) {
+  final categories = ref.watch(availableCategoriesProvider);
+  final currentCatIndex = ref.watch(currentCategoryProvider);
+
+  if (currentCatIndex >= categories.length) return "C";
+  final currentCat = categories[currentCatIndex];
+
+  return ref.watch(rankLabelByCategoryProvider(currentCat.id));
+}
+

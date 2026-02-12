@@ -13,6 +13,7 @@ LocalStorageService localStorageService(Ref ref) {
 
 class LocalStorageService {
   static const String _tasksKey = 'day0_tasks_v1';
+  static const String _categoryOrderKey = 'day0_category_order_v1';
 
   Future<List<TaskUIModel>> loadTasks() async {
     final prefs = await SharedPreferences.getInstance();
@@ -33,6 +34,16 @@ class LocalStorageService {
     final prefs = await SharedPreferences.getInstance();
     final String jsonString = jsonEncode(tasks.map((t) => t.toJson()).toList());
     await prefs.setString(_tasksKey, jsonString);
+  }
+
+  Future<List<String>> loadCategoryOrder() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getStringList(_categoryOrderKey) ?? [];
+  }
+
+  Future<void> saveCategoryOrder(List<String> order) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_categoryOrderKey, order);
   }
 
   Future<void> clearTasks() async {

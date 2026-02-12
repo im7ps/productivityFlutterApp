@@ -11,11 +11,19 @@ import 'package:whativedone/src/features/consultant/data/consultant_repository.d
 import 'package:whativedone/src/features/consultant/presentation/consultant_screen.dart';
 import 'package:whativedone/src/features/consultant/presentation/widgets/consultant_card.dart';
 import 'package:whativedone/src/features/dashboard/presentation/dashboard_models.dart';
+import 'package:whativedone/l10n/app_localizations.dart';
+import 'package:whativedone/src/core/storage/local_storage_service.dart';
+import 'package:whativedone/src/features/dashboard/presentation/dashboard_providers.dart';
 
 // Mocks
 class MockConsultantRepository extends Mock implements ConsultantRepository {}
 
-class MockAllTasksNotifier extends Mock implements AllTasksNotifier {}
+class MockLocalStorageService extends Mock implements LocalStorageService {}
+
+// We use the real one to avoid issues with StateNotifier mocking
+class TestAllTasksNotifier extends AllTasksNotifier {
+  TestAllTasksNotifier() : super();
+}
 
 // Dummy TaskUIModel for fallback
 TaskUIModel _createDummyTask() => TaskUIModel(
@@ -37,16 +45,22 @@ void main() {
 
   group('ConsultantScreen', () {
     late MockConsultantRepository mockConsultantRepository;
-    late MockAllTasksNotifier mockAllTasksNotifier;
+    late TestAllTasksNotifier testAllTasksNotifier;
+    late MockLocalStorageService mockLocalStorageService;
 
     setUp(() {
       mockConsultantRepository = MockConsultantRepository();
-      mockAllTasksNotifier = MockAllTasksNotifier();
+      testAllTasksNotifier = TestAllTasksNotifier();
+      mockLocalStorageService = MockLocalStorageService();
 
       // Default mock for fetchProposals
       when(
         () => mockConsultantRepository.fetchProposals(),
       ).thenAnswer((_) async => right([]));
+
+      // Mock LocalStorageService
+      when(() => mockLocalStorageService.loadTasks()).thenAnswer((_) async => []);
+      when(() => mockLocalStorageService.saveTasks(any())).thenAnswer((_) async => {});
     });
 
     // Helper to pump the widget with necessary providers
@@ -105,9 +119,14 @@ void main() {
             consultantRepositoryProvider.overrideWithValue(
               mockConsultantRepository,
             ),
-            allTasksProvider.overrideWith((ref) => mockAllTasksNotifier),
+            allTasksProvider.overrideWith((ref) => testAllTasksNotifier),
+            localStorageServiceProvider.overrideWithValue(mockLocalStorageService),
           ],
-          child: MaterialApp.router(routerConfig: router),
+          child: MaterialApp.router(
+            routerConfig: router,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+          ),
         ),
       );
 
@@ -239,7 +258,6 @@ void main() {
       when(
         () => mockConsultantRepository.consumeProposal(any()),
       ).thenAnswer((_) async => right(newMockProposals));
-      when(() => mockAllTasksNotifier.addTask(any())).thenReturn(null);
 
       await pumpConsultantScreen(tester, proposals: mockProposals);
 
@@ -261,6 +279,9 @@ void main() {
 
       // Verify consumeProposal was called
       verify(() => mockConsultantRepository.consumeProposal(any())).called(1);
+      
+      // Verify task was added to allTasks (portfolio)
+      expect(testAllTasksNotifier.state.any((t) => t.id == '1'), isTrue);
     });
   });
 }
