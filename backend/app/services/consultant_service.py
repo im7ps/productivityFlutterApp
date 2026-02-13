@@ -2,7 +2,8 @@ import uuid
 from typing import List
 from sqlmodel import Session
 from app.models.action import Action
-from app.repositories.action_repo import ActionRepo
+from app.schemas.action import ActionCreate
+from app.services.action_service import ActionService
 from app.services.consultant_engine import ConsultantEngine
 
 class ConsultantService:
@@ -11,10 +12,9 @@ class ConsultantService:
     Delegates complex selection logic to ConsultantEngine.
     """
 
-    def __init__(self, session: Session):
-        self.session = session
-        self.action_repo = ActionRepo(session)
-        self.engine = ConsultantEngine(self.action_repo)
+    def __init__(self, action_service: ActionService, engine: ConsultantEngine):
+        self.action_service = action_service
+        self.engine = engine
     
     async def get_proposals(self, user_id: uuid.UUID) -> List[Action]:
         """
@@ -34,21 +34,16 @@ class ConsultantService:
             raise ValueError(f"Consultant proposal with ID {proposal_id} not found.")
             
         # Create a new Action instance based on the consumed proposal
-        # Status is COMPLETED because in Day 0 logic, accepting from consultant
-        # usually means it's done or being done immediately.
-        new_action = Action(
-            id=uuid.uuid4(),
+        # Use ActionCreate schema to pass data to action_service
+        action_in = ActionCreate(
             description=consumed_proposal.description,
-            user_id=user_id,
             category=consumed_proposal.category,
             difficulty=consumed_proposal.difficulty,
             fulfillment_score=consumed_proposal.fulfillment_score,
-            start_time=consumed_proposal.start_time,
             dimension_id=consumed_proposal.dimension_id,
             status="COMPLETED"
         )
-        self.session.add(new_action)
-        await self.session.commit()
-        await self.session.refresh(new_action)
+        
+        await self.action_service.create_action(user_id=user_id, action_in=action_in)
             
         return await self.get_proposals(user_id)

@@ -1,17 +1,13 @@
 import uuid
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import Session
 
-from app.api.v1.deps import get_session, get_current_active_user
+from app.api.v1.deps import get_consultant_service, get_current_active_user
 from app.models.action import Action
 from app.models.user import User
 from app.services.consultant_service import ConsultantService
 
 router = APIRouter()
-
-def get_consultant_service(session: Session = Depends(get_session)) -> ConsultantService:
-    return ConsultantService(session)
 
 @router.get("/proposals", response_model=List[Action])
 async def get_consultant_proposals(

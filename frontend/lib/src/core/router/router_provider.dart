@@ -11,6 +11,7 @@ import 'router_notifier.dart';
 import '../../features/action/presentation/portfolio_screen.dart';
 import '../../features/dashboard/presentation/category_management_screen.dart';
 import '../../features/dashboard/presentation/checkpoint_review_screen.dart';
+import '../../features/chat/presentation/chat_screen.dart';
 
 import '../../features/settings/presentation/settings_screen.dart'; // New import
 import '../../features/account/presentation/account_screen.dart'; // New import
@@ -91,6 +92,10 @@ GoRouter router(Ref ref) {
       GoRoute(
         path: '/portfolio',
         builder: (context, state) => const PortfolioScreen(),
+      ),
+      GoRoute(
+        path: '/chat',
+        builder: (context, state) => const ChatScreen(),
       ),
       GoRoute(path: '/', builder: (context, state) => const DashboardScreen()),
       GoRoute(

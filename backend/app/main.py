@@ -6,7 +6,7 @@ import structlog
 
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
-from app.api.v1.routers import auth, users, dimensions, actions, daily_logs, consultant
+from app.api.v1.routers import auth, users, dimensions, actions, daily_logs, consultant, chat
 from app.core.exceptions import (
     ResourceNotFound,
     EntityAlreadyExists,
@@ -27,6 +27,15 @@ logger = structlog.get_logger()
 async def lifespan(app: FastAPI):
     # Questo codice viene eseguito all'avvio dell'applicazione
     logger.info("Application starting", env=settings.ENVIRONMENT)
+    
+    # Configurazione LangChain / LangSmith Tracing
+    import os
+    if settings.LANGCHAIN_API_KEY:
+        os.environ["LANGCHAIN_TRACING_V2"] = settings.LANGCHAIN_TRACING_V2
+        os.environ["LANGCHAIN_API_KEY"] = settings.LANGCHAIN_API_KEY
+        os.environ["LANGCHAIN_PROJECT"] = settings.LANGCHAIN_PROJECT
+        logger.info("LangChain tracing enabled", project=settings.LANGCHAIN_PROJECT)
+        
     yield
     # Questo codice viene eseguito allo spegnimento dell'applicazione
     logger.info("Application shutting down")
@@ -91,6 +100,7 @@ app.include_router(dimensions.router, prefix="/api/v1/dimensions", tags=["dimens
 app.include_router(actions.router, prefix="/api/v1/actions", tags=["actions"])
 app.include_router(daily_logs.router, prefix="/api/v1/daily-logs", tags=["daily-logs"])
 app.include_router(consultant.router, prefix="/api/v1/consultant", tags=["consultant"])
+app.include_router(chat.router, prefix="/api/v1/chat", tags=["chat"])
 
 
 @app.get("/")

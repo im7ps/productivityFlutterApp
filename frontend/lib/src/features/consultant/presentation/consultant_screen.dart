@@ -93,6 +93,15 @@ class ConsultantScreen extends ConsumerWidget {
                         colors: [AppColors.anima, AppColors.relazioni],
                       ),
                     ),
+                    const SizedBox(width: 16),
+                    // AI Chat Button
+                    _circularActionButton(
+                      onPressed: () => context.push('/chat'),
+                      icon: Icons.chat_bubble_rounded,
+                      gradient: const LinearGradient(
+                        colors: [AppColors.neutral, AppColors.dovere],
+                      ),
+                    ),
                     const Spacer(),
                     // Confirm Button (Conditional)
                     if (selectedIds.isNotEmpty)

@@ -1,0 +1,25 @@
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
+from app.api.v1.deps import get_chat_service, CurrentUser
+from app.services.chat_service import ChatService
+from pydantic import BaseModel
+
+router = APIRouter()
+
+class ChatRequest(BaseModel):
+    message: str
+
+@router.post("/stream")
+async def stream_chat(
+    request: ChatRequest,
+    current_user: CurrentUser,
+    chat_service: ChatService = Depends(get_chat_service),
+):
+    """
+    Endpoint per lo streaming della chat con il Consulente Day 0.
+    Utilizza LangChain per generare consigli personalizzati basati sul contesto utente.
+    """
+    return StreamingResponse(
+        chat_service.stream_chat(current_user.id, request.message),
+        media_type="text/event-stream"
+    )

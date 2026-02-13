@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Any
 import uuid
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -41,10 +41,6 @@ async def get_current_user(
     token: TokenDep,
     user_service: UserServiceDep
 ) -> User:
-    """
-    Dependency to get the current authenticated user from a JWT token.
-    Decodes the token using domain logic (security.py) and handles domain exceptions.
-    """
     try:
         payload = decode_access_token(token)
         user_id_str: str | None = payload.get("sub")
@@ -89,13 +85,10 @@ async def get_current_active_user(current_user: CurrentUser) -> User:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
-# --- Dimensions & Actions Services ---
+# --- Repositories ---
 from app.repositories.dimension_repo import DimensionRepo
 from app.repositories.action_repo import ActionRepo
 from app.repositories.daily_log_repo import DailyLogRepo
-from app.services.dimension_service import DimensionService
-from app.services.action_service import ActionService
-from app.services.daily_log_service import DailyLogService
 
 def get_dimension_repo(session: Annotated[AsyncSession, Depends(get_session)]) -> DimensionRepo:
     return DimensionRepo(session)
@@ -106,18 +99,49 @@ def get_action_repo(session: Annotated[AsyncSession, Depends(get_session)]) -> A
 def get_daily_log_repo(session: Annotated[AsyncSession, Depends(get_session)]) -> DailyLogRepo:
     return DailyLogRepo(session)
 
-def get_dimension_service(repo: Annotated[DimensionRepo, Depends(get_dimension_repo)]) -> DimensionService:
+# --- Services (Lazy Import per evitare TypeError e Circolarità) ---
+
+def get_dimension_service(repo: Annotated[ActionRepo, Depends(get_dimension_repo)]) -> Any:
+    from app.services.dimension_service import DimensionService
     return DimensionService(repo)
 
 def get_action_service(
     repo: Annotated[ActionRepo, Depends(get_action_repo)],
-    dim_service: Annotated[DimensionService, Depends(get_dimension_service)]
-) -> ActionService:
+    session: Annotated[AsyncSession, Depends(get_session)]
+) -> Any:
+    from app.services.action_service import ActionService
+    from app.services.dimension_service import DimensionService
+    from app.repositories.dimension_repo import DimensionRepo
+    dim_repo = DimensionRepo(session)
+    dim_service = DimensionService(dim_repo)
     return ActionService(repo, dim_service)
 
 def get_daily_log_service(
     session: Annotated[AsyncSession, Depends(get_session)],
     repo: Annotated[DailyLogRepo, Depends(get_daily_log_repo)]
-) -> DailyLogService:
+) -> Any:
+    from app.services.daily_log_service import DailyLogService
     return DailyLogService(session, repo)
 
+def get_consultant_engine(
+    repo: Annotated[ActionRepo, Depends(get_action_repo)]
+) -> Any:
+    from app.services.consultant_engine import ConsultantEngine
+    # Log di debug esplicito (visibile nei log docker)
+    print(f"DEBUG: Initializing ConsultantEngine with repo {repo}")
+    return ConsultantEngine(action_repo=repo)
+
+def get_consultant_service(
+    action_service: Annotated[Any, Depends(get_action_service)],
+    engine: Annotated[Any, Depends(get_consultant_engine)]
+) -> Any:
+    from app.services.consultant_service import ConsultantService
+    return ConsultantService(action_service, engine)
+
+def get_chat_service(
+    user_service: Annotated[UserService, Depends(get_user_service)],
+    action_service: Annotated[Any, Depends(get_action_service)],
+    consultant_service: Annotated[Any, Depends(get_consultant_service)]
+) -> Any:
+    from app.services.chat_service import ChatService
+    return ChatService(user_service, action_service, consultant_service)

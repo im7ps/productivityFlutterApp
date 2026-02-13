@@ -15,6 +15,12 @@ class Settings(BaseSettings):
     # Rate Limiting
     RATE_LIMIT_ENABLED: bool = True
 
+    # Google & LangChain
+    GOOGLE_API_KEY: str | None = None
+    LANGCHAIN_TRACING_V2: str = "false"
+    LANGCHAIN_API_KEY: str | None = None
+    LANGCHAIN_PROJECT: str = "whativedone-chat"
+
     # Database Settings
     POSTGRES_POOL_SIZE: int = 5  # Default SQLAlchemy
     POSTGRES_MAX_OVERFLOW: int = 10  # Default SQLAlchemy
