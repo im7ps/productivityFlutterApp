@@ -28,3 +28,36 @@ class ActionRepo(UserOwnedRepo[Action, ActionCreate, ActionUpdate]):
         # result = await self.session.exec(statement) # SQLModel .exec is for Sync, for AsyncSession use .execute
         result = await self.session.execute(statement)
         return result.scalars().all()
+
+    async def get_unique_completed_actions(self, user_id: uuid.UUID) -> List[Action]:
+        """
+        Returns a list of unique actions (by description) that the user has COMPLETED.
+        This represents the user's "Portfolio".
+        """
+        # We select the most recent instance of each unique completed description
+        from sqlalchemy import func
+        
+        subquery = (
+            select(
+                self.model.description,
+                func.max(self.model.start_time).label("max_time")
+            )
+            .where(self.model.user_id == user_id)
+            .where(self.model.status == "COMPLETED")
+            .group_by(self.model.description)
+            .subquery()
+        )
+        
+        statement = (
+            select(self.model)
+            .join(
+                subquery,
+                (self.model.description == subquery.c.description) & 
+                (self.model.start_time == subquery.c.max_time)
+            )
+            .where(self.model.user_id == user_id)
+            .options(selectinload(self.model.dimension))
+        )
+        
+        result = await self.session.execute(statement)
+        return result.scalars().all()
