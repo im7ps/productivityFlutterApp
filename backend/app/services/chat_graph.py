@@ -4,9 +4,12 @@ from typing import Annotated, TypedDict, Literal
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
-from langchain_core.messages import BaseMessage
+from langchain_core.messages import BaseMessage, SystemMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.tools import tool
+from langchain_core.runnables import RunnableConfig
+from langgraph.checkpoint.memory import MemorySaver
+
 from app.core.config import settings
 
 # 1. DEFINIZIONE DELLO STATO (La "lavagna" condivisa tra i nodi)
@@ -14,14 +17,66 @@ class GraphState(TypedDict):
     # Annotated + add_messages permette di accumulare i messaggi nella cronologia
     messages: Annotated[list[BaseMessage], add_messages]
 
-# 2. DEFINIZIONE DEI TOOLS (Azioni eseguibili dall'LLM)
-@tool
-def get_user_portfolio():
-    """Restituisce la lista delle azioni nel portfolio dell'utente."""
-    # In una versione reale, qui chiameremmo ActionService
-    return ["Allenamento Gym", "Meditazione", "Studio LangGraph", "Lettura Libro"]
 
-tools = [get_user_portfolio]
+SYSTEM_PROMPT_TEMPLATE = """
+Sei il "Consulente Day 0" di WhatI'veDone. Il tuo obiettivo è eliminare la paralisi decisionale dell'utente.
+La tua filosofia è: "Il miglior momento per fare è ORA. Domani non esiste, oggi è tutto quello che hai."
+
+CONTESTO UTENTE:
+- Rank Attuale: {rank}
+- Portfolio Attività: {portfolio}
+- Proposte del Giorno: {proposals}
+
+REGOLE DI COMPORTAMENTO:
+1. Sii pragmatico, anti-paralisi, breve e motivante.
+2. Usa i dati forniti per personalizzare il consiglio (es. se il rank è basso, suggerisci qualcosa di rapido).
+3. Non fare liste lunghe. Punta a una singola azione o una scelta binaria chiara.
+4. Parla in italiano, usa un tono diretto ma incoraggiante.
+5. Se l'utente è indeciso, scegli TU per lui basandoti sulla logica Day 0.
+"""
+
+
+# 2. DEFINIZIONE DEI TOOLS
+@tool
+async def get_user_portfolio(config: RunnableConfig):
+    """Restituisce la lista delle azioni nel portfolio dell'utente.
+    Usa questo tool per sapere cosa l'utente ha fatto o vuole fare in futuro."""
+    
+    user_id = config["configurable"].get("user_id")
+    action_service = config["configurable"].get("action_service")
+    
+    if not action_service or not user_id:
+        return "Errore: Servizi non disponibili nel contesto"
+    
+    actions = await action_service.get_user_portfolio(user_id)
+    if not actions:
+        return "L'utente non ha azioni nel suo portfolio"
+    return [f"{a.description} (Categoria: {a.category})" for a in actions]
+
+@tool
+async def start_new_action(description: str, dimension_id: str, config: RunnableConfig):
+    """Inizia una nuova task per l'utente. 
+    DIMENSION_ID validi: 'passion', 'duties', 'energy'.
+    Usa questo tool SOLO quando l'utente accetta esplicitamente una task o dice chiaramente di voler fare qualcosa
+    """
+    user_id = config["configurable"].get("user_id")
+    action_service = config["configurable"].get("action_service")
+    
+    from app.schemas.action import ActionCreate
+    
+    action_in = ActionCreate(
+        description=description,
+        dimension_id=dimension_id,
+        status="IN_PROGRESS"
+    )
+    
+    try:
+        await action_service.create_action(user_id, action_in)
+        return f"SUCCESSO: L'attività '{description}' è stata avviata correttamente."
+    except Exception as e:
+        return f"ERRORE: Impossibile avviare la task. Dettaglio: {str(e)}"
+
+tools = [get_user_portfolio, start_new_action]
 # Il ToolNode è un componente pre-costruito che esegue i tool chiamati dall'LLM
 tool_node = ToolNode(tools)
 
@@ -29,7 +84,7 @@ tool_node = ToolNode(tools)
 llm = ChatGoogleGenerativeAI(
     model="gemini-2.5-flash",
     google_api_key=settings.GOOGLE_API_KEY,
-    temperature=0.7,
+    temperature=0.1,
     convert_system_message_to_human=True
 )
 
@@ -37,9 +92,22 @@ llm = ChatGoogleGenerativeAI(
 llm_with_tools = llm.bind_tools(tools)
 
 # 4. DEFINIZIONE DEI NODI (Le funzioni di lavoro)
-def chatbot(state: GraphState):
+def chatbot(state: GraphState, config: RunnableConfig):
     """Nodo principale: invoca l'LLM con la cronologia dei messaggi."""
-    response = llm_with_tools.invoke(state["messages"])
+    
+    rank = config["configurable"].get("rank", 0)
+    portfolio = config["configurable"].get("portfolio", [])
+    proposals = config["configurable"].get("proposals", [])
+    
+    system_message = SystemMessage(content=SYSTEM_PROMPT_TEMPLATE.format(
+        rank=rank,
+        portfolio=portfolio,
+        proposals=proposals,
+    ))
+    
+    full_context = [system_message] + state["messages"]
+    
+    response = llm_with_tools.invoke(full_context)
     # Restituisce il nuovo messaggio che verrà aggiunto allo stato via 'add_messages'
     return {"messages": [response]}
 
@@ -73,6 +141,9 @@ workflow.add_conditional_edges(
 # Dopo l'esecuzione dei tool, il controllo torna sempre all'agente per rispondere
 workflow.add_edge("tools", "agent")
 
-# 6. COMPILAZIONE
+# 6. SALVATAGGIO IN MEMORIA
+checkpointer = MemorySaver()
+
+# 7. COMPILAZIONE
 # Trasforma il diagramma in un'applicazione eseguibile
-app_graph = workflow.compile()
+app_graph = workflow.compile(checkpointer=checkpointer)
