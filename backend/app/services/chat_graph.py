@@ -8,7 +8,6 @@ from langchain_core.messages import BaseMessage, SystemMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.tools import tool
 from langchain_core.runnables import RunnableConfig
-from langgraph.checkpoint.memory import MemorySaver
 
 from app.core.config import settings
 
@@ -141,9 +140,8 @@ workflow.add_conditional_edges(
 # Dopo l'esecuzione dei tool, il controllo torna sempre all'agente per rispondere
 workflow.add_edge("tools", "agent")
 
-# 6. SALVATAGGIO IN MEMORIA
-checkpointer = MemorySaver()
+app_graph = None
 
-# 7. COMPILAZIONE
-# Trasforma il diagramma in un'applicazione eseguibile
-app_graph = workflow.compile(checkpointer=checkpointer)
+def compile_graph(checkpointer):
+    global app_graph
+    app_graph = workflow.compile(checkpointer=checkpointer)

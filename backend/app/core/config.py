@@ -17,7 +17,7 @@ class Settings(BaseSettings):
 
     # Google & LangChain
     GOOGLE_API_KEY: str | None = None
-    LANGCHAIN_TRACING_V2: str = "false"
+    LANGCHAIN_TRACING_V2: str = "true"
     LANGCHAIN_API_KEY: str | None = None
     LANGCHAIN_PROJECT: str = "whativedone-chat"
 

@@ -35,6 +35,7 @@ async def test_create_user_success(user_service: UserService):
     assert created_user is not None
     assert created_user.username == user_data.username
     assert created_user.email == user_data.email
+    assert created_user.rank_score == 0
     assert created_user.id is not None
     assert created_user.created_at is not None
     

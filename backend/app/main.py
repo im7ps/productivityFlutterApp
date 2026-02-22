@@ -19,6 +19,10 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from app.core.rate_limit import limiter
 
+from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
+from app.services.chat_graph import compile_graph
+
+
 # Inizializza il logging strutturato prima della creazione dell'app
 configure_logging()
 logger = structlog.get_logger()
@@ -35,8 +39,12 @@ async def lifespan(app: FastAPI):
         os.environ["LANGCHAIN_API_KEY"] = settings.LANGCHAIN_API_KEY
         os.environ["LANGCHAIN_PROJECT"] = settings.LANGCHAIN_PROJECT
         logger.info("LangChain tracing enabled", project=settings.LANGCHAIN_PROJECT)
-        
-    yield
+    
+    conn_string = os.getenv("DATABASE_URL")
+    async with AsyncPostgresSaver.from_conn_string(conn_string) as checkpointer:
+        await checkpointer.setup()
+        compile_graph(checkpointer)
+        yield
     # Questo codice viene eseguito allo spegnimento dell'applicazione
     logger.info("Application shutting down")
 

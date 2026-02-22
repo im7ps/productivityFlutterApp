@@ -79,9 +79,9 @@ class ChatService:
         }
 
 
-        async for chunk in app_graph.astream(input_data, config=config, stream_mode="updates"):
-            if "agent" in chunk:
-                last_msg = chunk["agent"]["messages"][-1]
-                if last_msg.content and not last_msg.tool_calls:
-                    yield last_msg.content
+        async for event in app_graph.astream_events(input_data, config=config, version="v2"):
+            if event["event"] == "on_chat_model_stream":
+                chunk = event["data"]["chunk"]
+                if chunk.content:
+                    yield chunk.content
 

@@ -60,7 +60,9 @@ async def test_full_auth_lifecycle(test_client: AsyncClient, user_credentials: d
     # 1. Register User
     response = await test_client.post("/api/v1/auth/register", json=user_credentials)
     assert response.status_code == 201, f"Registration failed: {response.text}"
-    assert response.json()["email"] == user_credentials["email"]
+    user_data = response.json()
+    assert user_data["email"] == user_credentials["email"]
+    assert user_data["rank_score"] == 0
 
     # 2. Login
     login_payload = {
@@ -77,7 +79,9 @@ async def test_full_auth_lifecycle(test_client: AsyncClient, user_credentials: d
     headers = {"Authorization": f"Bearer {access_token}"}
     response = await test_client.get("/api/v1/users/me", headers=headers)
     assert response.status_code == 200
-    assert response.json()["email"] == user_credentials["email"]
+    user_me = response.json()
+    assert user_me["email"] == user_credentials["email"]
+    assert user_me["rank_score"] == 0
 
 
 async def test_register_duplicate_username(test_client: AsyncClient, user_credentials: dict):
