@@ -102,6 +102,7 @@ def test_create_jwt(auth_service: AuthService):
         id=uuid.uuid4(),
         username="testuser",
         email="test@example.com",
+        rank_score=0,
         created_at=datetime.utcnow()
     )
     

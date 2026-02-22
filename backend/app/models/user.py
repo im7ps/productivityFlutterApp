@@ -17,6 +17,7 @@ class User(SQLModel, table=True):
     email: str = Field(unique=True)
     hashed_password: str
     is_active: bool = Field(default=True)
+    rank_score: int = Field(default=0)
 
     # Usa la funzione helper, non la lambda, per massima pulizia
     created_at: datetime = Field(default_factory=get_utc_now)

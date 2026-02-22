@@ -49,7 +49,7 @@ class ChatService:
         # 1. Recupero Contesto
         user = await self.user_service.get_user_by_id(user_id)
         # TODO: Implement dynamic rank calculation via RankEngine
-        rank = 0 # Fallback temporary as User model doesn't have rank_score yet
+        rank = user.rank_score
         
         portfolio_actions = await self.action_service.get_user_portfolio(user_id)
         # logger.info(f"--ISPEZIONE PORTFOLIO actions--\n{portfolio_actions}")

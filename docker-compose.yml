@@ -39,7 +39,6 @@ services:
       - LANGCHAIN_API_KEY=${LANGCHAIN_API_KEY}
       - LANGCHAIN_PROJECT=${LANGCHAIN_PROJECT:-whativedone-chat}
       - LANGCHAIN_ENDPOINT=${LANGCHAIN_ENDPOINT}
-      # Database Pooling for High Concurrency
       - POSTGRES_POOL_SIZE=50
       - POSTGRES_MAX_OVERFLOW=20
     restart: always
@@ -77,6 +76,7 @@ services:
       - SECRET_KEY=test_secret_key_fixed_for_all_tests
       - ALGORITHM=HS256
       - DATABASE_URL=postgresql+psycopg://test_user:test_password@db-test:5432/test_db
+      - GOOGLE_API_KEY=dummy_key_for_testing
     # Aggiunto -v per verbosità e --color=yes per log leggibili
     command: pytest -v --color=yes
 

@@ -31,6 +31,7 @@ class UserUpdate(TunableBaseModel):
     username: Optional[str] = None
     email: Optional[EmailStr] = None
     password: Optional[str] = None
+    rank_score: Optional[int] = None
 
     @field_validator("password")
     def validate_password(cls, v: Optional[str]) -> Optional[str]:
@@ -57,12 +58,14 @@ class UserUpdateDB(TunableBaseModel):
     username: Optional[str] = None
     email: Optional[EmailStr] = None
     hashed_password: Optional[str] = None
+    rank_score: Optional[int] = None
 
 # Schema per la RISPOSTA
 class UserPublic(SQLModel):
     id: uuid.UUID
     username: str
     email: str
+    rank_score: int
     created_at: datetime
 
 # Schema per il TOKEN
