@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import 'chat_controller.dart';
 import '../domain/chat_message.dart';
+import '../domain/chat_state.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key});
@@ -63,28 +64,33 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final messages = ref.watch(chatControllerProvider);
+    final chatState = ref.watch(chatControllerProvider);
+    final messages = chatState.messages;
     final theme = Theme.of(context);
 
     // Listen for new messages to scroll
-    ref.listen<List<ChatMessage>>(chatControllerProvider, (previous, next) {
-      if (next.length > (previous?.length ?? 0)) {
-        final lastMessage = next.last;
-        
+    ref.listen<ChatState>(chatControllerProvider, (previous, next) {
+      if (next.messages.length > (previous?.messages.length ?? 0)) {
+        final lastMessage = next.messages.last;
+
         if (lastMessage.isUser) {
           // Messaggio dell'utente: scroll immediato in fondo
           _firstUnreadOffset = null;
-          WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+          WidgetsBinding.instance.addPostFrameCallback(
+            (_) => _scrollToBottom(),
+          );
         } else {
           // Messaggio AI: scroll all'inizio del nuovo messaggio
           // Se non stiamo già tracciando un messaggio non letto, salviamo l'offset
           if (_firstUnreadOffset == null) {
-            final oldMaxScroll = _scrollController.hasClients 
-                ? _scrollController.position.maxScrollExtent 
+            final oldMaxScroll = _scrollController.hasClients
+                ? _scrollController.position.maxScrollExtent
                 : 0.0;
-            
+
             _firstUnreadOffset = oldMaxScroll;
-            WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToOffset(oldMaxScroll));
+            WidgetsBinding.instance.addPostFrameCallback(
+              (_) => _scrollToOffset(oldMaxScroll),
+            );
           }
         }
       }
@@ -198,7 +204,14 @@ class _ChatInputSectionState extends ConsumerState<_ChatInputSection> {
 
   @override
   Widget build(BuildContext context) {
-    final isListening = ref.watch(chatControllerProvider.notifier).isListening;
+    final chatState = ref.watch(chatControllerProvider);
+    final isWaitingConfirmation = chatState.isWaitingConfirmation;
+    final controller = ref.watch(chatControllerProvider.notifier);
+    final isListening = controller.isListening;
+
+    if (isWaitingConfirmation) {
+      return _buildConfirmationBar();
+    }
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
@@ -237,6 +250,77 @@ class _ChatInputSectionState extends ConsumerState<_ChatInputSection> {
           IconButton(
             icon: const Icon(Icons.send_rounded, color: AppColors.dovere),
             onPressed: _handleSend,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildConfirmationBar() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text(
+            "Vuoi che esegua questa azione?",
+            style: TextStyle(color: AppColors.grey, fontSize: 13),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  icon: const Icon(
+                    Icons.close_rounded,
+                    color: AppColors.passione,
+                    size: 18,
+                  ),
+                  label: const Text(
+                    "Annulla",
+                    style: TextStyle(color: AppColors.passione),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: AppColors.passione),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () => ref
+                      .read(chatControllerProvider.notifier)
+                      .confirmAction(false),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton.icon(
+                  icon: const Icon(
+                    Icons.check_rounded,
+                    color: AppColors.white,
+                    size: 18,
+                  ),
+                  label: const Text(
+                    "Conferma",
+                    style: TextStyle(color: AppColors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.energia,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () => ref
+                      .read(chatControllerProvider.notifier)
+                      .confirmAction(true),
+                ),
+              ),
+            ],
           ),
         ],
       ),

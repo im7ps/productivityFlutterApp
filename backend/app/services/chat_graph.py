@@ -1,15 +1,22 @@
 # backend/app/services/chat_graph.py
 
 from typing import Annotated, TypedDict, Literal
+import logging
+
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
-from langchain_core.messages import BaseMessage, SystemMessage
+from langgraph.types import interrupt
+
+from langchain_core.messages import HumanMessage, BaseMessage, SystemMessage, AIMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.tools import tool
 from langchain_core.runnables import RunnableConfig
 
 from app.core.config import settings
+
+# Inizializza il logger
+logger = logging.getLogger(__name__)
 
 # 1. DEFINIZIONE DELLO STATO (La "lavagna" condivisa tra i nodi)
 class GraphState(TypedDict):
@@ -45,7 +52,7 @@ async def get_user_portfolio(config: RunnableConfig):
     action_service = config["configurable"].get("action_service")
     
     if not action_service or not user_id:
-        return "Errore: Servizi non disponibili nel contesto"
+        raise ValueError("action_service o user_id non disponibili nel config")
     
     actions = await action_service.get_user_portfolio(user_id)
     if not actions:
@@ -77,7 +84,7 @@ async def start_new_action(description: str, dimension_id: str, config: Runnable
 
 tools = [get_user_portfolio, start_new_action]
 # Il ToolNode è un componente pre-costruito che esegue i tool chiamati dall'LLM
-tool_node = ToolNode(tools)
+tool_node = ToolNode(tools, handle_tool_errors=True)
 
 # 3. CONFIGURAZIONE DELL'LLM (Gemini)
 llm = ChatGoogleGenerativeAI(
@@ -90,9 +97,25 @@ llm = ChatGoogleGenerativeAI(
 # Colleghiamo i tool all'LLM così che sappia di poterli usare
 llm_with_tools = llm.bind_tools(tools)
 
+# TODO: implementare una guardia per evitare che in un turno ci siano conversazioni da miliardi di token
+def trim_to_last_n_turns(messages: list[BaseMessage], n: int = 5) -> list[BaseMessage]:
+    """Mantiene gli ultimi N turni completi. Un turno = HumanMessage + tutto ciò che segue."""
+    turns = []
+    current_turn = []
+    for msg in messages:
+        if isinstance(msg, HumanMessage) and current_turn:
+            turns.append(current_turn)
+            current_turn = [msg]
+        else:
+            current_turn.append(msg)
+    if current_turn:
+        turns.append(current_turn)
+    return [msg for turn in turns[-n:] for msg in turn]
+
+
 # 4. DEFINIZIONE DEI NODI (Le funzioni di lavoro)
-def chatbot(state: GraphState, config: RunnableConfig):
-    """Nodo principale: invoca l'LLM con la cronologia dei messaggi."""
+async def chatbot(state: GraphState, config: RunnableConfig):
+    """Nodo principale: invoca l'LLM con la cronologia dei messaggi in streaming."""
     
     rank = config["configurable"].get("rank", 0)
     portfolio = config["configurable"].get("portfolio", [])
@@ -103,12 +126,37 @@ def chatbot(state: GraphState, config: RunnableConfig):
         portfolio=portfolio,
         proposals=proposals,
     ))
+
+    trimmed = trim_to_last_n_turns(state["messages"], 5)
+    full_context = [system_message] + trimmed
     
-    full_context = [system_message] + state["messages"]
+    # 1. Chiamata iniziale con astream per supportare lo streaming diretto
+    final_message = None
+    async for chunk in llm_with_tools.astream(full_context, config=config):
+        if final_message is None:
+            final_message = chunk
+        else:
+            final_message += chunk
     
-    response = llm_with_tools.invoke(full_context)
-    # Restituisce il nuovo messaggio che verrà aggiunto allo stato via 'add_messages'
-    return {"messages": [response]}
+    if final_message.tool_calls:
+        # Sospensione del grafo per intervento umano (interrupt)
+        confirmed = interrupt({"tool_calls": final_message.tool_calls})
+        
+        if not confirmed:
+            logger.info("Tool REJECTED. Generazione risposta di rifiuto in streaming...")
+            # 2. Se rifiutato, generiamo una nuova risposta (senza tools) via astream
+            rejection_message = None
+            async for chunk in llm.astream(full_context, config=config):
+                if rejection_message is None:
+                    rejection_message = chunk
+                else:
+                    rejection_message += chunk
+            return {"messages": [rejection_message]}
+            
+        logger.info("Tool ACCEPTED. Procedo al nodo tools.")
+    
+    # Se non ci sono tool calls o se sono state accettate, restituiamo il messaggio accumulato
+    return {"messages": [final_message]}
 
 def route_tools(state: GraphState) -> Literal["tools", "__end__"]:
     """
@@ -116,9 +164,12 @@ def route_tools(state: GraphState) -> Literal["tools", "__end__"]:
     Controlla se l'ultimo messaggio dell'IA contiene richieste di tool.
     """
     msg = state["messages"][-1]
-    if msg.tool_calls:
+    tool_calls = getattr(msg, "tool_calls", [])
+    if tool_calls:
+        logger.info(f"Routing: Tool calls rilevati ({len(tool_calls)}). Vado a 'tools'.")
         return "tools"
-    # Se non ci sono tool da chiamare, termina la conversazione
+    
+    logger.info("Routing: Nessun tool call. Fine conversazione.")
     return "__end__"
 
 # 5. COSTRUZIONE DEL WORKFLOW (Il Grafo)

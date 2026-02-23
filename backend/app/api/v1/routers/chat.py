@@ -23,3 +23,20 @@ async def stream_chat(
         chat_service.stream_chat(current_user.id, request.message),
         media_type="text/event-stream"
     )
+
+class ConfirmRequest(BaseModel):
+    confirmed: bool
+    
+@router.post("/confirm")
+async def confirm_tool(
+    request: ConfirmRequest,
+    current_user: CurrentUser,
+    chat_service: ChatService = Depends(get_chat_service),
+):
+    """
+    Endpoint per ricevere la conferma dell'utente riguardo all'esecuzione di un tool suggerito.
+    """
+    return StreamingResponse(
+        chat_service.resume_chat(current_user.id, request.confirmed),
+        media_type="text/event-stream"
+    )

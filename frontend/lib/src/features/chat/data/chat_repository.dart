@@ -24,6 +24,20 @@ class ChatRepository {
         .map((unit8List) => unit8List.toList()) // Convert Uint8List to List<int>
         .transform(utf8.decoder);
   }
+
+  Stream<String> confirmTool(bool confirmed) async* {
+    final response = await _dio.post(
+      '/api/v1/chat/confirm',
+      data: {'confirmed': confirmed},
+      options: Options(responseType: ResponseType.stream),
+    );
+
+    final stream = (response.data as ResponseBody).stream;
+
+    yield* stream
+        .map((uint8List) => uint8List.toList())
+        .transform(utf8.decoder);
+  }
 }
 
 @riverpod
