@@ -1,6 +1,6 @@
 from typing import Annotated, Any
 import uuid
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -139,9 +139,15 @@ def get_consultant_service(
     return ConsultantService(action_service, engine)
 
 def get_chat_service(
+    request: Request,
     user_service: Annotated[UserService, Depends(get_user_service)],
     action_service: Annotated[Any, Depends(get_action_service)],
     consultant_service: Annotated[Any, Depends(get_consultant_service)]
 ) -> Any:
     from app.services.chat_service import ChatService
-    return ChatService(user_service, action_service, consultant_service)
+    return ChatService(
+        user_service,
+        action_service,
+        consultant_service,
+        app_graph=request.app.state.app_graph,
+    )

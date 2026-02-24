@@ -13,13 +13,12 @@ from app.core.exceptions import (
     InvalidCredentials,
     DomainValidationError,
 )
-from app.core.config import settings
-from app.core.logging import configure_logging
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
-from app.core.rate_limit import limiter
 
-from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
+from app.core.logging import configure_logging
+from app.core.config import settings
+from app.core.rate_limit import limiter
 from app.services.chat_graph import compile_graph
 
 
@@ -40,10 +39,11 @@ async def lifespan(app: FastAPI):
         os.environ["LANGCHAIN_PROJECT"] = settings.LANGCHAIN_PROJECT
         logger.info("LangChain tracing enabled", project=settings.LANGCHAIN_PROJECT)
     
+    from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
     conn_string = os.getenv("DATABASE_URL")
     async with AsyncPostgresSaver.from_conn_string(conn_string) as checkpointer:
         await checkpointer.setup()
-        compile_graph(checkpointer)
+        app.state.app_graph = compile_graph(checkpointer)
         yield
     # Questo codice viene eseguito allo spegnimento dell'applicazione
     logger.info("Application shutting down")

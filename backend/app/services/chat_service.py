@@ -1,30 +1,16 @@
-import json
 import logging
-from typing import AsyncGenerator, List
-from pydantic import BaseModel, Field
+from dataclasses import dataclass
+from typing import AsyncGenerator
 
 from langchain_core.messages import HumanMessage
-from langchain_core.tools import tool
-from langchain_google_genai import ChatGoogleGenerativeAI 
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnableLambda, RunnablePassthrough
 
 from langgraph.types import Command
 
 from app.services.user_service import UserService
 from app.services.action_service import ActionService
 from app.services.consultant_service import ConsultantService
-from app.core.config import settings
-from app.services import chat_graph as chat_graph_module
-
 logger = logging.getLogger(__name__)
 HUMAN_MSG_MAX_LENGHT = 5000
-
-class ActionInput(BaseModel):
-    description: str = Field(description="La descrizione dell'attività da iniziare")
-    dimension_id: str = Field(description="L'ID della dimensione (es. 'passion', 'duties', 'energy')")
-    
 
 class ChatService:
     def __init__(
@@ -32,28 +18,21 @@ class ChatService:
         user_service: UserService,
         action_service: ActionService,
         consultant_service: ConsultantService,
+        app_graph,
     ):
         self.user_service = user_service
         self.action_service = action_service
         self.consultant_service = consultant_service
-        
-        # Inizializzazione LLM con Google Gemini
-        if not settings.GOOGLE_API_KEY:
-            raise ValueError("GOOGLE_API_KEY is not set in environment variables")
+        self.app_graph = app_graph
 
-
-    def _inspect_chain_data(self, data):
-        logger.info("--ISPEZIONE DATI CHAIN--")
-        logger.info(f"Rank inviato: {data.get('rank')}")
-        logger.info(f"Input utente: {data.get('input')}")
-        return data
-
-
-    async def stream_chat(self, user_id, user_message: str) -> AsyncGenerator[str, None]:
-        if len(user_message) > HUMAN_MSG_MAX_LENGHT:
-            yield "Il messaggio è troppo lungo. Riducilo a meno di 5000 caratteri."
-            return
-        # Recupero Contesto
+    @dataclass
+    class _UserContext:
+        rank: int
+        portfolio: list[str]
+        proposals: list[str]
+    
+    
+    async def _fetch_context(self, user_id) -> _UserContext:
         user = await self.user_service.get_user_by_id(user_id)
         rank = user.rank_score
         
@@ -62,37 +41,46 @@ class ChatService:
         
         proposals = await self.consultant_service.get_proposals(user_id)
         proposals_desc = [f"{p.description}: {p.category}" for p in proposals]
+        
+        return self._UserContext(rank=rank, portfolio=portfolio_desc, proposals=proposals_desc)
+    
+    
+    def _return_context_configurable(self, user_id, context: _UserContext):
+        return {
+            "configurable": {
+                "thread_id": str(user_id),
+                "user_id": user_id,
+                "action_service": self.action_service,
+                "rank": context.rank,
+                "portfolio": context.portfolio,
+                "proposals": context.proposals,
+            }}
+
+
+    async def stream_chat(self, user_id, user_message: str) -> AsyncGenerator[str, None]:
+        if len(user_message) > HUMAN_MSG_MAX_LENGHT:
+            yield "Il messaggio è troppo lungo. Riducilo a meno di 5000 caratteri."
+            return
+
 
         input_data = {
             "messages": [
                 HumanMessage(content=user_message)
             ]
         }
-        
-        config = {
-            "configurable": {
-                "thread_id": str(user_id),
-                "user_id": user_id,
-                "action_service": self.action_service,
-                "rank": rank,
-                "portfolio": portfolio_desc,
-                "proposals": proposals_desc,
-            }
-        }
 
-        # Inviamo un piccolo segnale di "pensiero" se il messaggio è breve
-        if len(user_message) < 100:
-             yield "Sto elaborando la tua richiesta...\n\n"
+        context = await self._fetch_context(user_id)
+        config = self._return_context_configurable(user_id, context)
 
-        has_streamed = False
-        async for event in chat_graph_module.app_graph.astream_events(input_data, config=config, version="v2"):
+
+        async for event in self.app_graph.astream_events(input_data, config=config, version="v2"):
             if event["event"] == "on_chat_model_stream":
                 chunk = event["data"]["chunk"]
+                # durante tool_calls chunk.content non è una stringa ma un dict con info sul tool call, quindi controlliamo che sia una stringa prima di streamare
                 if chunk.content and isinstance(chunk.content, str):
-                    has_streamed = True
                     yield chunk.content
         
-        state = await chat_graph_module.app_graph.aget_state(config)
+        state = await self.app_graph.aget_state(config)
         if state.next:
             for task in state.tasks:
                 for interrupt_obj in task.interrupts:
@@ -110,19 +98,14 @@ class ChatService:
 
 
     async def resume_chat(self, user_id, confirmed: bool) -> AsyncGenerator[str, None]:
-        config = {
-            "configurable": {
-                "thread_id": str(user_id),
-                "user_id": user_id,
-                "action_service": self.action_service,
-            }
-        }
+        context = await self._fetch_context(user_id)
+        config = self._return_context_configurable(user_id, context)
         
         # Se l'utente rifiuta, inviamo un feedback immediato via stream prima di riprendere il grafo
         if not confirmed:
             yield "Ricevuto. Annullamento operazione e generazione risposta alternativa...\n\n"
 
-        async for event in chat_graph_module.app_graph.astream_events(
+        async for event in self.app_graph.astream_events(
             Command(resume=confirmed),
             config=config,
             version="v2"
