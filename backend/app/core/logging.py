@@ -17,7 +17,8 @@ def configure_logging():
         structlog.stdlib.add_log_level,
         structlog.stdlib.PositionalArgumentsFormatter(),
         structlog.processors.StackInfoRenderer(),
-        structlog.processors.format_exc_info,
+        # format_exc_info removed: ConsoleRenderer handles exceptions natively;
+        # ExceptionRenderer is used for JSON output in production.
         structlog.processors.UnicodeDecoder(),
     ]
 
@@ -36,18 +37,17 @@ def configure_logging():
 
     # Renderer selection based on environment
     if settings.ENVIRONMENT == "local":
-        renderer = structlog.dev.ConsoleRenderer()
         final_processors = [
             # Remove internal keys added by wrap_for_formatter
             structlog.stdlib.ProcessorFormatter.remove_processors_meta,
-            renderer
+            structlog.dev.ConsoleRenderer()
         ]
     else:
-        renderer = structlog.processors.JSONRenderer()
         final_processors = [
             structlog.stdlib.ProcessorFormatter.remove_processors_meta,
-            structlog.processors.dict_tracebacks,
-            renderer
+            # Render exceptions as structured dicts inside the JSON payload
+            structlog.processors.ExceptionRenderer(),
+            structlog.processors.JSONRenderer()
         ]
 
     # Configure standard library logging to use structlog
@@ -61,15 +61,15 @@ def configure_logging():
     # Reset root logger handlers
     root_logger = logging.getLogger()
     root_logger.handlers = []
-    
+
     handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(formatter)
     root_logger.addHandler(handler)
-    
+
     # Set level based on environment
     level = logging.DEBUG if settings.ENVIRONMENT == "local" else logging.INFO
     root_logger.setLevel(level)
 
-    # Avoid duplicate logs from uvicorn (uvicorn handles its own logging setup usually, 
+    # Avoid duplicate logs from uvicorn (uvicorn handles its own logging setup usually,
     # but we want to override it or let it propagate).
     # Setting propagate to True for specific loggers ensures they bubble up to our root logger.

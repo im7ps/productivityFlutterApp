@@ -1,7 +1,5 @@
 import pytest
-from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
-from jose import jwt
 
 from app.core.exceptions import AccessTokenExpired, InvalidToken
 from app.core.security import (
@@ -9,8 +7,6 @@ from app.core.security import (
     verify_password,
     create_access_token,
     decode_access_token,
-    SECRET_KEY,
-    ALGORITHM,
 )
 
 # --- Password Hashing and Verification Tests ---
@@ -69,16 +65,15 @@ def test_jwt_roundtrip():
 
 def test_decode_expired_token():
     """
-    Tests that decoding an expired token raises ExpiredSignatureError.
+    Tests that decoding an expired token raises AccessTokenExpired.
+
+    Uses create_access_token (with negative expiry via patch) so that both encode
+    and decode always use the same SECRET_KEY from the module — avoiding the
+    stale-binding bug that occurs when importing the constant directly.
     """
-    # Create a token that expired 1 minute ago
-    expire = datetime.now(timezone.utc) - timedelta(minutes=1)
-    payload = {"sub": "user@example.com", "exp": expire}
-    
-    # Manually encode using jose to bypass create_access_token's logic
-    expired_token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
-    
-    # Assert that decoding it raises the specific AccessTokenExpired
+    with patch("app.core.security.ACCESS_TOKEN_EXPIRE_MINUTES", -1):
+        expired_token = create_access_token(data={"sub": "user@example.com"})
+
     with pytest.raises(AccessTokenExpired):
         decode_access_token(expired_token)
 

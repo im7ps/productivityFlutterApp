@@ -7,7 +7,10 @@
       "Bash(docker compose --profile test up tests)",
       "Bash(docker compose --profile test build tests)",
       "Bash(poetry run pytest tests/unit/services/test_chat_service.py -v)",
-      "Bash(SECRET_KEY=test_secret_key GOOGLE_API_KEY=fake_key_for_tests DATABASE_URL=postgresql+psycopg://test:test@localhost/test poetry run pytest tests/unit/services/test_chat_service.py -v)"
+      "Bash(SECRET_KEY=test_secret_key GOOGLE_API_KEY=fake_key_for_tests DATABASE_URL=postgresql+psycopg://test:test@localhost/test poetry run pytest tests/unit/services/test_chat_service.py -v)",
+      "Bash(poetry lock --no-update)",
+      "Bash(poetry lock)",
+      "Bash(SECRET_KEY=test_secret_key GOOGLE_API_KEY=fake DATABASE_URL=postgresql+psycopg://x:x@localhost/x poetry run pytest tests/unit/test_security.py -v)"
     ]
   }
 }

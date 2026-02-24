@@ -26,9 +26,9 @@ class ConsultantService:
         """
         Consumes a proposal and returns a fresh set of proposals.
         """
-        # Re-generate current proposals to find the one to consume
-        current_proposals = await self.get_proposals(user_id)
-        consumed_proposal = next((p for p in current_proposals if p.id == proposal_id), None)
+        # Search in the FULL pool, not just the random top-5 shown to the user,
+        # so any valid proposal ID can be consumed regardless of which subset was rendered.
+        consumed_proposal = await self.engine.find_proposal_by_id(user_id, proposal_id)
 
         if not consumed_proposal:
             raise ValueError(f"Consultant proposal with ID {proposal_id} not found.")

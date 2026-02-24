@@ -13,49 +13,55 @@ class ConsultantEngine:
 
     # Seeds to ensure the user always has something to do
     SEED_TASKS = [
-        {"description": "Meditazione 15 minuti", "category": "Energia", "difficulty": 1, "fulfillment": 4, "slug": "energy"},
-        {"description": "Suonare uno strumento", "category": "Passione", "difficulty": 2, "fulfillment": 5, "slug": "passion"},
-        {"description": "Pulizia profonda 20 min", "category": "Dovere", "difficulty": 3, "fulfillment": 3, "slug": "duties"},
-        {"description": "Esercizio Fisico Intenso", "category": "Energia", "difficulty": 5, "fulfillment": 4, "slug": "energy"},
-        {"description": "Lettura Formativa", "category": "Anima", "difficulty": 2, "fulfillment": 5, "slug": "soul"},
-        {"description": "Revisione Obiettivi", "category": "Dovere", "difficulty": 1, "fulfillment": 3, "slug": "duties"},
-        {"description": "Connessione Sociale", "category": "Relazioni", "difficulty": 1, "fulfillment": 4, "slug": "relationships"},
+        {"description": "Meditazione 15 minuti", "category": "Energia", "difficulty": 1, "fulfillment": 4, "slug": "energia"},
+        {"description": "Suonare uno strumento", "category": "Passione", "difficulty": 2, "fulfillment": 5, "slug": "passione"},
+        {"description": "Pulizia profonda 20 min", "category": "Dovere", "difficulty": 3, "fulfillment": 3, "slug": "dovere"},
+        {"description": "Esercizio Fisico Intenso", "category": "Energia", "difficulty": 5, "fulfillment": 4, "slug": "energia"},
+        {"description": "Lettura Formativa", "category": "Anima", "difficulty": 2, "fulfillment": 5, "slug": "anima"},
+        {"description": "Revisione Obiettivi", "category": "Dovere", "difficulty": 1, "fulfillment": 3, "slug": "dovere"},
+        {"description": "Connessione Sociale", "category": "Relazioni", "difficulty": 1, "fulfillment": 4, "slug": "relazioni"},
     ]
 
     def __init__(self, action_repo: ActionRepo):
         self.action_repo = action_repo
 
+    async def _build_pool(self, user_id: uuid.UUID) -> List[dict]:
+        """
+        Builds the full list of candidate task dicts for a user (history + seeds,
+        excluding tasks already completed today). Does NOT apply random selection.
+        """
+        history = await self.action_repo.get_all_by_user(user_id)
+
+        today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+        completed_today = {
+            a.description.lower() for a in history
+            if a.status == "COMPLETED" and a.start_time >= today_start
+        }
+
+        portfolio = self._extract_unique_tasks(history)
+        available_portfolio = [
+            t for t in portfolio
+            if t['description'].lower() not in completed_today
+        ]
+        return self._merge_seeds_into_pool(available_portfolio, completed_today)
+
     async def generate_proposals(self, user_id: uuid.UUID, count: int = 5) -> List[Action]:
         """
         Orchestrates the selection of tasks based on history and seeds.
         """
-        # 1. Get user history (all tasks ever created/completed)
-        history = await self.action_repo.get_all_by_user(user_id)
-        
-        # 2. Get tasks completed TODAY (to avoid proposing them again)
-        today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
-        completed_today = {
-            a.description.lower() for a in history 
-            if a.status == "COMPLETED" and a.start_time >= today_start
-        }
-
-        # 3. Build a 'Portfolio' of unique tasks from history
-        portfolio = self._extract_unique_tasks(history)
-        
-        # 4. Filter out tasks completed today from portfolio
-        available_portfolio = [
-            t for t in portfolio 
-            if t['description'].lower() not in completed_today
-        ]
-
-        # 5. Add Seed Tasks to the pool if they are not already in portfolio/completed today
-        pool = self._merge_seeds_into_pool(available_portfolio, completed_today)
-
-        # 6. Select the best candidates (Logic can be expanded here)
+        pool = await self._build_pool(user_id)
         selected_tasks = self._select_balanced_subset(pool, count)
-
-        # 7. Convert to Action models
         return self._map_to_actions(selected_tasks, user_id)
+
+    async def find_proposal_by_id(self, user_id: uuid.UUID, proposal_id: uuid.UUID) -> Action | None:
+        """
+        Searches the full pool (not just the random top-N) for a proposal by ID.
+        Required by consume_proposal so that any valid proposal can be found,
+        regardless of which random subset was shown to the user.
+        """
+        pool = await self._build_pool(user_id)
+        all_proposals = self._map_to_actions(pool, user_id)
+        return next((p for p in all_proposals if p.id == proposal_id), None)
 
     def _extract_unique_tasks(self, history: List[Action]) -> List[dict]:
         """
