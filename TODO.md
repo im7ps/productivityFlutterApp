@@ -1,21 +1,30 @@
 # TODO - What I've Done (Emotional Compass)
 
-## ✅ Completati (Pivot Architetturale)
-- [x] **Backend Re-architecting**: Rinominate entità Category -> Dimension e ActivityLog -> Action.
-- [x] **Database Pivot**: Passaggio a Slug IDs per le Dimensioni e seeding dei 4 pilastri (Energia, Chiarezza, Relazioni, Anima).
-- [x] **Fulfillment System**: Aggiunto `fulfillment_score` (1-5) alle Azioni per misurare il "nutrimento" emotivo.
-- [x] **Onboarding "The Manifesto"**: Implementata sequenza cinematografica con testi definitivi, animazioni e feedback aptico.
-- [x] **Frontend Alignment**: Refactoring completo dei repository, modelli Freezed e provider per riflettere il nuovo dominio.
-- [x] **Bug Fix Critici**: Risolta persistenza dati (commijt mancante nel backend) e bug di routing (accessibilità manuale onboarding).
+## Bug
+# Quando clicco le icone non si spengono per diventare inattive
+# Non funziona se non sulla stessa rete wifi del server (il pc)
+# Il portfolio visualizzato sull'app non coincide con quello presente nel BE
+# La chat non scorre per visualizzare l'ultimo messaggio
+# Quando annullo la conferma di una task perchè voglio modificare qualcosa il messaggio dell'agent è vuoto al posto di essere qualcosa del tipo "cosa vuoi modificare?"
+# Quando elimino una task dal portfolio tramite agent dovrebbe eliminarla anche dalle attività correnti
 
-## 🚀 Prossimi Passi (Alta Priorità)
-- [ ] **Dimension Balance Widget**: Creare un widget (radar chart o barre cumulative) nella Dashboard che mostri il bilancio delle 4 dimensioni per la giornata corrente.
-- [ ] **Action History Filtering**: Aggiungere filtri nella Dashboard per visualizzare le azioni per singola dimensione.
-- [ ] **Energy Bar Logic**: Definire come il `fulfillment_score` e la durata delle azioni influenzano il riempimento delle barre di energia giornaliere.
-- [ ] **Daily Log Integration**: Collegare i Daily Log (sonno, umore) al sistema delle dimensioni per vedere correlazioni (es. "Se dormo poco, la mia Chiarezza cala").
+## Features
+# Cambiare la scritta "identità in azione" con "riepilogo task"
+# Integrare la logica dei checkpoint
+# Integrare il termine della giornata corrente
+# Integrare giornate successive al day0 per programmare azioni anche nel domani, dopodomani ecc
+# Aggiungere durata temporale delle task calcolabile tramite pulsante che consente di mettere in pausa/riprendere le task
+# Aggiungere bottone per eliminare una task da quelle correnti
 
-## 🛠️ Manutenzione e Qualità
-- [ ] **Refactoring `onboarding_screen.dart`**: Pulire il codice rimuovendo i residui di debug print e semplificando i widget di layout.
-- [ ] **Backend Test Update**: Aggiornare la suite di test per coprire i nuovi endpoint `/dimensions` e `/actions`.
-- [ ] **Localization (i18n)**: Passare da `AppStrings` a file `.arb` reali per il supporto multi-lingua.
-- [ ] **Unit Tests Frontend**: Aumentare la copertura dei test sui nuovi Action/Dimension Notifiers.
+## Agents
+# Creare agent specifici per ogni zona (Energia - Anima - ecc)
+# Creare agent che sa quale agent deve chiamare 
+
+## Noises
+# dimension_id è un campo che genera confusione, da rivedere
+# non c'è bisogno che l'agent mi chieda la conferma dopo che gli ho dato le info perchè poi mi fa vedere la card che posso scegliere di modificare
+
+## Aesthetic
+# Migliorare il login, fa schifo
+# Curare la light mode
+# Cambiare lo sfondo delle schermate in dark mode e light mode

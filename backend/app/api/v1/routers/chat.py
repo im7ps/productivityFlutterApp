@@ -3,11 +3,13 @@ from fastapi.responses import StreamingResponse
 from app.api.v1.deps import get_chat_service, CurrentUser
 from app.services.chat_service import ChatService
 from pydantic import BaseModel
+from typing import Optional
 
 router = APIRouter()
 
 class ChatRequest(BaseModel):
     message: str
+    session_id: Optional[str] = "default"
 
 @router.post("/stream")
 async def stream_chat(
@@ -20,12 +22,13 @@ async def stream_chat(
     Utilizza LangChain per generare consigli personalizzati basati sul contesto utente.
     """
     return StreamingResponse(
-        chat_service.stream_chat(current_user.id, request.message),
+        chat_service.stream_chat(current_user.id, request.message, request.session_id),
         media_type="text/event-stream"
     )
 
 class ConfirmRequest(BaseModel):
     confirmed: bool
+    session_id: Optional[str] = "default"
     
 @router.post("/confirm")
 async def confirm_tool(
@@ -37,6 +40,6 @@ async def confirm_tool(
     Endpoint per ricevere la conferma dell'utente riguardo all'esecuzione di un tool suggerito.
     """
     return StreamingResponse(
-        chat_service.resume_chat(current_user.id, request.confirmed),
+        chat_service.resume_chat(current_user.id, request.confirmed, request.session_id),
         media_type="text/event-stream"
     )

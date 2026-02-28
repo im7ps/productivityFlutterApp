@@ -41,28 +41,35 @@ class IdentityGrid extends ConsumerWidget {
         final categoryColor = _getCategoryColor(task.category);
         final theme = Theme.of(context);
 
+        final isInProgress = task.status == "IN_PROGRESS";
+        final isCompleted = task.status == "COMPLETED";
+
         return GestureDetector(
           onTap: () => onTaskTap(task),
           onLongPress: () => onTaskLongPress(task),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 300),
             decoration: BoxDecoration(
-              color: task.isCompleted 
+              color: isCompleted 
                   ? categoryColor.withValues(alpha: 0.2) 
-                  : theme.cardTheme.color,
+                  : isInProgress
+                      ? categoryColor.withValues(alpha: 0.1)
+                      : theme.cardTheme.color,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: task.isCompleted 
+                color: isCompleted 
                     ? categoryColor.withValues(alpha: 0.5) 
-                    : Colors.transparent,
-                width: 2,
+                    : isInProgress
+                        ? categoryColor
+                        : Colors.transparent,
+                width: isInProgress ? 3 : 2,
               ),
               boxShadow: [
-                if (task.isCompleted)
+                if (isCompleted || isInProgress)
                   BoxShadow(
                     color: categoryColor.withValues(alpha: 0.3),
-                    blurRadius: 12,
-                    spreadRadius: 2,
+                    blurRadius: isInProgress ? 16 : 12,
+                    spreadRadius: isInProgress ? 3 : 2,
                   ),
                 const BoxShadow(
                   color: Colors.black12,
@@ -76,11 +83,37 @@ class IdentityGrid extends ConsumerWidget {
               children: [
                 Icon(
                   task.icon,
-                  color: task.isCompleted 
+                  color: (isCompleted || isInProgress)
                       ? categoryColor 
                       : categoryColor.withValues(alpha: 0.4),
                   size: 24,
                 ),
+                if (isInProgress)
+                  Positioned(
+                    top: 4,
+                    right: 4,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                if (task.durationMinutes != null)
+                  Positioned(
+                    bottom: 4,
+                    right: 4,
+                    child: Text(
+                      "${task.durationMinutes}'",
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        fontSize: 8,
+                        fontWeight: FontWeight.bold,
+                        color: (isCompleted || isInProgress) ? categoryColor : AppColors.grey,
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),

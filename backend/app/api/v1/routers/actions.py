@@ -29,3 +29,35 @@ async def read_actions(
     Retrieve user actions.
     """
     return await service.get_user_actions(current_user.id, skip=skip, limit=limit)
+
+@router.get("/portfolio", response_model=List[ActionRead])
+async def read_portfolio(
+    current_user: User = Depends(get_current_active_user),
+    service: ActionService = Depends(get_action_service),
+):
+    """
+    Retrieve user portfolio (unique actions).
+    """
+    return await service.get_user_portfolio(current_user.id)
+
+@router.delete("/{action_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_action(
+    action_id: str,
+    current_user: User = Depends(get_current_active_user),
+    service: ActionService = Depends(get_action_service),
+):
+    """
+    Delete a specific action.
+    """
+    import uuid
+    try:
+        uid = uuid.UUID(action_id)
+    except ValueError:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail="Invalid UUID format")
+        
+    success = await service.delete_action(current_user.id, uid)
+    if not success:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Action not found or not owned by user")
+    return None

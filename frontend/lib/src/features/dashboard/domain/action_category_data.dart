@@ -41,13 +41,13 @@ enum ActionCategory {
 
   static List<ActionCategory> getByDimension(String dimensionId) {
     switch (dimensionId.toLowerCase()) {
-      case 'energy':
+      case 'energia':
         return [run, gym, walk, sport, sleep, eat, water];
-      case 'clarity':
+      case 'chiarezza':
         return [work, focus, plan, read, learn, write];
-      case 'relationships':
+      case 'relazioni':
         return [family, friends, partner, call, event, help];
-      case 'soul':
+      case 'anima':
         return [meditate, journal, nature, art, music, gratitude];
       default:
         return values; // Fallback: all

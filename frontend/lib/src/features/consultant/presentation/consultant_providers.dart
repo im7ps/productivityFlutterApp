@@ -46,15 +46,8 @@ class ConsultantProposalsNotifier
           // 1. ADD DIRECTLY TO TODAY'S ARSENAL (Dashboard)
           ref.read(taskListProvider.notifier).addTasks([consumedTask]);
 
-          // 2. SYNC WITH PORTFOLIO (Avoid duplicates by title)
-          final portfolio = ref.read(allTasksProvider);
-          final existsInPortfolio = portfolio.any(
-            (t) => t.title.toLowerCase() == consumedTask.title.toLowerCase(),
-          );
-
-          if (!existsInPortfolio) {
-            ref.read(allTasksProvider.notifier).addTask(consumedTask);
-          }
+          // 2. INVALIDE PORTFOLIO (Let backend-backed provider re-fetch)
+          ref.invalidate(portfolioProvider);
         }
         return AsyncValue.data(newProposals);
       },

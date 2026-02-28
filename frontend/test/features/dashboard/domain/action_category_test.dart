@@ -19,12 +19,12 @@ void main() {
     });
 
     test('getByDimension returns specific lists', () {
-      final energyActions = ActionCategory.getByDimension('energy');
+      final energyActions = ActionCategory.getByDimension('energia');
       expect(energyActions.contains(ActionCategory.run), isTrue);
       expect(energyActions.contains(ActionCategory.gym), isTrue);
       expect(energyActions.contains(ActionCategory.meditate), isFalse);
 
-      final soulActions = ActionCategory.getByDimension('soul');
+      final soulActions = ActionCategory.getByDimension('anima');
       expect(soulActions.contains(ActionCategory.meditate), isTrue);
       expect(soulActions.contains(ActionCategory.run), isFalse);
     });

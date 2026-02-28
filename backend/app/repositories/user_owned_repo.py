@@ -41,4 +41,10 @@ class UserOwnedRepo(BaseRepo[ModelType, CreateSchemaType, UpdateSchemaType]):
         result = await self.session.execute(statement)
         return result.scalars().all()
     
-    # update e delete sono ereditati da BaseRepo
+    async def delete_for_user(self, user_id: uuid.UUID, obj_id: uuid.UUID) -> bool:
+        """Cancella un oggetto solo se appartiene all'utente specificato."""
+        db_obj = await self.get_by_id(obj_id, user_id)
+        if not db_obj:
+            return False
+        await self.delete(db_obj)
+        return True

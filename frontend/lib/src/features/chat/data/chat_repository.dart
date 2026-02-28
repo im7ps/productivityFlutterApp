@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/networking/dio_provider.dart';
 
 part 'chat_repository.g.dart';
@@ -11,24 +12,26 @@ class ChatRepository {
 
   ChatRepository(this._dio);
 
-  Stream<String> streamChat(String message) async* {
+  Stream<String> streamChat(String message, String sessionId) async* {
     final response = await _dio.post(
       '/api/v1/chat/stream',
-      data: {'message': message},
+      data: {'message': message, 'session_id': sessionId},
       options: Options(responseType: ResponseType.stream),
     );
 
     final stream = (response.data as ResponseBody).stream;
-    
+
     yield* stream
-        .map((unit8List) => unit8List.toList()) // Convert Uint8List to List<int>
+        .map(
+          (unit8List) => unit8List.toList(),
+        ) // Convert Uint8List to List<int>
         .transform(utf8.decoder);
   }
 
-  Stream<String> confirmTool(bool confirmed) async* {
+  Stream<String> confirmTool(bool confirmed, String sessionId) async* {
     final response = await _dio.post(
       '/api/v1/chat/confirm',
-      data: {'confirmed': confirmed},
+      data: {'confirmed': confirmed, 'session_id': sessionId},
       options: Options(responseType: ResponseType.stream),
     );
 
@@ -41,6 +44,6 @@ class ChatRepository {
 }
 
 @riverpod
-ChatRepository chatRepository(ChatRepositoryRef ref) {
+ChatRepository chatRepository(Ref ref) {
   return ChatRepository(ref.watch(dioProvider));
 }

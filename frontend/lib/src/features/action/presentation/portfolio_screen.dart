@@ -6,6 +6,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../dashboard/presentation/dashboard_providers.dart';
 import 'action_providers.dart';
 import 'widgets/portfolio_card.dart';
+import '../../dashboard/presentation/dashboard_models.dart';
 
 class PortfolioScreen extends ConsumerStatefulWidget {
   const PortfolioScreen({super.key});
@@ -40,11 +41,7 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final allTasks = ref.watch(allTasksProvider);
-
-    final filteredTasks = _selectedFilter == 'Tutti'
-        ? allTasks
-        : allTasks.where((t) => t.category.toLowerCase() == _selectedFilter.toLowerCase()).toList();
+    final portfolioAsync = ref.watch(portfolioProvider);
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -70,9 +67,13 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen> {
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () => context.pop(),
         ),
-        title: Text("PORTFOLIO", style: theme.textTheme.titleLarge),
+        title: Text("BIBLIOTECA DEL SÉ", style: theme.textTheme.titleLarge),
         backgroundColor: Colors.transparent,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded),
+            onPressed: () => ref.read(portfolioProvider.notifier).refresh(),
+          ),
           Builder(
             builder: (context) => IconButton(
               icon: const Icon(Icons.menu_rounded),
@@ -81,95 +82,107 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Category Filters
-          SizedBox(
-            height: 60,
-            child: ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              scrollDirection: Axis.horizontal,
-              itemCount: _filters.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
-              itemBuilder: (context, index) {
-                final filter = _filters[index];
-                final isSelected = filter == _selectedFilter;
-                final filterColor = _getCategoryColor(filter);
+      body: portfolioAsync.when(
+        data: (allTasks) {
+          final filteredTasks = _selectedFilter == 'Tutti'
+              ? allTasks
+              : allTasks.where((t) => t.category.toLowerCase() == _selectedFilter.toLowerCase()).toList();
 
-                return GestureDetector(
-                  onTap: () => setState(() => _selectedFilter = filter),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: isSelected ? filterColor.withValues(alpha: 0.2) : theme.cardTheme.color,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: isSelected ? filterColor : Colors.transparent,
-                        width: 1.5,
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        filter.toUpperCase(),
-                        style: TextStyle(
-                          color: isSelected ? filterColor : AppColors.grey,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
+          return Column(
+            children: [
+              // Category Filters
+              SizedBox(
+                height: 60,
+                child: ListView.separated(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _filters.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  itemBuilder: (context, index) {
+                    final filter = _filters[index];
+                    final isSelected = filter == _selectedFilter;
+                    final filterColor = _getCategoryColor(filter);
+
+                    return GestureDetector(
+                      onTap: () => setState(() => _selectedFilter = filter),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: isSelected ? filterColor.withValues(alpha: 0.2) : theme.cardTheme.color,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: isSelected ? filterColor : Colors.transparent,
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Center(
+                          child: Text(
+                            filter.toUpperCase(),
+                            style: TextStyle(
+                              color: isSelected ? filterColor : AppColors.grey,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-          // Task List
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(24),
-              itemCount: filteredTasks.length,
-              itemBuilder: (context, index) {
-                final t = filteredTasks[index];
-                return PortfolioCard(
-                  title: t.title,
-                  category: t.category,
-                  completionCount: 0,
-                  avgSatisfaction: t.satisfaction.toDouble(),
-                  icon: t.icon,
-                  onTap: () => _showTaskDetail(t, ref),
-                  onScegli: () {
-                    ref.read(taskListProvider.notifier).addTasks([t]);
-                    context.go('/');
+                    );
                   },
-                );
-              },
-            ),
-          ),
-          
-          // Add Task Button at the Bottom
-          Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Container(
-              width: double.infinity,
-              height: 56,
-              decoration: BoxDecoration(
-                gradient: AppColors.primaryGradient,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: ElevatedButton.icon(
-                onPressed: () => _showCreateTaskModal(),
-                icon: const Icon(Icons.add_rounded),
-                label: const Text("CREA NUOVA MISSIONE", style: TextStyle(fontWeight: FontWeight.bold)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.transparent,
-                  foregroundColor: Colors.white,
-                  shadowColor: Colors.transparent,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
               ),
-            ),
-          ),
-        ],
+              // Task List
+              Expanded(
+                child: filteredTasks.isEmpty 
+                  ? Center(child: Text("Nessuna attività trovata.", style: TextStyle(color: AppColors.grey)))
+                  : ListView.builder(
+                      padding: const EdgeInsets.all(24),
+                      itemCount: filteredTasks.length,
+                      itemBuilder: (context, index) {
+                        final t = filteredTasks[index];
+                        return PortfolioCard(
+                          title: t.title,
+                          category: t.category,
+                          completionCount: 0,
+                          avgSatisfaction: t.satisfaction.toDouble(),
+                          icon: t.icon,
+                          onTap: () => _showTaskDetail(t, ref),
+                          onScegli: () {
+                            ref.read(taskListProvider.notifier).addTasks([t]);
+                            context.go('/');
+                          },
+                        );
+                      },
+                    ),
+              ),
+              
+              // Add Task Button at the Bottom
+              Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Container(
+                  width: double.infinity,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    gradient: AppColors.primaryGradient,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: ElevatedButton.icon(
+                    onPressed: () => _showCreateTaskModal(),
+                    icon: const Icon(Icons.add_rounded),
+                    label: const Text("CREA NUOVA MISSIONE", style: TextStyle(fontWeight: FontWeight.bold)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      foregroundColor: Colors.white,
+                      shadowColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text("Errore nel caricamento: $err")),
       ),
     );
   }
@@ -219,7 +232,7 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen> {
             const SizedBox(height: 12),
             TextButton(
               onPressed: () {
-                ref.read(allTasksProvider.notifier).removeTask(task.id);
+                ref.read(portfolioProvider.notifier).removeTask(task.id);
                 Navigator.pop(context);
               },
               child: const Text("Elimina dal Portfolio", style: TextStyle(color: AppColors.passione)),
@@ -352,20 +365,25 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen> {
                         shadowColor: Colors.transparent,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       ),
-                      onPressed: () {
+                      onPressed: () async {
                         if (title.isNotEmpty) {
-                          final newTask = TaskUIModel(
-                            id: DateTime.now().millisecondsSinceEpoch.toString(),
-                            title: title,
-                            icon: selectedIcon,
-                            color: _getCategoryColor(category),
-                            difficulty: fatigue.round(),
-                            satisfaction: satisfaction.round(),
-                            category: category,
-                            isCompleted: false,
+                          // Note: In a real app, you would use ActionCreateController here to persist to backend.
+                          // For now, let's just use the local provider logic or refactor to backend.
+                          final dimensionMapping = {
+                            'Dovere': 'dovere',
+                            'Passione': 'passione',
+                            'Energia': 'energia',
+                            'Anima': 'anima',
+                            'Relazioni': 'relazioni',
+                          };
+                          
+                          await ref.read(actionCreateControllerProvider.notifier).createAction(
+                            description: title,
+                            dimensionId: dimensionMapping[category] ?? 'dovere',
+                            fulfillmentScore: satisfaction.round(),
                           );
-                          ref.read(allTasksProvider.notifier).addTask(newTask);
-                          Navigator.pop(context);
+                          
+                          if (mounted) Navigator.pop(context);
                         }
                       },
                       child: const Text("CREA E AGGIUNGI", style: TextStyle(fontWeight: FontWeight.bold)),

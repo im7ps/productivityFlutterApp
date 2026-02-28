@@ -64,10 +64,10 @@ class _AddActionModalState extends ConsumerState<AddActionModal> {
   Color _getDimensionColor(String? dimensionId) {
     if (dimensionId == null) return const Color(0xFF64FFDA); 
     switch (dimensionId.toLowerCase()) {
-      case 'energy': return const Color(0xFFE64A19);
-      case 'clarity': return const Color(0xFF006064);
-      case 'relationships': return const Color(0xFFFBC02D);
-      case 'soul': return const Color(0xFF6A1B9A);
+      case 'energia': return const Color(0xFFE64A19);
+      case 'chiarezza': return const Color(0xFF006064);
+      case 'relazioni': return const Color(0xFFFBC02D);
+      case 'anima': return const Color(0xFF6A1B9A);
       default: return const Color(0xFF64FFDA);
     }
   }

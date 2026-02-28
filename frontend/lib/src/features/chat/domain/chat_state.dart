@@ -8,5 +8,8 @@ class ChatState with _$ChatState {
   const factory ChatState({
     @Default([]) List<ChatMessage> messages,
     @Default(false) bool isWaitingConfirmation,
+    @Default('') String sessionId,
+    String? pendingToolName,
+    Map<String, dynamic>? pendingToolArgs,
   }) = _ChatState;
 }

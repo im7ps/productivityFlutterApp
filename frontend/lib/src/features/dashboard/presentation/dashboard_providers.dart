@@ -115,7 +115,66 @@ class TaskList extends _$TaskList {
   @override
   Future<List<TaskUIModel>> build() async {
     final storage = ref.watch(localStorageServiceProvider);
-    return await storage.loadTasks();
+    final localTasks = await storage.loadTasks();
+    
+    // Al caricamento, proviamo a sincronizzare con il backend per recuperare task create via chat
+    // Usiamo microtask per non bloccare il build
+    Future.microtask(() => syncWithBackend());
+    
+    return localTasks;
+  }
+
+  Future<void> syncWithBackend() async {
+    final repo = ref.read(actionRepositoryProvider);
+    final currentTasks = state.valueOrNull ?? [];
+    
+    debugPrint("DEBUG: TaskList.syncWithBackend - START");
+    debugPrint("DEBUG: TaskList.syncWithBackend - Local tasks count: ${currentTasks.length}");
+
+    try {
+      final remoteActions = await repo.getUserActions(limit: 20);
+      debugPrint("DEBUG: TaskList.syncWithBackend - Received ${remoteActions.length} actions from backend");
+      
+      final List<TaskUIModel> updatedList = List.from(currentTasks);
+      bool changed = false;
+
+      for (final action in remoteActions) {
+        debugPrint("DEBUG: TaskList.syncWithBackend - Inspecting Remote Action: '${action.description}' [Status: ${action.status}, ID: ${action.id}]");
+        
+        if (action.status == "IN_PROGRESS") {
+          final alreadyExists = updatedList.any((t) {
+            final idMatch = t.id == action.id;
+            final descMatch = t.title.toLowerCase() == (action.description ?? "").toLowerCase() && t.status == "IN_PROGRESS";
+            return idMatch || descMatch;
+          });
+          
+          if (!alreadyExists) {
+            debugPrint("DEBUG: TaskList.syncWithBackend - !! ADDING NEW TASK TO DASHBOARD: ${action.description}");
+            updatedList.add(TaskUIModel.fromActionJson({
+              'id': action.id,
+              'description': action.description,
+              'category': action.category,
+              'difficulty': action.difficulty,
+              'fulfillment_score': action.fulfillmentScore,
+              'status': action.status,
+              'duration_minutes': action.durationMinutes,
+            }));
+            changed = true;
+          } else {
+            debugPrint("DEBUG: TaskList.syncWithBackend - Task already exists in local list, skipping.");
+          }
+        }
+      }
+
+      if (changed) {
+        debugPrint("DEBUG: TaskList.syncWithBackend - UPDATING STATE AND STORAGE. New count: ${updatedList.length}");
+        await _save(updatedList);
+      } else {
+        debugPrint("DEBUG: TaskList.syncWithBackend - NO CHANGES APPLIED.");
+      }
+    } catch (e) {
+      debugPrint("DEBUG: TaskList.syncWithBackend - CRITICAL ERROR: $e");
+    }
   }
 
   Future<void> _save(List<TaskUIModel> newState) async {
@@ -192,17 +251,17 @@ class TaskList extends _$TaskList {
   String _mapCategoryToDimensionId(String category) {
     switch (category.toLowerCase()) {
       case 'passione':
-        return 'passion';
+        return 'passione';
       case 'dovere':
-        return 'duties';
+        return 'dovere';
       case 'energia':
-        return 'energy';
+        return 'energia';
       case 'anima':
-        return 'soul';
+        return 'anima';
       case 'relazioni':
-        return 'relationships';
+        return 'relazioni';
       default:
-        return 'duties';
+        return 'dovere';
     }
   }
 }

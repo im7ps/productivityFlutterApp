@@ -19,6 +19,10 @@ final _privateConstructorUsedError = UnsupportedError(
 mixin _$ChatState {
   List<ChatMessage> get messages => throw _privateConstructorUsedError;
   bool get isWaitingConfirmation => throw _privateConstructorUsedError;
+  String get sessionId => throw _privateConstructorUsedError;
+  String? get pendingToolName => throw _privateConstructorUsedError;
+  Map<String, dynamic>? get pendingToolArgs =>
+      throw _privateConstructorUsedError;
 
   /// Create a copy of ChatState
   /// with the given fields replaced by the non-null parameter values.
@@ -32,7 +36,13 @@ abstract class $ChatStateCopyWith<$Res> {
   factory $ChatStateCopyWith(ChatState value, $Res Function(ChatState) then) =
       _$ChatStateCopyWithImpl<$Res, ChatState>;
   @useResult
-  $Res call({List<ChatMessage> messages, bool isWaitingConfirmation});
+  $Res call({
+    List<ChatMessage> messages,
+    bool isWaitingConfirmation,
+    String sessionId,
+    String? pendingToolName,
+    Map<String, dynamic>? pendingToolArgs,
+  });
 }
 
 /// @nodoc
@@ -49,7 +59,13 @@ class _$ChatStateCopyWithImpl<$Res, $Val extends ChatState>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? messages = null, Object? isWaitingConfirmation = null}) {
+  $Res call({
+    Object? messages = null,
+    Object? isWaitingConfirmation = null,
+    Object? sessionId = null,
+    Object? pendingToolName = freezed,
+    Object? pendingToolArgs = freezed,
+  }) {
     return _then(
       _value.copyWith(
             messages: null == messages
@@ -60,6 +76,18 @@ class _$ChatStateCopyWithImpl<$Res, $Val extends ChatState>
                 ? _value.isWaitingConfirmation
                 : isWaitingConfirmation // ignore: cast_nullable_to_non_nullable
                       as bool,
+            sessionId: null == sessionId
+                ? _value.sessionId
+                : sessionId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            pendingToolName: freezed == pendingToolName
+                ? _value.pendingToolName
+                : pendingToolName // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            pendingToolArgs: freezed == pendingToolArgs
+                ? _value.pendingToolArgs
+                : pendingToolArgs // ignore: cast_nullable_to_non_nullable
+                      as Map<String, dynamic>?,
           )
           as $Val,
     );
@@ -75,7 +103,13 @@ abstract class _$$ChatStateImplCopyWith<$Res>
   ) = __$$ChatStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({List<ChatMessage> messages, bool isWaitingConfirmation});
+  $Res call({
+    List<ChatMessage> messages,
+    bool isWaitingConfirmation,
+    String sessionId,
+    String? pendingToolName,
+    Map<String, dynamic>? pendingToolArgs,
+  });
 }
 
 /// @nodoc
@@ -91,7 +125,13 @@ class __$$ChatStateImplCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? messages = null, Object? isWaitingConfirmation = null}) {
+  $Res call({
+    Object? messages = null,
+    Object? isWaitingConfirmation = null,
+    Object? sessionId = null,
+    Object? pendingToolName = freezed,
+    Object? pendingToolArgs = freezed,
+  }) {
     return _then(
       _$ChatStateImpl(
         messages: null == messages
@@ -102,6 +142,18 @@ class __$$ChatStateImplCopyWithImpl<$Res>
             ? _value.isWaitingConfirmation
             : isWaitingConfirmation // ignore: cast_nullable_to_non_nullable
                   as bool,
+        sessionId: null == sessionId
+            ? _value.sessionId
+            : sessionId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        pendingToolName: freezed == pendingToolName
+            ? _value.pendingToolName
+            : pendingToolName // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        pendingToolArgs: freezed == pendingToolArgs
+            ? _value._pendingToolArgs
+            : pendingToolArgs // ignore: cast_nullable_to_non_nullable
+                  as Map<String, dynamic>?,
       ),
     );
   }
@@ -113,7 +165,11 @@ class _$ChatStateImpl implements _ChatState {
   const _$ChatStateImpl({
     final List<ChatMessage> messages = const [],
     this.isWaitingConfirmation = false,
-  }) : _messages = messages;
+    this.sessionId = '',
+    this.pendingToolName,
+    final Map<String, dynamic>? pendingToolArgs,
+  }) : _messages = messages,
+       _pendingToolArgs = pendingToolArgs;
 
   final List<ChatMessage> _messages;
   @override
@@ -127,10 +183,24 @@ class _$ChatStateImpl implements _ChatState {
   @override
   @JsonKey()
   final bool isWaitingConfirmation;
+  @override
+  @JsonKey()
+  final String sessionId;
+  @override
+  final String? pendingToolName;
+  final Map<String, dynamic>? _pendingToolArgs;
+  @override
+  Map<String, dynamic>? get pendingToolArgs {
+    final value = _pendingToolArgs;
+    if (value == null) return null;
+    if (_pendingToolArgs is EqualUnmodifiableMapView) return _pendingToolArgs;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableMapView(value);
+  }
 
   @override
   String toString() {
-    return 'ChatState(messages: $messages, isWaitingConfirmation: $isWaitingConfirmation)';
+    return 'ChatState(messages: $messages, isWaitingConfirmation: $isWaitingConfirmation, sessionId: $sessionId, pendingToolName: $pendingToolName, pendingToolArgs: $pendingToolArgs)';
   }
 
   @override
@@ -140,7 +210,15 @@ class _$ChatStateImpl implements _ChatState {
             other is _$ChatStateImpl &&
             const DeepCollectionEquality().equals(other._messages, _messages) &&
             (identical(other.isWaitingConfirmation, isWaitingConfirmation) ||
-                other.isWaitingConfirmation == isWaitingConfirmation));
+                other.isWaitingConfirmation == isWaitingConfirmation) &&
+            (identical(other.sessionId, sessionId) ||
+                other.sessionId == sessionId) &&
+            (identical(other.pendingToolName, pendingToolName) ||
+                other.pendingToolName == pendingToolName) &&
+            const DeepCollectionEquality().equals(
+              other._pendingToolArgs,
+              _pendingToolArgs,
+            ));
   }
 
   @override
@@ -148,6 +226,9 @@ class _$ChatStateImpl implements _ChatState {
     runtimeType,
     const DeepCollectionEquality().hash(_messages),
     isWaitingConfirmation,
+    sessionId,
+    pendingToolName,
+    const DeepCollectionEquality().hash(_pendingToolArgs),
   );
 
   /// Create a copy of ChatState
@@ -163,12 +244,21 @@ abstract class _ChatState implements ChatState {
   const factory _ChatState({
     final List<ChatMessage> messages,
     final bool isWaitingConfirmation,
+    final String sessionId,
+    final String? pendingToolName,
+    final Map<String, dynamic>? pendingToolArgs,
   }) = _$ChatStateImpl;
 
   @override
   List<ChatMessage> get messages;
   @override
   bool get isWaitingConfirmation;
+  @override
+  String get sessionId;
+  @override
+  String? get pendingToolName;
+  @override
+  Map<String, dynamic>? get pendingToolArgs;
 
   /// Create a copy of ChatState
   /// with the given fields replaced by the non-null parameter values.

@@ -16,7 +16,7 @@ class ActionRepository {
 
   ActionRepository({required Dio dio}) : _dio = dio;
 
-  Future<List<Action>> getActions({int skip = 0, int limit = 50}) async {
+  Future<List<Action>> getUserActions({int skip = 0, int limit = 50}) async {
     try {
       final response = await _dio.get(
         '/api/v1/actions/',
@@ -25,7 +25,19 @@ class ActionRepository {
       final List<dynamic> data = response.data;
       return data.map((json) => Action.fromJson(json)).toList();
     } catch (e, stack) {
-      print("ERROR in getActions: $e");
+      print("ERROR in getUserActions: $e");
+      print(stack);
+      rethrow;
+    }
+  }
+
+  Future<List<Action>> getPortfolio() async {
+    try {
+      final response = await _dio.get('/api/v1/actions/portfolio');
+      final List<dynamic> data = response.data;
+      return data.map((json) => Action.fromJson(json)).toList();
+    } catch (e, stack) {
+      print("ERROR in getPortfolio: $e");
       print(stack);
       rethrow;
     }

@@ -29,6 +29,8 @@ class TaskUIModel with _$TaskUIModel {
     @IconDataConverter() required IconData icon,
     @ColorConverter() required Color color,
     @Default(false) bool isCompleted,
+    @Default("COMPLETED") String status,
+    int? durationMinutes,
     required int difficulty,
     required int satisfaction,
     required String category,
@@ -40,6 +42,7 @@ class TaskUIModel with _$TaskUIModel {
   /// Creates a TaskUIModel from backend Action JSON, mapping category to icon/color
   factory TaskUIModel.fromActionJson(Map<String, dynamic> json) {
     final category = json['category'] as String? ?? 'Dovere';
+    final status = json['status'] as String? ?? 'COMPLETED';
 
     IconData icon;
     Color color;
@@ -75,7 +78,9 @@ class TaskUIModel with _$TaskUIModel {
       difficulty: json['difficulty'] as int? ?? 3,
       satisfaction: json['fulfillment_score'] as int? ?? 3,
       category: category,
-      isCompleted: json['status'] == 'COMPLETED',
+      status: status,
+      isCompleted: status == 'COMPLETED',
+      durationMinutes: json['duration_minutes'] as int?,
     );
   }
 }

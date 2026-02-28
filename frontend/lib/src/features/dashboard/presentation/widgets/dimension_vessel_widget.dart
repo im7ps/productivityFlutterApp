@@ -19,25 +19,25 @@ class DimensionVesselWidget extends StatelessWidget {
     // Increase saturation/brightness slightly with level if needed, 
     // but here we stick to the core colors and let the container's opacity/glow do the work.
     switch (id.toLowerCase()) {
-      case 'energy':
+      case 'energia':
         return const LinearGradient(
           colors: [Color(0xFFFFA726), Color(0xFFE64A19)], // Orange -> Red
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         );
-      case 'clarity':
+      case 'chiarezza':
         return const LinearGradient(
           colors: [Color(0xFF26C6DA), Color(0xFF006064)], // Cyan -> Blue
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         );
-      case 'relationships':
+      case 'relazioni':
         return const LinearGradient(
           colors: [Color(0xFFFFEE58), Color(0xFFFBC02D)], // Amber -> Yellow
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         );
-      case 'soul':
+      case 'anima':
         return const LinearGradient(
           colors: [Color(0xFFAB47BC), Color(0xFF6A1B9A)], // Purple -> Violet
           begin: Alignment.topCenter,
@@ -54,10 +54,10 @@ class DimensionVesselWidget extends StatelessWidget {
 
   Color _getMainColor(String id) {
      switch (id.toLowerCase()) {
-      case 'energy': return const Color(0xFFE64A19);
-      case 'clarity': return const Color(0xFF006064);
-      case 'relationships': return const Color(0xFFFBC02D);
-      case 'soul': return const Color(0xFF6A1B9A);
+      case 'energia': return const Color(0xFFE64A19);
+      case 'chiarezza': return const Color(0xFF006064);
+      case 'relazioni': return const Color(0xFFFBC02D);
+      case 'anima': return const Color(0xFF6A1B9A);
       default: return Colors.grey;
     }
   }

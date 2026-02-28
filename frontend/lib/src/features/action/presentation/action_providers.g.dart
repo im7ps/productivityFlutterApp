@@ -6,7 +6,7 @@ part of 'action_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$actionListHash() => r'73c8fa8e5f6a074c09a2b13aec6ada41de0eb462';
+String _$actionListHash() => r'42b354dd8b8e07de6c51d08b4385078c36fd19d5';
 
 /// See also [actionList].
 @ProviderFor(actionList)
@@ -25,8 +25,24 @@ final actionListProvider =
 // ignore: unused_element
 typedef ActionListRef =
     AutoDisposeFutureProviderRef<List<domain_action.Action>>;
+String _$portfolioHash() => r'f768de4e0c4484d3843909f22057e85204697d51';
+
+/// See also [Portfolio].
+@ProviderFor(Portfolio)
+final portfolioProvider =
+    AutoDisposeAsyncNotifierProvider<Portfolio, List<TaskUIModel>>.internal(
+      Portfolio.new,
+      name: r'portfolioProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$portfolioHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$Portfolio = AutoDisposeAsyncNotifier<List<TaskUIModel>>;
 String _$actionCreateControllerHash() =>
-    r'4874430498ec31a48849e6b3a9b85ee21175f093';
+    r'3f43c12ba560eeec074027f0e893762c0102ab28';
 
 /// See also [ActionCreateController].
 @ProviderFor(ActionCreateController)

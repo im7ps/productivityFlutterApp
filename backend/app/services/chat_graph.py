@@ -25,20 +25,31 @@ class GraphState(TypedDict):
 
 
 SYSTEM_PROMPT_TEMPLATE = """
-Sei il "Consulente Day 0" di WhatI'veDone. Il tuo obiettivo è eliminare la paralisi decisionale dell'utente.
-La tua filosofia è: "Il miglior momento per fare è ORA. Domani non esiste, oggi è tutto quello che hai."
+Sei il "Consulente Day 0" di WhatI'veDone. Il tuo obiettivo è eliminare la paralisi decisionale dell'utente e aiutarlo a definire le sue azioni per la giornata.
+
+La tua filosofia è: "Ogni giorno è il Giorno 0. Quello che conta è cosa decidi di fare OGGI."
 
 CONTESTO UTENTE:
 - Rank Attuale: {rank}
 - Portfolio Attività: {portfolio}
 - Proposte del Giorno: {proposals}
 
+LOGICA DI CREAZIONE TASK (Slot Filling):
+Prima di aggiungere una nuova task con il tool `start_new_action`, devi assicurarti di avere queste informazioni. Se mancano, chiedile:
+1. **Cosa**: Una descrizione chiara (es. "Studiare Flutter").
+2. **Quanto**: Una durata stimata in minuti (proponila tu se l'utente non la specifica).
+3. **Dimensione**: Scegli tra 'dovere', 'passione', 'energia', 'relazioni', 'anima'.
+
 REGOLE DI COMPORTAMENTO:
-1. Sii pragmatico, anti-paralisi, breve e motivante.
-2. Usa i dati forniti per personalizzare il consiglio (es. se il rank è basso, suggerisci qualcosa di rapido).
-3. Non fare liste lunghe. Punta a una singola azione o una scelta binaria chiara.
-4. Parla in italiano, usa un tono diretto ma incoraggiante.
-5. Se l'utente è indeciso, scegli TU per lui basandoti sulla logica Day 0.
+1. Sii pragmatico, breve e motivante.
+2. Quando l'utente esprime un desiderio, aiutalo a trasformarlo in una task per la giornata. Non forzare l'idea che debba iniziare "in questo istante", ma che la task sia pianificata per oggi.
+3. Non chiamare `start_new_action` finché non hai i dettagli necessari.
+4. Se l'utente rifiuta una conferma del tool, chiedi subito cosa preferisce cambiare (durata, descrizione o dimensione).
+5. Parla in italiano, usa un tono diretto.
+
+QUANDO CREI UNA TASK:
+- Sincronizza sempre la `category` con il `dimension_id` (capitalizzato).
+- Stima un `fulfillment_score` (1-5) realistico se non specificato.
 """
 
 
@@ -59,30 +70,123 @@ async def get_user_portfolio(config: RunnableConfig):
     return [f"{a.description} (Categoria: {a.category})" for a in actions]
 
 @tool
-async def start_new_action(description: str, dimension_id: str, config: RunnableConfig):
+async def start_new_action(
+    description: str, 
+    dimension_id: str, 
+    fulfillment_score: int = 3,
+    duration_minutes: int | None = None,
+    config: RunnableConfig = None
+):
     """Inizia una nuova task per l'utente. 
-    DIMENSION_ID validi: 'passion', 'duties', 'energy'.
-    Usa questo tool SOLO quando l'utente accetta esplicitamente una task o dice chiaramente di voler fare qualcosa
+    DIMENSION_ID validi: 'dovere', 'passione', 'energia', 'relazioni', 'anima'.
+    Usa questo tool SOLO quando l'utente accetta esplicitamente una task o dice chiaramente di voler fare qualcosa.
+    
+    Args:
+        description: Breve descrizione dell'attività.
+        dimension_id: Lo slug della dimensione (es. 'passione').
+        fulfillment_score: Valore da 1 a 5 dell'appagamento previsto (default 3).
+        duration_minutes: Durata prevista in minuti (opzionale).
     """
     user_id = config["configurable"].get("user_id")
     action_service = config["configurable"].get("action_service")
     
+    # Normalizzazione e Mapping delle Dimensioni (per gestire slug vecchi o in inglese)
+    mapping = {
+        "energy": "energia",
+        "soul": "anima",
+        "relationships": "relazioni",
+        "clarity": "chiarezza",
+        "duties": "dovere",
+        "passions": "passione",
+        "work": "dovere",
+        "health": "energia"
+    }
+    
+    normalized_id = dimension_id.lower().strip()
+    if normalized_id in mapping:
+        print(f"DEBUG: start_new_action - Mapping '{normalized_id}' to '{mapping[normalized_id]}'")
+        normalized_id = mapping[normalized_id]
+    
+    print(f"DEBUG: start_new_action tool triggered - Description: '{description}', Dimension: '{normalized_id}' (original: '{dimension_id}'), Duration: {duration_minutes}")
+    
+    if not action_service or not user_id:
+        print("DEBUG: start_new_action tool FAILED - missing service or user_id")
+        return "ERRORE: Servizio non disponibile."
+        
     from app.schemas.action import ActionCreate
     
     action_in = ActionCreate(
         description=description,
-        dimension_id=dimension_id,
+        dimension_id=normalized_id,
+        category=normalized_id.capitalize(),
+        fulfillment_score=fulfillment_score,
+        duration_minutes=duration_minutes,
         status="IN_PROGRESS"
     )
     
     try:
+        print(f"DEBUG: calling action_service.create_action for user {user_id}")
         await action_service.create_action(user_id, action_in)
+        print(f"DEBUG: action_service.create_action SUCCESS for '{description}'")
         return f"SUCCESSO: L'attività '{description}' è stata avviata correttamente."
     except Exception as e:
+        print(f"DEBUG: action_service.create_action EXCEPTION: {str(e)}")
         return f"ERRORE: Impossibile avviare la task. Dettaglio: {str(e)}"
 
+@tool
+async def delete_action(description_query: str, config: RunnableConfig):
+    """Cancella una task dell'utente basandosi sulla descrizione.
+    Usa questo tool quando l'utente vuole annullare, rimuovere o cancellare un'attività specifica.
+    
+    Args:
+        description_query: Parola chiave o descrizione della task da cancellare.
+    """
+    user_id = config["configurable"].get("user_id")
+    action_service = config["configurable"].get("action_service")
+    
+    print(f"DEBUG: delete_action tool triggered - Query: '{description_query}'")
+    
+    if not action_service or not user_id:
+        print("DEBUG: delete_action tool FAILED - missing service or user_id")
+        return "ERRORE: Servizio non disponibile."
+    
+    try:
+        # 1. Recuperiamo TUTTE le azioni uniche (Portfolio) per un match più preciso
+        actions = await action_service.get_user_portfolio(user_id)
+        
+        # 2. Se non troviamo nulla nel portfolio, proviamo le azioni recenti (incluse quelle IN_PROGRESS)
+        if not any(description_query.lower() in (a.description or "").lower() for a in actions):
+            recent = await action_service.get_user_actions(user_id, limit=50)
+            actions.extend(recent)
+
+        print(f"DEBUG: delete_action - searching in {len(actions)} total action templates")
+        
+        # Cerchiamo un match (case insensitive)
+        target_action = None
+        for a in actions:
+            if description_query.lower() in (a.description or "").lower():
+                target_action = a
+                break
+        
+        if not target_action:
+            print(f"DEBUG: delete_action - NO MATCH found for query '{description_query}'")
+            return f"ERRORE: Non ho trovato nessuna attività che corrisponde a '{description_query}'."
+            
+        print(f"DEBUG: delete_action - MATCH FOUND: '{target_action.description}' (ID: {target_action.id}). Deleting...")
+        success = await action_service.delete_action(user_id, target_action.id)
+        if success:
+            print(f"DEBUG: delete_action SUCCESS for '{target_action.description}'")
+            return f"SUCCESSO: L'attività '{target_action.description}' è stata rimossa."
+        else:
+            print(f"DEBUG: delete_action FAILED for ID: {target_action.id}")
+            return "ERRORE: Impossibile cancellare l'attività."
+            
+    except Exception as e:
+        print(f"DEBUG: delete_action EXCEPTION: {str(e)}")
+        return f"ERRORE: {str(e)}"
+
 def build_tools() -> list:
-    tools = [get_user_portfolio, start_new_action]
+    tools = [get_user_portfolio, start_new_action, delete_action]
     return tools
 
 
@@ -98,7 +202,6 @@ def fetch_llm() -> ChatGoogleGenerativeAI:
         model="gemini-2.5-flash",
         google_api_key=settings.GOOGLE_API_KEY,
         temperature=0.1,
-        convert_system_message_to_human=True
     )
     return llm
 
@@ -110,7 +213,7 @@ def fetch_llm_with_tools() -> ChatGoogleGenerativeAI:
 
 
 # TODO: implementare una guardia per evitare che in un turno ci siano conversazioni da miliardi di token
-def trim_to_last_n_turns(messages: list[BaseMessage], n: int = 5) -> list[BaseMessage]:
+def trim_to_last_n_turns(messages: list[BaseMessage], n: int = 10) -> list[BaseMessage]:
     """Mantiene gli ultimi N turni completi. Un turno = HumanMessage + tutto ciò che segue."""
     turns = []
     current_turn = []
@@ -181,7 +284,7 @@ def compile_graph(checkpointer):
             proposals=proposals,
         ))
 
-        trimmed = trim_to_last_n_turns(state["messages"], 5)
+        trimmed = trim_to_last_n_turns(state["messages"], 10)
         full_context = [system_message] + trimmed
         
         # 1. Chiamata iniziale con astream per supportare lo streaming diretto
@@ -193,21 +296,26 @@ def compile_graph(checkpointer):
                 final_message += chunk
         
         if final_message.tool_calls:
-            # Sospensione del grafo per intervento umano (interrupt)
-            confirmed = interrupt({"tool_calls": final_message.tool_calls})
+            # Sospensione del grafo per intervento umano (interrupt) solo per tool di scrittura
+            modifying_tools = ["start_new_action", "delete_action"]
+            needs_confirmation = any(tc["name"] in modifying_tools for tc in final_message.tool_calls)
             
-            if not confirmed:
-                logger.info("Tool REJECTED. Generazione risposta di rifiuto in streaming...")
-                # 2. Se rifiutato, generiamo una nuova risposta (senza tools) via astream
-                rejection_message = None
-                async for chunk in llm.astream(full_context, config=config):
-                    if rejection_message is None:
-                        rejection_message = chunk
-                    else:
-                        rejection_message += chunk
-                return {"messages": [rejection_message]}
+            if needs_confirmation:
+                confirmed = interrupt({"tool_calls": final_message.tool_calls})
                 
-            logger.info("Tool ACCEPTED. Procedo al nodo tools.")
+                if not confirmed:
+                    logger.info("Tool REJECTED. Generazione risposta di rifiuto in streaming...")
+                    rejection_message = None
+                    async for chunk in llm.astream(full_context, config=config):
+                        if rejection_message is None:
+                            rejection_message = chunk
+                        else:
+                            rejection_message += chunk
+                    return {"messages": [rejection_message]}
+                    
+                logger.info("Tool ACCEPTED. Procedo al nodo tools.")
+            else:
+                logger.info("Read-only tool detected. Skipping interrupt.")
         
         # Se non ci sono tool calls o se sono state accettate, restituiamo il messaggio accumulato
         return {"messages": [final_message]}

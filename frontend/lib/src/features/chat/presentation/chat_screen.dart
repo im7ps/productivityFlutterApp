@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../core/theme/app_theme.dart';
 import 'chat_controller.dart';
 import '../domain/chat_message.dart';
@@ -32,7 +33,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   void _onScroll() {
     if (_scrollController.hasClients) {
-      // Se l'utente raggiunge il fondo, resettiamo l'offset dei messaggi non letti
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 50) {
         setState(() {
@@ -68,20 +68,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final messages = chatState.messages;
     final theme = Theme.of(context);
 
-    // Listen for new messages to scroll
     ref.listen<ChatState>(chatControllerProvider, (previous, next) {
       if (next.messages.length > (previous?.messages.length ?? 0)) {
         final lastMessage = next.messages.last;
 
         if (lastMessage.isUser) {
-          // Messaggio dell'utente: scroll immediato in fondo
           _firstUnreadOffset = null;
           WidgetsBinding.instance.addPostFrameCallback(
             (_) => _scrollToBottom(),
           );
         } else {
-          // Messaggio AI: scroll all'inizio del nuovo messaggio
-          // Se non stiamo già tracciando un messaggio non letto, salviamo l'offset
           if (_firstUnreadOffset == null) {
             final oldMaxScroll = _scrollController.hasClients
                 ? _scrollController.position.maxScrollExtent
@@ -145,6 +141,8 @@ class _ChatBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isUser = message.isUser;
+    if (message.text.trim().isEmpty && !isUser) return const SizedBox.shrink();
+    
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
@@ -243,7 +241,7 @@ class _ChatInputSectionState extends ConsumerState<_ChatInputSection> {
             ),
             onPressed: () async {
               await ref.read(chatControllerProvider.notifier).toggleListening();
-              setState(() {}); // Aggiorno UI per lo stato del microfono
+              setState(() {}); 
             },
           ),
           const SizedBox(width: 8),
@@ -257,67 +255,187 @@ class _ChatInputSectionState extends ConsumerState<_ChatInputSection> {
   }
 
   Widget _buildConfirmationBar() {
+    final chatState = ref.watch(chatControllerProvider);
+    final args = chatState.pendingToolArgs;
+    final toolName = chatState.pendingToolName;
+    final theme = Theme.of(context);
+
+    if (args == null) {
+      return Container(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+        decoration: const BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    bool isDelete = toolName == "delete_action";
+    String title = isDelete ? "VUOI CANCELLARE?" : "CONFERMA IL TUO IMPEGNO";
+    String description = "";
+    
+    if (isDelete) {
+      description = args['description_query'] ?? 'Attività';
+    } else {
+      description = args['description'] ?? 'Nuova attività';
+    }
+    
+    final duration = args['duration_minutes'];
+    final dimensionId = args['dimension_id'] ?? 'dovere';
+
+    IconData icon;
+    Color color;
+    
+    if (isDelete) {
+      icon = Icons.delete_forever_rounded;
+      color = Colors.redAccent;
+    } else {
+      switch (dimensionId.toString().toLowerCase()) {
+        case 'passione':
+          icon = FontAwesomeIcons.guitar;
+          color = AppColors.passione;
+          break;
+        case 'energia':
+          icon = FontAwesomeIcons.bolt;
+          color = AppColors.energia;
+          break;
+        case 'relazioni':
+          icon = FontAwesomeIcons.peopleGroup;
+          color = AppColors.relazioni;
+          break;
+        case 'anima':
+          icon = FontAwesomeIcons.heart;
+          color = AppColors.anima;
+          break;
+        case 'dovere':
+        default:
+          icon = FontAwesomeIcons.briefcase;
+          color = AppColors.dovere;
+      }
+    }
+
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
       decoration: const BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+        boxShadow: [
+          BoxShadow(color: Colors.black26, blurRadius: 20, offset: Offset(0, -5))
+        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
-            "Vuoi che esegua questa azione?",
-            style: TextStyle(color: AppColors.grey, fontSize: 13),
+          Text(
+            title,
+            style: theme.textTheme.labelSmall?.copyWith(
+              letterSpacing: 1.5,
+              fontWeight: FontWeight.bold,
+              color: isDelete ? Colors.redAccent : AppColors.grey,
+            ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppColors.background,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: color.withValues(alpha: 0.3), width: 2),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, color: color, size: 28),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        description.toString().toUpperCase(),
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      if (!isDelete)
+                        Row(
+                          children: [
+                            if (duration != null) ...[
+                              const Icon(Icons.timer_outlined,
+                                  size: 14, color: AppColors.grey),
+                              const SizedBox(width: 4),
+                              Text(
+                                "$duration min",
+                                style: theme.textTheme.bodySmall
+                                    ?.copyWith(color: AppColors.grey),
+                              ),
+                              const SizedBox(width: 12),
+                            ],
+                            const Icon(Icons.category_outlined,
+                                size: 14, color: AppColors.grey),
+                            const SizedBox(width: 4),
+                            Text(
+                              dimensionId.toString().toUpperCase(),
+                              style: theme.textTheme.bodySmall
+                                  ?.copyWith(color: AppColors.grey),
+                            ),
+                          ],
+                        ),
+                      if (isDelete)
+                        Text(
+                          "Questa azione verrà rimossa definitivamente.",
+                          style: theme.textTheme.bodySmall?.copyWith(color: AppColors.grey),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
           Row(
             children: [
               Expanded(
-                child: OutlinedButton.icon(
-                  icon: const Icon(
-                    Icons.close_rounded,
-                    color: AppColors.passione,
-                    size: 18,
-                  ),
-                  label: const Text(
-                    "Annulla",
-                    style: TextStyle(color: AppColors.passione),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppColors.passione),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   onPressed: () => ref
                       .read(chatControllerProvider.notifier)
                       .confirmAction(false),
+                  child: Text(
+                    isDelete ? "Annulla" : "Modifica",
+                    style: const TextStyle(color: AppColors.grey),
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: ElevatedButton.icon(
-                  icon: const Icon(
-                    Icons.check_rounded,
-                    color: AppColors.white,
-                    size: 18,
-                  ),
-                  label: const Text(
-                    "Conferma",
-                    style: TextStyle(color: AppColors.white),
-                  ),
+                child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.energia,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    backgroundColor: color,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                   ),
                   onPressed: () => ref
                       .read(chatControllerProvider.notifier)
                       .confirmAction(true),
+                  child: Text(
+                    isDelete ? "Elimina Ora" : "Conferma",
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
             ],

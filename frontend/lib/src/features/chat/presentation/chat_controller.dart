@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import '../domain/chat_message.dart';
@@ -5,6 +6,8 @@ import '../domain/chat_state.dart';
 import '../data/speech_to_text_provider.dart';
 import '../data/permission_provider.dart';
 import '../data/chat_repository.dart';
+import '../../dashboard/presentation/dashboard_providers.dart';
+import '../../action/presentation/action_providers.dart';
 import 'package:uuid/uuid.dart';
 
 part 'chat_controller.g.dart';
@@ -15,7 +18,8 @@ class ChatController extends _$ChatController {
   
   @override
   ChatState build() {
-    return const ChatState();
+    // Generate a fresh session ID for every controller build (new chat session)
+    return ChatState(sessionId: const Uuid().v4());
   }
 
   bool _isListening = false;
@@ -24,14 +28,13 @@ class ChatController extends _$ChatController {
   static const _confirmTag = "||INTERRUPT||";
 
   Future<bool> toggleListening() async {
-    // 1. Check & Request Permissions via service
     final hasPermission = await ref.read(permissionServiceProvider).requestMicrophonePermission();
     if (!hasPermission) return false;
 
     if (_isListening) {
       await _speech.stop();
       _isListening = false;
-      state = state; // Trigger update if needed (isListening isn't in ChatState yet)
+      state = state; 
       return false;
     }
 
@@ -76,7 +79,6 @@ class ChatController extends _$ChatController {
       messages: [...state.messages, message],
     );
     
-    // Avvia streaming reale dal backend
     _startAIStreaming(text);
   }
 
@@ -98,19 +100,37 @@ class ChatController extends _$ChatController {
     StringBuffer fullText = StringBuffer();
     
     try {
-      await for (final chunk in repository.streamChat(userText)) {
+      await for (final chunk in repository.streamChat(userText, state.sessionId)) {
         fullText.write(chunk);
 
         String displayText = fullText.toString();
         bool waiting = false;
+        Map<String, dynamic>? toolArgs;
+        String? toolName;
+
         if (displayText.contains(_confirmTag)) {
           waiting = true;
-          displayText = displayText.replaceAll(_confirmTag, "").trim();
+          final parts = displayText.split(_confirmTag);
+          if (parts.length > 1) {
+            final confirmContent = parts[1];
+            final confirmParts = confirmContent.split("||");
+            // Format: tool_name||json_args
+            if (confirmParts.length >= 2) {
+              toolName = confirmParts[0];
+              try {
+                toolArgs = jsonDecode(confirmParts[1]) as Map<String, dynamic>;
+              } catch (e) {
+                print("Error decoding tool args: $e");
+              }
+            }
+          }
+          displayText = parts[0].trim();
         }
 
-        // Aggiorna l'ultimo messaggio (la risposta AI) nel state
         state = state.copyWith(
           isWaitingConfirmation: waiting,
+          pendingToolName: toolName,
+          pendingToolArgs: toolArgs,
           messages: [
             for (final msg in state.messages)
               if (msg.id == responseId)
@@ -120,8 +140,11 @@ class ChatController extends _$ChatController {
           ],
         );
       }
+      
+      ref.read(taskListProvider.notifier).syncWithBackend();
+      ref.invalidate(portfolioProvider);
+      
     } catch (e) {
-      // Gestione errore base
       state = state.copyWith(
         messages: [
           for (final msg in state.messages)
@@ -135,7 +158,11 @@ class ChatController extends _$ChatController {
   }
 
   Future<void> confirmAction(bool confirmed) async {
-    state = state.copyWith(isWaitingConfirmation: false);
+    state = state.copyWith(
+      isWaitingConfirmation: false,
+      pendingToolName: null,
+      pendingToolArgs: null,
+    );
 
     final repository = ref.read(chatRepositoryProvider);
     final responseId = const Uuid().v4();
@@ -155,18 +182,36 @@ class ChatController extends _$ChatController {
     final fullText = StringBuffer();
 
     try {
-      await for (final chunk in repository.confirmTool(confirmed)) {
+      await for (final chunk in repository.confirmTool(confirmed, state.sessionId)) {
         fullText.write(chunk);
         
         String displayText = fullText.toString();
         bool waiting = false;
+        Map<String, dynamic>? toolArgs;
+        String? toolName;
+
         if (displayText.contains(_confirmTag)) {
           waiting = true;
-          displayText = displayText.replaceAll(_confirmTag, "").trim();
+          final parts = displayText.split(_confirmTag);
+          if (parts.length > 1) {
+            final confirmContent = parts[1];
+            final confirmParts = confirmContent.split("||");
+            if (confirmParts.length >= 2) {
+              toolName = confirmParts[0];
+              try {
+                toolArgs = jsonDecode(confirmParts[1]) as Map<String, dynamic>;
+              } catch (e) {
+                print("Error decoding tool args in resume: $e");
+              }
+            }
+          }
+          displayText = parts[0].trim();
         }
 
         state = state.copyWith(
           isWaitingConfirmation: waiting,
+          pendingToolName: toolName,
+          pendingToolArgs: toolArgs,
           messages: [
             for (final msg in state.messages)
               if (msg.id == responseId)
@@ -176,6 +221,10 @@ class ChatController extends _$ChatController {
           ],
         );
       }
+      
+      ref.read(taskListProvider.notifier).syncWithBackend();
+      ref.invalidate(portfolioProvider);
+      
     } catch (e) {
       state = state.copyWith(
         messages: [
@@ -189,4 +238,3 @@ class ChatController extends _$ChatController {
     }
   }
 }
-

@@ -31,11 +31,11 @@ class ActionRepo(UserOwnedRepo[Action, ActionCreate, ActionUpdate]):
 
     async def get_unique_completed_actions(self, user_id: uuid.UUID) -> List[Action]:
         """
-        Returns a list of unique actions (by description) that the user has COMPLETED.
-        This represents the user's "Portfolio".
+        Returns a list of unique actions (by description) that the user has COMPLETED or are IN_PROGRESS.
+        This represents the user's "Portfolio" and "Active Identity".
         """
-        # We select the most recent instance of each unique completed description
-        from sqlalchemy import func
+        print(f"DEBUG: ActionRepo.get_unique_completed_actions - Fetching for user {user_id}")
+        from sqlalchemy import func, or_
         
         subquery = (
             select(
@@ -43,7 +43,7 @@ class ActionRepo(UserOwnedRepo[Action, ActionCreate, ActionUpdate]):
                 func.max(self.model.start_time).label("max_time")
             )
             .where(self.model.user_id == user_id)
-            .where(self.model.status == "COMPLETED")
+            .where(or_(self.model.status == "COMPLETED", self.model.status == "IN_PROGRESS"))
             .group_by(self.model.description)
             .subquery()
         )
@@ -60,4 +60,6 @@ class ActionRepo(UserOwnedRepo[Action, ActionCreate, ActionUpdate]):
         )
         
         result = await self.session.execute(statement)
-        return result.scalars().all()
+        actions = result.scalars().all()
+        print(f"DEBUG: ActionRepo.get_unique_completed_actions - FOUND {len(actions)} unique actions")
+        return list(actions)

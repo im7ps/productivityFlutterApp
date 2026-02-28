@@ -12,17 +12,22 @@ class ActionService:
         self.dimension_service = dimension_service
 
     async def create_action(self, user_id: uuid.UUID, action_in: ActionCreate) -> Action:
+        print(f"DEBUG: ActionService.create_action - User: {user_id}, Dimension: '{action_in.dimension_id}', Desc: '{action_in.description}'")
         # Verify dimension exists
-        dim = await self.dimension_service.get_dimension(action_in.dimension_id)
-        if not dim:
-             raise HTTPException(status_code=404, detail="Dimension not found")
+        try:
+            dim = await self.dimension_service.get_dimension(action_in.dimension_id)
+        except HTTPException as e:
+            print(f"DEBUG: ActionService.create_action - Dimension validation FAILED: {str(e.detail)}")
+            raise e
              
+        print(f"DEBUG: ActionService.create_action - Dimension validated. Creating record...")
         action = await self.repo.create_for_user(user_id, action_in)
         # --- FIX: AGGIUNTO COMMIT PER PERSISTENZA ---
         await self.repo.session.commit()
         
         # Manually populate the relationship to avoid MissingGreenlet error on serialization
         action.dimension = dim 
+        print(f"DEBUG: ActionService.create_action - SUCCESS: Created action {action.id}")
         return action
 
     async def get_user_actions(self, user_id: uuid.UUID, skip: int = 0, limit: int = 50) -> List[Action]:
@@ -35,4 +40,7 @@ class ActionService:
         return await self.repo.get_unique_completed_actions(user_id)
         
     async def delete_action(self, user_id: uuid.UUID, action_id: uuid.UUID) -> bool:
-        return await self.repo.delete_for_user(user_id, action_id)
+        success = await self.repo.delete_for_user(user_id, action_id)
+        if success:
+            await self.repo.session.commit()
+        return success

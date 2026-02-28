@@ -107,12 +107,10 @@ def get_dimension_service(repo: Annotated[ActionRepo, Depends(get_dimension_repo
 
 def get_action_service(
     repo: Annotated[ActionRepo, Depends(get_action_repo)],
-    session: Annotated[AsyncSession, Depends(get_session)]
+    dim_repo: Annotated[DimensionRepo, Depends(get_dimension_repo)]
 ) -> Any:
     from app.services.action_service import ActionService
     from app.services.dimension_service import DimensionService
-    from app.repositories.dimension_repo import DimensionRepo
-    dim_repo = DimensionRepo(session)
     dim_service = DimensionService(dim_repo)
     return ActionService(repo, dim_service)
 

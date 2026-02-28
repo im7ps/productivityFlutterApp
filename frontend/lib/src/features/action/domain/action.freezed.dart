@@ -27,7 +27,9 @@ mixin _$Action {
   String? get description => throw _privateConstructorUsedError;
   String get category => throw _privateConstructorUsedError;
   int get difficulty => throw _privateConstructorUsedError;
+  String get status => throw _privateConstructorUsedError;
   int get fulfillmentScore => throw _privateConstructorUsedError;
+  int? get durationMinutes => throw _privateConstructorUsedError;
   String get userId => throw _privateConstructorUsedError;
   String get dimensionId => throw _privateConstructorUsedError;
   Dimension? get dimension => throw _privateConstructorUsedError;
@@ -53,7 +55,9 @@ abstract class $ActionCopyWith<$Res> {
     String? description,
     String category,
     int difficulty,
+    String status,
     int fulfillmentScore,
+    int? durationMinutes,
     String userId,
     String dimensionId,
     Dimension? dimension,
@@ -83,7 +87,9 @@ class _$ActionCopyWithImpl<$Res, $Val extends Action>
     Object? description = freezed,
     Object? category = null,
     Object? difficulty = null,
+    Object? status = null,
     Object? fulfillmentScore = null,
+    Object? durationMinutes = freezed,
     Object? userId = null,
     Object? dimensionId = null,
     Object? dimension = freezed,
@@ -114,10 +120,18 @@ class _$ActionCopyWithImpl<$Res, $Val extends Action>
                 ? _value.difficulty
                 : difficulty // ignore: cast_nullable_to_non_nullable
                       as int,
+            status: null == status
+                ? _value.status
+                : status // ignore: cast_nullable_to_non_nullable
+                      as String,
             fulfillmentScore: null == fulfillmentScore
                 ? _value.fulfillmentScore
                 : fulfillmentScore // ignore: cast_nullable_to_non_nullable
                       as int,
+            durationMinutes: freezed == durationMinutes
+                ? _value.durationMinutes
+                : durationMinutes // ignore: cast_nullable_to_non_nullable
+                      as int?,
             userId: null == userId
                 ? _value.userId
                 : userId // ignore: cast_nullable_to_non_nullable
@@ -165,7 +179,9 @@ abstract class _$$ActionImplCopyWith<$Res> implements $ActionCopyWith<$Res> {
     String? description,
     String category,
     int difficulty,
+    String status,
     int fulfillmentScore,
+    int? durationMinutes,
     String userId,
     String dimensionId,
     Dimension? dimension,
@@ -195,7 +211,9 @@ class __$$ActionImplCopyWithImpl<$Res>
     Object? description = freezed,
     Object? category = null,
     Object? difficulty = null,
+    Object? status = null,
     Object? fulfillmentScore = null,
+    Object? durationMinutes = freezed,
     Object? userId = null,
     Object? dimensionId = null,
     Object? dimension = freezed,
@@ -226,10 +244,18 @@ class __$$ActionImplCopyWithImpl<$Res>
             ? _value.difficulty
             : difficulty // ignore: cast_nullable_to_non_nullable
                   as int,
+        status: null == status
+            ? _value.status
+            : status // ignore: cast_nullable_to_non_nullable
+                  as String,
         fulfillmentScore: null == fulfillmentScore
             ? _value.fulfillmentScore
             : fulfillmentScore // ignore: cast_nullable_to_non_nullable
                   as int,
+        durationMinutes: freezed == durationMinutes
+            ? _value.durationMinutes
+            : durationMinutes // ignore: cast_nullable_to_non_nullable
+                  as int?,
         userId: null == userId
             ? _value.userId
             : userId // ignore: cast_nullable_to_non_nullable
@@ -257,7 +283,9 @@ class _$ActionImpl implements _Action {
     this.description,
     this.category = "Dovere",
     this.difficulty = 3,
+    this.status = "COMPLETED",
     required this.fulfillmentScore,
+    this.durationMinutes,
     required this.userId,
     required this.dimensionId,
     this.dimension,
@@ -281,7 +309,12 @@ class _$ActionImpl implements _Action {
   @JsonKey()
   final int difficulty;
   @override
+  @JsonKey()
+  final String status;
+  @override
   final int fulfillmentScore;
+  @override
+  final int? durationMinutes;
   @override
   final String userId;
   @override
@@ -291,7 +324,7 @@ class _$ActionImpl implements _Action {
 
   @override
   String toString() {
-    return 'Action(id: $id, startTime: $startTime, endTime: $endTime, description: $description, category: $category, difficulty: $difficulty, fulfillmentScore: $fulfillmentScore, userId: $userId, dimensionId: $dimensionId, dimension: $dimension)';
+    return 'Action(id: $id, startTime: $startTime, endTime: $endTime, description: $description, category: $category, difficulty: $difficulty, status: $status, fulfillmentScore: $fulfillmentScore, durationMinutes: $durationMinutes, userId: $userId, dimensionId: $dimensionId, dimension: $dimension)';
   }
 
   @override
@@ -309,8 +342,11 @@ class _$ActionImpl implements _Action {
                 other.category == category) &&
             (identical(other.difficulty, difficulty) ||
                 other.difficulty == difficulty) &&
+            (identical(other.status, status) || other.status == status) &&
             (identical(other.fulfillmentScore, fulfillmentScore) ||
                 other.fulfillmentScore == fulfillmentScore) &&
+            (identical(other.durationMinutes, durationMinutes) ||
+                other.durationMinutes == durationMinutes) &&
             (identical(other.userId, userId) || other.userId == userId) &&
             (identical(other.dimensionId, dimensionId) ||
                 other.dimensionId == dimensionId) &&
@@ -328,7 +364,9 @@ class _$ActionImpl implements _Action {
     description,
     category,
     difficulty,
+    status,
     fulfillmentScore,
+    durationMinutes,
     userId,
     dimensionId,
     dimension,
@@ -356,7 +394,9 @@ abstract class _Action implements Action {
     final String? description,
     final String category,
     final int difficulty,
+    final String status,
     required final int fulfillmentScore,
+    final int? durationMinutes,
     required final String userId,
     required final String dimensionId,
     final Dimension? dimension,
@@ -377,7 +417,11 @@ abstract class _Action implements Action {
   @override
   int get difficulty;
   @override
+  String get status;
+  @override
   int get fulfillmentScore;
+  @override
+  int? get durationMinutes;
   @override
   String get userId;
   @override
@@ -404,6 +448,7 @@ mixin _$ActionCreate {
   DateTime? get endTime => throw _privateConstructorUsedError;
   String get dimensionId => throw _privateConstructorUsedError;
   int get fulfillmentScore => throw _privateConstructorUsedError;
+  int? get durationMinutes => throw _privateConstructorUsedError;
   String get category => throw _privateConstructorUsedError;
   int get difficulty => throw _privateConstructorUsedError;
   String get status => throw _privateConstructorUsedError;
@@ -431,6 +476,7 @@ abstract class $ActionCreateCopyWith<$Res> {
     DateTime? endTime,
     String dimensionId,
     int fulfillmentScore,
+    int? durationMinutes,
     String category,
     int difficulty,
     String status,
@@ -457,6 +503,7 @@ class _$ActionCreateCopyWithImpl<$Res, $Val extends ActionCreate>
     Object? endTime = freezed,
     Object? dimensionId = null,
     Object? fulfillmentScore = null,
+    Object? durationMinutes = freezed,
     Object? category = null,
     Object? difficulty = null,
     Object? status = null,
@@ -483,6 +530,10 @@ class _$ActionCreateCopyWithImpl<$Res, $Val extends ActionCreate>
                 ? _value.fulfillmentScore
                 : fulfillmentScore // ignore: cast_nullable_to_non_nullable
                       as int,
+            durationMinutes: freezed == durationMinutes
+                ? _value.durationMinutes
+                : durationMinutes // ignore: cast_nullable_to_non_nullable
+                      as int?,
             category: null == category
                 ? _value.category
                 : category // ignore: cast_nullable_to_non_nullable
@@ -516,6 +567,7 @@ abstract class _$$ActionCreateImplCopyWith<$Res>
     DateTime? endTime,
     String dimensionId,
     int fulfillmentScore,
+    int? durationMinutes,
     String category,
     int difficulty,
     String status,
@@ -541,6 +593,7 @@ class __$$ActionCreateImplCopyWithImpl<$Res>
     Object? endTime = freezed,
     Object? dimensionId = null,
     Object? fulfillmentScore = null,
+    Object? durationMinutes = freezed,
     Object? category = null,
     Object? difficulty = null,
     Object? status = null,
@@ -567,6 +620,10 @@ class __$$ActionCreateImplCopyWithImpl<$Res>
             ? _value.fulfillmentScore
             : fulfillmentScore // ignore: cast_nullable_to_non_nullable
                   as int,
+        durationMinutes: freezed == durationMinutes
+            ? _value.durationMinutes
+            : durationMinutes // ignore: cast_nullable_to_non_nullable
+                  as int?,
         category: null == category
             ? _value.category
             : category // ignore: cast_nullable_to_non_nullable
@@ -593,6 +650,7 @@ class _$ActionCreateImpl implements _ActionCreate {
     this.endTime,
     required this.dimensionId,
     required this.fulfillmentScore,
+    this.durationMinutes,
     this.category = "Dovere",
     this.difficulty = 3,
     this.status = "COMPLETED",
@@ -612,6 +670,8 @@ class _$ActionCreateImpl implements _ActionCreate {
   @override
   final int fulfillmentScore;
   @override
+  final int? durationMinutes;
+  @override
   @JsonKey()
   final String category;
   @override
@@ -623,7 +683,7 @@ class _$ActionCreateImpl implements _ActionCreate {
 
   @override
   String toString() {
-    return 'ActionCreate(description: $description, startTime: $startTime, endTime: $endTime, dimensionId: $dimensionId, fulfillmentScore: $fulfillmentScore, category: $category, difficulty: $difficulty, status: $status)';
+    return 'ActionCreate(description: $description, startTime: $startTime, endTime: $endTime, dimensionId: $dimensionId, fulfillmentScore: $fulfillmentScore, durationMinutes: $durationMinutes, category: $category, difficulty: $difficulty, status: $status)';
   }
 
   @override
@@ -640,6 +700,8 @@ class _$ActionCreateImpl implements _ActionCreate {
                 other.dimensionId == dimensionId) &&
             (identical(other.fulfillmentScore, fulfillmentScore) ||
                 other.fulfillmentScore == fulfillmentScore) &&
+            (identical(other.durationMinutes, durationMinutes) ||
+                other.durationMinutes == durationMinutes) &&
             (identical(other.category, category) ||
                 other.category == category) &&
             (identical(other.difficulty, difficulty) ||
@@ -656,6 +718,7 @@ class _$ActionCreateImpl implements _ActionCreate {
     endTime,
     dimensionId,
     fulfillmentScore,
+    durationMinutes,
     category,
     difficulty,
     status,
@@ -682,6 +745,7 @@ abstract class _ActionCreate implements ActionCreate {
     final DateTime? endTime,
     required final String dimensionId,
     required final int fulfillmentScore,
+    final int? durationMinutes,
     final String category,
     final int difficulty,
     final String status,
@@ -700,6 +764,8 @@ abstract class _ActionCreate implements ActionCreate {
   String get dimensionId;
   @override
   int get fulfillmentScore;
+  @override
+  int? get durationMinutes;
   @override
   String get category;
   @override

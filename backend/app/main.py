@@ -3,6 +3,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import structlog
+import os
 
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
@@ -32,7 +33,6 @@ async def lifespan(app: FastAPI):
     logger.info("Application starting", env=settings.ENVIRONMENT)
     
     # Configurazione LangChain / LangSmith Tracing
-    import os
     if settings.LANGCHAIN_API_KEY:
         os.environ["LANGCHAIN_TRACING_V2"] = settings.LANGCHAIN_TRACING_V2
         os.environ["LANGCHAIN_API_KEY"] = settings.LANGCHAIN_API_KEY
@@ -40,12 +40,28 @@ async def lifespan(app: FastAPI):
         logger.info("LangChain tracing enabled", project=settings.LANGCHAIN_PROJECT)
     
     from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
+    from psycopg_pool import AsyncConnectionPool
+    
     conn_string = os.getenv("DATABASE_URL")
-    async with AsyncPostgresSaver.from_conn_string(conn_string) as checkpointer:
-        await checkpointer.setup()
-        app.state.app_graph = compile_graph(checkpointer)
+    if not conn_string:
+        logger.error("DATABASE_URL not set, chat graph will not work")
         yield
-    # Questo codice viene eseguito allo spegnimento dell'applicazione
+        return
+
+    # Usiamo un pool di connessioni per gestire la concorrenza e la stabilità
+    # Importante: AsyncPostgresSaver può accettare un pool direttamente
+    try:
+        async with AsyncConnectionPool(conn_string, max_size=20, kwargs={"autocommit": True}) as pool:
+            checkpointer = AsyncPostgresSaver(pool)
+            # Setup crea le tabelle se non esistono
+            await checkpointer.setup()
+            logger.info("LangGraph checkpointer (Pool) initialized and tables verified")
+            app.state.app_graph = compile_graph(checkpointer)
+            yield
+    except Exception as e:
+        logger.error("Failed to initialize LangGraph checkpointer pool", error=str(e))
+        yield
+        
     logger.info("Application shutting down")
 
 
@@ -66,7 +82,6 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # Configurazione CORS
 app.add_middleware(
     CORSMiddleware,
-    # Conversione rigorosa da AnyHttpUrl a stringa per evitare errori di serializzazione
     allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
     allow_credentials=True,
     allow_methods=["*"],
@@ -101,7 +116,6 @@ async def domain_validation_error_handler(request: Request, exc: DomainValidatio
         content={"detail": exc.message},
     )
 
-# Include i router delle API
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
 app.include_router(users.router, prefix="/api/v1/users", tags=["users"])
 app.include_router(dimensions.router, prefix="/api/v1/dimensions", tags=["dimensions"])

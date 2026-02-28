@@ -28,6 +28,8 @@ mixin _$TaskUIModel {
   @ColorConverter()
   Color get color => throw _privateConstructorUsedError;
   bool get isCompleted => throw _privateConstructorUsedError;
+  String get status => throw _privateConstructorUsedError;
+  int? get durationMinutes => throw _privateConstructorUsedError;
   int get difficulty => throw _privateConstructorUsedError;
   int get satisfaction => throw _privateConstructorUsedError;
   String get category => throw _privateConstructorUsedError;
@@ -55,6 +57,8 @@ abstract class $TaskUIModelCopyWith<$Res> {
     @IconDataConverter() IconData icon,
     @ColorConverter() Color color,
     bool isCompleted,
+    String status,
+    int? durationMinutes,
     int difficulty,
     int satisfaction,
     String category,
@@ -81,6 +85,8 @@ class _$TaskUIModelCopyWithImpl<$Res, $Val extends TaskUIModel>
     Object? icon = null,
     Object? color = null,
     Object? isCompleted = null,
+    Object? status = null,
+    Object? durationMinutes = freezed,
     Object? difficulty = null,
     Object? satisfaction = null,
     Object? category = null,
@@ -107,6 +113,14 @@ class _$TaskUIModelCopyWithImpl<$Res, $Val extends TaskUIModel>
                 ? _value.isCompleted
                 : isCompleted // ignore: cast_nullable_to_non_nullable
                       as bool,
+            status: null == status
+                ? _value.status
+                : status // ignore: cast_nullable_to_non_nullable
+                      as String,
+            durationMinutes: freezed == durationMinutes
+                ? _value.durationMinutes
+                : durationMinutes // ignore: cast_nullable_to_non_nullable
+                      as int?,
             difficulty: null == difficulty
                 ? _value.difficulty
                 : difficulty // ignore: cast_nullable_to_non_nullable
@@ -140,6 +154,8 @@ abstract class _$$TaskUIModelImplCopyWith<$Res>
     @IconDataConverter() IconData icon,
     @ColorConverter() Color color,
     bool isCompleted,
+    String status,
+    int? durationMinutes,
     int difficulty,
     int satisfaction,
     String category,
@@ -165,6 +181,8 @@ class __$$TaskUIModelImplCopyWithImpl<$Res>
     Object? icon = null,
     Object? color = null,
     Object? isCompleted = null,
+    Object? status = null,
+    Object? durationMinutes = freezed,
     Object? difficulty = null,
     Object? satisfaction = null,
     Object? category = null,
@@ -191,6 +209,14 @@ class __$$TaskUIModelImplCopyWithImpl<$Res>
             ? _value.isCompleted
             : isCompleted // ignore: cast_nullable_to_non_nullable
                   as bool,
+        status: null == status
+            ? _value.status
+            : status // ignore: cast_nullable_to_non_nullable
+                  as String,
+        durationMinutes: freezed == durationMinutes
+            ? _value.durationMinutes
+            : durationMinutes // ignore: cast_nullable_to_non_nullable
+                  as int?,
         difficulty: null == difficulty
             ? _value.difficulty
             : difficulty // ignore: cast_nullable_to_non_nullable
@@ -217,6 +243,8 @@ class _$TaskUIModelImpl implements _TaskUIModel {
     @IconDataConverter() required this.icon,
     @ColorConverter() required this.color,
     this.isCompleted = false,
+    this.status = "COMPLETED",
+    this.durationMinutes,
     required this.difficulty,
     required this.satisfaction,
     required this.category,
@@ -239,6 +267,11 @@ class _$TaskUIModelImpl implements _TaskUIModel {
   @JsonKey()
   final bool isCompleted;
   @override
+  @JsonKey()
+  final String status;
+  @override
+  final int? durationMinutes;
+  @override
   final int difficulty;
   @override
   final int satisfaction;
@@ -247,7 +280,7 @@ class _$TaskUIModelImpl implements _TaskUIModel {
 
   @override
   String toString() {
-    return 'TaskUIModel(id: $id, title: $title, icon: $icon, color: $color, isCompleted: $isCompleted, difficulty: $difficulty, satisfaction: $satisfaction, category: $category)';
+    return 'TaskUIModel(id: $id, title: $title, icon: $icon, color: $color, isCompleted: $isCompleted, status: $status, durationMinutes: $durationMinutes, difficulty: $difficulty, satisfaction: $satisfaction, category: $category)';
   }
 
   @override
@@ -261,6 +294,9 @@ class _$TaskUIModelImpl implements _TaskUIModel {
             (identical(other.color, color) || other.color == color) &&
             (identical(other.isCompleted, isCompleted) ||
                 other.isCompleted == isCompleted) &&
+            (identical(other.status, status) || other.status == status) &&
+            (identical(other.durationMinutes, durationMinutes) ||
+                other.durationMinutes == durationMinutes) &&
             (identical(other.difficulty, difficulty) ||
                 other.difficulty == difficulty) &&
             (identical(other.satisfaction, satisfaction) ||
@@ -278,6 +314,8 @@ class _$TaskUIModelImpl implements _TaskUIModel {
     icon,
     color,
     isCompleted,
+    status,
+    durationMinutes,
     difficulty,
     satisfaction,
     category,
@@ -304,6 +342,8 @@ abstract class _TaskUIModel implements TaskUIModel {
     @IconDataConverter() required final IconData icon,
     @ColorConverter() required final Color color,
     final bool isCompleted,
+    final String status,
+    final int? durationMinutes,
     required final int difficulty,
     required final int satisfaction,
     required final String category,
@@ -324,6 +364,10 @@ abstract class _TaskUIModel implements TaskUIModel {
   Color get color;
   @override
   bool get isCompleted;
+  @override
+  String get status;
+  @override
+  int? get durationMinutes;
   @override
   int get difficulty;
   @override
