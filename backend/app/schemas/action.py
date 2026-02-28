@@ -17,6 +17,7 @@ class ActionBase(TunableBaseModel):
     status: str = "COMPLETED"
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
+    duration_minutes: Optional[int] = None
     dimension_id: Optional[str] = None # Now String
     fulfillment_score: int = 3
 

@@ -25,6 +25,9 @@ class Action(SQLModel, table=True):
     
     # Fulfillment Score (1-5) - acts as satisfaction
     fulfillment_score: int = Field(default=3, ge=1, le=5)
+    
+    # NEW: Duration in minutes
+    duration_minutes: Optional[int] = Field(default=None)
 
     user_id: uuid.UUID = Field(foreign_key="user.id", index=True)
     user: Optional["User"] = Relationship(back_populates="actions")
